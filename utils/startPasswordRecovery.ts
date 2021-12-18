@@ -1,10 +1,12 @@
 import { GraphContextType, UserType } from "types";
 import { randomBytes } from "crypto";
-import { handleEmails } from ".";
+import { handleEmails, handleError } from ".";
 import config from "config";
+import mongoose from "mongoose";
 
 const {
   passwordRecoveryOption: { body, from, subject },
+  generalErrorMessage,
 } = config.appData;
 
 const startPasswordRecovery = async (
@@ -13,31 +15,43 @@ const startPasswordRecovery = async (
   { UserModel }: GraphContextType
 ) => {
   try {
-    // generate access code and with time
-    const accessCode = randomBytes(4).toString("hex"),
-      start = new Date(),
-      end = new Date(Date.now() + 30 * 60 * 1000);
-    // update the password recovery field
-    await UserModel.findOneAndUpdate(
-      { email },
-      {
-        passwordRecovery: { accessCode, start, end },
-      },
-      { upsert: true }
-    )
-      .select("passwordRecovery")
-      .exec();
-    // send email
+    // generate access code and time
+    const passwordRecoveryCode = randomBytes(4).toString("hex"),
+      // recovery start time
+      passwordRecoveryStart = new Date(),
+      // recovery expires after some time
+      passwordRecoveryEnd = new Date(
+        passwordRecoveryStart.getTime() + 30 * 60 * 1000
+      );
+    // update the password recovery fields or throw error if email is invalid
+    handleError(
+      !(await UserModel.findOneAndUpdate(
+        { email },
+        {
+          passwordRecoveryCode,
+          passwordRecoveryStart,
+          passwordRecoveryEnd,
+        }
+      )
+        .select("passwordRecoveryEnd")
+        .exec()),
+      Error,
+      generalErrorMessage
+    );
+    // disconnect db
+    mongoose.disconnect();
+    // send access code to email
     await handleEmails({
       subject,
       from,
-      body: body + accessCode,
+      body: body + passwordRecoveryCode,
       to: email,
     });
 
     return "Access code sent to your email";
   } catch (error: any) {
-    throw new Error("Something went wrong");
+    // log error to see more
+    handleError(error.message, Error, generalErrorMessage);
   }
 };
 
