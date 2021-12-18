@@ -1,10 +1,11 @@
 import { GraphContextType } from "types";
 import { getHashPayload, handleError } from ".";
 import config from "config";
+import mongoose from "mongoose"
 
-const { generalErrorMessage } = config.appData;
+const { generalErrorMessage } = config.appData,
 
-const recoverPassword = async (
+recoverPassword = async (
   _: any,
   {
     recoveryData: { accessCode: passwordRecoveryCode, newPassword },
@@ -28,6 +29,8 @@ const recoverPassword = async (
     );
     // find & update user with new password & salt
     await UserModel.findByIdAndUpdate(user?._id!, { password, salt }).exec();
+    // disconnect db
+    mongoose.disconnect()
 
     return "Password has been changed successfully";
   } catch (error: any) {
