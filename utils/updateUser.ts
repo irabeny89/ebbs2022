@@ -1,5 +1,10 @@
+import { AuthenticationError } from "apollo-server-core";
 import { BusinessType, GraphContextType, UserType } from "types";
-import { handleAuth } from ".";
+import { getAuthPayload, handleError } from ".";
+import config from "config";
+import mongoose from "mongoose";
+
+const { generalErrorMessage } = config.appData;
 
 const updateUser = async (
   _: any,
@@ -17,21 +22,36 @@ const updateUser = async (
     BusinessModel,
   }: GraphContextType
 ) => {
-  // validate user auth
-  const payload = handleAuth(authorization!.replace("Bearer ", "")),
-    userUpdate = { country, state, phone },
-    businessUpdate = { label, description, logo },
-    // update the user data
-    userBusiness = await UserModel.findByIdAndUpdate(payload?.sub, userUpdate)
-      .select("business")
-      .exec();
-  // update business data
-  await BusinessModel.findByIdAndUpdate(
-    userBusiness?.business,
-    businessUpdate
-  ).exec();
+  try {
+    // updates data
+    const userUpdate = { country, state, phone },
+      businessUpdate = { label, description, logo };
+    // start db transaction
+    const session = await mongoose.startSession();
+    await session.withTransaction(async () => {
+      // update the user data or throw error
+      const userBusiness = await UserModel.findByIdAndUpdate(
+        getAuthPayload(authorization!).sub,
+        userUpdate,
+        { session }
+      )
+        .select("business")
+        .exec();
+      // update business data
+      await BusinessModel.findByIdAndUpdate(
+        userBusiness?.business!,
+        businessUpdate,
+        { session }
+      ).exec();
+    });
+    session.endSession();
+    await mongoose.disconnect();
 
-  return "Successfully updated";
+    return "Successfully updated";
+  } catch (error: any) {
+    // log error to see more
+    handleError(error.message, AuthenticationError, generalErrorMessage);
+  }
 };
 
 export default updateUser;
