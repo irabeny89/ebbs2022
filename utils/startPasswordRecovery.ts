@@ -39,7 +39,7 @@ const startPasswordRecovery = async (
       generalErrorMessage
     );
     // disconnect db
-    mongoose.disconnect();
+    await mongoose.disconnect();
     // send access code to email
     await handleEmails({
       subject,

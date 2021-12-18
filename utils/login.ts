@@ -17,7 +17,7 @@ const login = async (
 ) => {
   // select the fields required for signing a token
   const userPayloadField = await UserModel.findOne({ email })
-    .select("_id username audience password salt")
+    .select("_id username audience password salt business")
     .exec();
   // handle error if user does not exist
   handleError(
@@ -31,6 +31,7 @@ const login = async (
     audience,
     password: hashedPassword,
     salt,
+    business: businessId
   } = userPayloadField!;
   // verify user and compare password
   await comparePassword(hashedPassword, password, salt);
@@ -42,6 +43,7 @@ const login = async (
       id: _id,
       username,
       audience,
+      businessId: businessId.toString()
     },
     res
   );
@@ -54,7 +56,7 @@ const login = async (
     { upsert: true }
   ).exec();
   // disconnect db
-  mongoose.disconnect()
+  await mongoose.disconnect()
 
   return tokenPair;
 };

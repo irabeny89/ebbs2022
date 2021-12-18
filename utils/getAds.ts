@@ -15,7 +15,7 @@ const getAds = async (
     .populate("product")
     .exec();
     // disconnect db
-    mongoose.disconnect()
+    await mongoose.disconnect()
 
   return { businessAds, productAds };
 };

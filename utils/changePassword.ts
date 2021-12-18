@@ -1,12 +1,12 @@
 import { GraphContextType } from "types";
 import {
-  AUTHORIZATION_ERROR_MESSAGE,
   comparePassword,
   getAuthPayload,
   getHashPayload,
   handleError,
 } from ".";
 import config from "config";
+import mongoose from "mongoose"
 
 const { generalErrorMessage } = config.appData;
 
@@ -36,6 +36,8 @@ const changePassword = async (
       password,
       salt,
     }).exec();
+    // disconnect db
+    await mongoose.disconnect()
 
     return "Password changed successfully";
   } catch (error: any) {

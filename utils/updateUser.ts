@@ -44,7 +44,8 @@ const updateUser = async (
         { session }
       ).exec();
     });
-    session.endSession();
+    // end transaction session and disconnect db
+    await session.endSession();
     await mongoose.disconnect();
 
     return "Successfully updated";

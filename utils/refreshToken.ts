@@ -22,16 +22,17 @@ const {
   ) => {
     try {
       // verify refresh token
-      const { aud, sub, username } = verify(
+      const { aud, sub, username, businessId } = verify(
           token,
           jwtRefreshSecret
-        ) as JwtPayload & Pick<UserPayloadType, "username">,
+        ) as JwtPayload & UserPayloadType,
         // re-auth user
         tokenPair = authUser(
           {
             id: sub!,
             audience: aud as "ADMIN" | "USER",
             username,
+            businessId
           },
           res
         );
@@ -45,7 +46,7 @@ const {
         }
       ).exec();
       // disconnect db
-      mongoose.disconnect();
+      await mongoose.disconnect();
 
       return tokenPair;
     } catch (error) {

@@ -30,7 +30,7 @@ recoverPassword = async (
     // find & update user with new password & salt
     await UserModel.findByIdAndUpdate(user?._id!, { password, salt }).exec();
     // disconnect db
-    mongoose.disconnect()
+    await mongoose.disconnect()
 
     return "Password has been changed successfully";
   } catch (error: any) {

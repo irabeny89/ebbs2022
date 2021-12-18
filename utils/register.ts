@@ -75,6 +75,7 @@ register = async (
         id: userDoc._id,
         audience: userDoc.audience,
         username: userDoc.username,
+        businessId: businessDoc._id
       },
       res
     ),
@@ -98,8 +99,9 @@ register = async (
       handleError(error.message, Error, generalErrorMessage)
     }
   });
-  session.endSession();
-  mongoose.disconnect()
+  // end transaction session and disconnect db
+  await session.endSession();
+  await mongoose.disconnect()
 
   return tokenPair;
 };

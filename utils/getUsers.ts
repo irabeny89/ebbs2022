@@ -26,7 +26,7 @@ const getUsers = async (
         .populate("ratedBusinesses")
         .exec();
     // disconnect db
-    mongoose.disconnect();
+    await mongoose.disconnect();
 
     // do nothing(not even error) for unauthorized/non-admin user
   } catch (error: any) {

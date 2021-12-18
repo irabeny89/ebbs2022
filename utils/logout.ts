@@ -18,7 +18,7 @@ const logout = async (
     token,
   }).exec();
   // disconnect db
-  mongoose.disconnect();
+  await mongoose.disconnect();
   // invalidate cookie
   setCookie(res, "token", "", {
     maxAge: 0,
