@@ -1,5 +1,6 @@
 import { GraphContextType } from "types";
 import { setCookie } from ".";
+import mongoose from "mongoose";
 
 const logout = async (
   _: any,
@@ -16,6 +17,8 @@ const logout = async (
   await RefreshTokenModel.findOneAndDelete({
     token,
   }).exec();
+  // disconnect db
+  mongoose.disconnect();
   // invalidate cookie
   setCookie(res, "token", "", {
     maxAge: 0,
