@@ -3,13 +3,15 @@ import { ValidationError } from "apollo-server-micro";
 import {
   BusinessType,
   GraphContextType,
-  TokenPairType,
   UserType,
   WalletType,
 } from "types";
-import { authUser, handleEncryption, handleError } from ".";
+import { authUser, getHashPayload, handleError } from ".";
+import config from "config";
 
-const register = async (
+const { generalErrorMessage } = config.appData,
+
+register = async (
   _: any,
   {
     userData: { logo, description, label, account, bank, ...rest },
@@ -54,7 +56,7 @@ const register = async (
     // create user document
     userDoc = new UserModel({
       ...rest,
-      ...(await handleEncryption(rest.password)),
+      ...(await getHashPayload(rest.password)),
     }),
     // create business document
     businessDoc = new BusinessModel({
@@ -87,12 +89,17 @@ const register = async (
   // run query with transaction
   const session = await mongoose.startSession();
   await session.withTransaction(async () => {
-    await userDoc.save({ session });
-    await businessDoc.save({ session });
-    await walletDoc.save({ session });
-    await refreshTokenDoc.save({ session });
+    try {
+      await userDoc.save({ session });
+      await businessDoc.save({ session });
+      await walletDoc.save({ session });
+      await refreshTokenDoc.save({ session });
+    } catch(error: any) {
+      handleError(error.message, Error, generalErrorMessage)
+    }
   });
   session.endSession();
+  mongoose.disconnect()
 
   return tokenPair;
 };
