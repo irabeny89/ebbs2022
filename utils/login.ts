@@ -6,6 +6,7 @@ import {
   handleError,
 } from ".";
 import { AuthenticationError } from "apollo-server-micro";
+import mongoose from "mongoose"
 
 const login = async (
   _: any,
@@ -52,6 +53,8 @@ const login = async (
     { token: tokenPair.refreshToken },
     { upsert: true }
   ).exec();
+  // disconnect db
+  mongoose.disconnect()
 
   return tokenPair;
 };
