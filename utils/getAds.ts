@@ -1,4 +1,5 @@
 import { GraphContextType } from "types";
+import mongoose from "mongoose"
 
 const getAds = async (
   _: any,
@@ -13,6 +14,8 @@ const getAds = async (
     .select("product")
     .populate("product")
     .exec();
+    // disconnect db
+    mongoose.disconnect()
 
   return { businessAds, productAds };
 };
