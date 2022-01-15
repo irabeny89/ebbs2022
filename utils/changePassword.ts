@@ -28,14 +28,14 @@ const changePassword = async (
       // hash new password with salt
       { password, salt } = await getHashPayload(newPassword),
       // get old password and salt
-      user = await UserModel.findById(userId).select("password salt").exec();
+      user = await UserModel.findById(userId).select("password salt").lean().exec();
     // confirm old password is in db or throw an error
     await comparePassword(user?.password!, oldPassword, user?.salt!);
     // then update password and salt
     await UserModel.findByIdAndUpdate(userId, {
       password,
       salt,
-    }).exec();
+    }).lean().exec();
     // disconnect db
     await mongoose.disconnect()
 

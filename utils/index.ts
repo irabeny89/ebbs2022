@@ -69,7 +69,7 @@ export const handleError = (
 ) => {
   if (condition) throw new ErrorClass(message);
 };
-
+// verifies jwt and throw errors
 export const getAuthPayload = (authorization: string) =>
   verify(authorization!.replace("Bearer ", ""), jwtAccessSecret) as JwtPayload &
     UserPayloadType;
@@ -164,7 +164,7 @@ export const authUser = (
   return tokenPair;
 };
 
-export const handleEmails = async (emailOptions: EmailOptionsType) => {
+export const sendEmails = async (emailOptions: EmailOptionsType) => {
   const { smtp, user, pass } = await createTestAccount(),
     // email transporter config
     transportOptions = {

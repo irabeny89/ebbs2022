@@ -9,10 +9,12 @@ const getAds = async (
   const businessAds = await BusinessAdModel.find()
     .select("business")
     .populate("business")
+    .lean()
     .exec();
   const productAds = await ProductAdModel.find()
     .select("product")
     .populate("product")
+    .lean()
     .exec();
     // disconnect db
     await mongoose.disconnect()

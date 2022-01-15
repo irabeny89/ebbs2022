@@ -1,6 +1,6 @@
 import { GraphContextType, UserType } from "types";
 import { randomBytes } from "crypto";
-import { handleEmails, handleError } from ".";
+import { sendEmails, handleError } from ".";
 import config from "config";
 import mongoose from "mongoose";
 
@@ -34,6 +34,7 @@ const startPasswordRecovery = async (
         }
       )
         .select("passwordRecoveryEnd")
+        .lean()
         .exec()),
       Error,
       generalErrorMessage
@@ -41,7 +42,7 @@ const startPasswordRecovery = async (
     // disconnect db
     await mongoose.disconnect();
     // send access code to email
-    await handleEmails({
+    await sendEmails({
       subject,
       from,
       body: body + passwordRecoveryCode,

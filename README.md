@@ -1,34 +1,29 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# EveryBodyBuySell
 
-## Getting Started
+EBBS is an ecommerce web app.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+- Browse products and services
+- Create a profile for both business and regular use i.e 2-in-1 account
+- Manage your products in your business
+- Manage your product orders
+- Manage your product requests
+- Service provider get paid when clients give consent
+- Subscribe if you want your business on the first page
+- Manage your wallet
+- Withdraw your fund anytime
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## More Features coming soon
+  
+### Variable Reward
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+  Products with normal prices are also placed on variable reward where there prices can either be one of three prices which can be lower or higher than the normal price eg;
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+  Product | Normal Price | Lower Price | Higher Price
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+  Airforce | 23000 | 20700 | 25300
 
-## Learn More
+### Auction
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+  Products are placed on auction at a certain price for a limited time where people bid for them and the top bidder before the time elapsed wins the bid and get the product purchased.

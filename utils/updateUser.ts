@@ -36,13 +36,16 @@ const updateUser = async (
         { session }
       )
         .select("business")
+        .lean()
         .exec();
       // update business data
       await BusinessModel.findByIdAndUpdate(
         userBusiness?.business!,
         businessUpdate,
         { session }
-      ).exec();
+      )
+        .lean()
+        .exec();
     });
     // end transaction session and disconnect db
     await session.endSession();

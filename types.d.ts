@@ -3,167 +3,237 @@ import { NextApiRequest, NextApiResponse } from "next";
 import Dataloader from "dataloader";
 import { JwtPayload } from "jsonwebtoken";
 import { MicroRequest } from "apollo-server-micro/dist/types";
+import path from "path";
+import { MutableRefObject, ReactNode } from "react";
 
-type TimestampAndId = {
-  _id?: mongoose.Types.ObjectId;
-  createdAt?: Date;
-  updatedAt?: Date;
-};
+type QueryVariableType = Record<"productArgs" | "serviceArgs" | "commentArgs", PagingInputType>
 
-type CartItem = {
-  product: mongoose.Types.ObjectId | ProductType;
-  quantity: number;
-  subTotal: number;
-};
-
-type PasswordRecovery = {
-  start: Date;
-  end: Date;
-  accessCode: string;
-};
-
-export type UserType = {
-  audience: "ADMIN" | "USER";
-  firstname: string;
-  lastname: string;
-  state: string;
-  country: string;
-  ratedBusinesses: mongoose.Types.ObjectId[] | BusinessType[];
-  requests: mongoose.Types.ObjectId[] | RequestType[];
-  username: string;
-  email: string;
-  password: string;
-  salt: string;
-  passwordRecovery: PasswordRecovery;
-  phone: string;
-  business: mongoose.Types.ObjectId | BusinessType;
-  wallet: mongoose.Types.ObjectId | WalletType;
-  withdraws: mongoose.Types.ObjectId[] | WithdrawType[];
-} & TimestampAndId;
-
-export type BusinessType = {
-  owner: mongoose.Types.ObjectId | UserType;
-  label: string;
-  logo: string;
-  description: string;
-  likeCount: number;
-  products: ProductType[];
-  orders: OrderType[];
-  feeds: FeedType[];
-  businessAdSubs: mongoose.Types.ObjectId[] | BusinessAdType[];
-  productAdSubs: mongoose.Types.ObjectId[] | ProductAdType[];
-} & TimestampAndId;
-
-export type WalletType = {
-  owner: mongoose.Types.ObjectId | UserType;
-  account: string;
-  bank: string;
-  balance: number;
-} & TimestampAndId;
-
-export type RequestType = {
-  items: CartItem[];
-  itemsCount: number;
-  status: "DELIVERED" | "PENDING" | "SHIPPED";
-  owner: mongoose.Types.ObjectId | UserType;
-  deliveryInfo: mongoose.Types.ObjectId | DeliveryInfoType;
-  totalCost: number;
-} & TimestampAndId;
-
-export type OrderType = {
-  provider: mongoose.Types.ObjectId | BusinessType;
-  status: "DELIVERED" | "PENDING" | "SHIPPED";
-  items: CartItem[];
-  itemsCount: number;
-  owner: mongoose.Types.ObjectId | UserType;
-  deliveryInfo: mongoose.Types.ObjectId | DeliveryInfoType;
-  totalCost: number;
-} & TimestampAndId;
-
-export type ProductType = {
-  name: string;
-  description: string;
-  images: string[];
-  video: string;
-  category: "WEARS" | "ELECTRICALS" | "VEHICLES" | "ELECTRONICS" | "FOOD_DRUGS";
-  tags: string[];
-  price: number;
-  soldCount: number;
-  quantity: number;
-  isDeleted: boolean;
-  business: mongoose.Types.ObjectId | BusinessType;
-} & TimestampAndId;
-
-export type FeedType = {
-  poster: mongoose.Types.ObjectId | UserType;
-  post: string;
-  business: mongoose.Types.ObjectId | BusinessType;
-} & TimestampAndId;
-
-export type BusinessAdType = {
-  business: mongoose.Types.ObjectId | BusinessType;
-  costPerDay: number;
-  totalCost: number;
-  start: Date;
-  end: Date;
-} & TimestampAndId;
-
-export type ProductAdType = {
-  product: mongoose.Types.ObjectId | ProductType;
-  costPerDay: number;
-  totalCost: number;
-  start: Date;
-  end: Date;
-} & TimestampAndId;
-
-export type DeliveryInfoType = {
-  order: mongoose.Types.ObjectId | OrderType;
-  contactPhone: String;
-  nearestBusStop: string;
-  localGovtArea: string;
-  state: string;
-  country: string;
-} & TimestampAndId;
-
-export type WithdrawType = {
-  user: mongoose.Types.ObjectId | UserType;
-  amount: number;
-  balanceBefore: number;
-  balanceAfter: number;
-} & TimestampAndId;
-
-export type GraphContextType = {
-  UserModel: Model<UserType>;
-  FeedModel: Model<FeedType>;
-  OrderModel: Model<OrderType>;
-  WalletModel: Model<WalletType>;
-  RequestModel: Model<RequestType>;
-  ProductModel: Model<ProductType>;
-  BusinessModel: Model<BusinessType>;
-  WithdrawModel: Model<WithdrawType>;
-  ProductAdModel: Model<ProductAdType>;
-  BusinessAdModel: Model<BusinessAdType>;
-  DeliveryAddressModel: Model<DeliveryInfoType>;
-  RefreshTokenModel: Model<RefreshTokenType>;
-} & ContextArgType;
-
-export type ContextArgType = {
-  req: NextApiRequest;
-  res: NextApiResponse;
-};
-
-export type TokenPairType = {
+type TokenPairType = {
   accessToken: string;
   refreshToken: string;
 };
 
-export type RefreshTokenType = {
+type ProductCategoryType =
+  | "WEARS"
+  | "ELECTRICALS"
+  | "VEHICLES"
+  | "ELECTRONICS"
+  | "FOOD_DRUGS";
+
+type TimestampAndId = {
+  _id?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+};
+
+type StyleType = {
+  className?: string;
+  style?: CSSProperties;
+};
+
+type UserType = {
+  role: "ADMIN" | "USER";
+  username: string;
   email: string;
-  token: string;
+  password: string;
+  salt: string;
+  passCode: string;
+  codeStart: Date;
+  codeEnd: Date;
 } & TimestampAndId;
 
-export type UserPayloadType = {
+type ServiceType = {
+  owner: mongoose.Types.ObjectId;
+  name: string;
+  logo: string;
+  description: string;
+  country: string;
+  state: string;
+  maxProduct: number;
+} & TimestampAndId;
+
+type ProductType = {
+  name: string;
+  description: string;
+  category: ProductCategoryType;
+  images: string[];
+  video: string;
+  tags: string[];
+  price: number;
+  provider: mongoose.Types.ObjectId;
+} & TimestampAndId;
+
+type OrderItemType = {
+  _id: mongoose.Types.ObjectId | string;
+  name: string;
+  price: number;
+  quantity: number;
+  cost: number;
+};
+
+type OrderType = {
+  client: mongoose.Types.ObjectId;
+  provider: mongoose.Types.ObjectId;
+  status: "DELIVERED" | "PENDING" | "SHIPPED" | "CANCELED";
+  items: OrderItemType[];
+  phone: string;
+  country: string;
+  state: string;
+  address: string;
+  nearestBusStop: string;
+  deliveryDate: Date;
+  totalCost: number;
+} & TimestampAndId;
+
+type LikeType = {
+  selection: mongoose.Types.ObjectId;
+  happyClients: mongoose.Types.ObjectId[];
+} & TimestampAndId;
+
+type CommentType = {
+  topic: mongoose.Types.ObjectId;
+  poster: mongoose.Types.ObjectId;
+  post: string;
+} & TimestampAndId;
+
+type ProductVertexType = Partial<
+  ProductType & {
+    saleCount: number;
+    provider: ServiceVertexType;
+  }
+>;
+
+type ServiceVertexType = Partial<Omit<ServiceType, "owner">> &
+  Partial<{
+    happyClients: string[];
+    products: CursorConnectionType<ProductVertexType>;
+    comments: CursorConnectionType<CommentVertexType>;
+    orders: CursorConnectionType<OrderVertexType>;
+    categories: [ProductCategoryType];
+    maxProduct: number;
+    commentCount: number;
+  }>;
+
+type CommentVertexType = Partial<{
+  topic: ServiceVertexType;
+  poster: UserVertexType;
+}> & Omit<CommentType, "topic" | "poster">;
+
+type UserVertexType = Partial<Pick<UserType, "username" | "email">> & TimestampAndId
+
+type OrderVertexType = Partial<OrderType>;
+
+type UserPayloadType = {
   username: string;
   id: string;
   audience: "ADMIN" | "USER";
 };
+
+type EmailOptionsType = {
+  subject: string;
+  from: string;
+  to: string;
+  body: string;
+};
+
+type PaginationInfoType = {
+  totalPages: number;
+  totalItems: number;
+  page: number;
+  perPage: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
+type CursorConnectionType<NodeType> = {
+  edges: EdgeType<NodeType>[];
+  pageInfo: PageInfoType;
+};
+
+type EdgeType<NodeType> = {
+  cursor: string;
+  node: NodeType;
+};
+
+type PageInfoType = {
+  startCursor: string;
+  endCursor: string;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+};
+
+type PagingInputType = Partial<{
+  id: Pick<TimestampAndId, "_id">;
+  first: number;
+  after: string;
+  last: number;
+  before: number;
+}>;
+
+type GraphContextType = {
+  UserModel: Model<UserType>;
+  UserServiceModel: Model<ServiceType>;
+  ServiceCommentModel: Model<CommentType>;
+  ServiceOrderModel: Model<OrderType>;
+  ServiceProductModel: Model<ProductType>;
+  ServiceLikeModel: Model<LikeType>;
+} & ContextArgType;
+
+type ContextArgType = {
+  req: NextApiRequest;
+  res: NextApiResponse;
+};
+
+type ServiceCardPropType = ServiceVertexType & StyleType;
+
+type ProductCardPropType = ProductVertexType & StyleType;
+
+type HomePagePropType = {
+  products: ProductCardPropType[];
+  services: ServiceCardPropType[];
+};
+
+type ProductSectionPropType = {
+  items: ProductCardPropType[];
+  title?: ReactNode | string | null;
+} & StyleType;
+
+type ProductListPropType = {
+  items: ProductCardPropType[];
+  carousel?: boolean;
+} & StyleType;
+
+type ServiceSectionPropType = {
+  items: ServiceCardPropType[];
+  title?: ReactNode | string | null;
+} & StyleType;
+
+type ServiceListPropType = {
+  items: ServiceCardPropType[];
+} & StyleType;
+
+type ServiceLabelPropType = Omit<ServiceVertexType, "products"> & StyleType;
+
+type HomePagePropType = {
+  services: ServiceCardPropType[];
+  products: ProductType[];
+};
+
+type LayoutPropsType = {
+  children: ReactNode;
+};
+
+type AjaxFeedbackProps = {
+  loading?: boolean;
+  error?: any;
+  text?: string;
+} & StyleType;
+
+type MoreButtonPropType = {
+  hasLazyFetched: MutableRefObject<boolean>;
+  fetchMore: any;
+  customFetch: any;
+  variables: object;
+  loading: boolean;
+  label: ReactNode | string
+}

@@ -17,16 +17,17 @@ const getUsers = async (
 ) => {
   try {
     // only admin allowed
-    if (getAuthPayload(authorization!).aud === "ADMIN")
-      return await UserModel.find()
-        .populate("business")
-        .populate("wallet")
-        .populate("withdraws")
-        .populate("requests")
-        .populate("ratedBusinesses")
+    if (getAuthPayload(authorization!).aud === "ADMIN") {
+      // get all users documents
+      const users = await UserModel.find()
+        .populate("business withdraws ratedBusinesses")
+        .lean()
         .exec();
-    // disconnect db
-    await mongoose.disconnect();
+      // disconnect db
+      await mongoose.disconnect();
+
+      return users;
+    }
 
     // do nothing(not even error) for unauthorized/non-admin user
   } catch (error: any) {

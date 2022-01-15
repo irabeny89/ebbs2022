@@ -34,6 +34,7 @@ const addProduct = async (
     // prevent over-adding product by comparing max product and product count
     const business = await BusinessModel.findById(businessId)
       .select("maxProductAllowed")
+      .lean()
       .exec();
     handleError(
       business?.maxProductAllowed! === business?.currentProductCount!,
@@ -60,7 +61,7 @@ const addProduct = async (
           },
         },
         { session }
-      );
+      ).lean().exec();
     });
     await session.endSession();
     // disconnect db after ending transaction session

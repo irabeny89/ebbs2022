@@ -4,47 +4,156 @@ const config = {
     title: "EBBS - EveryBodyBuySell",
     abbr: "EBBS",
     description:
-      "EBBS - EveryBodyBuySell is a platform for everybody to do business with products and services.",
+      "EBBS - EveryBodyBuySell is a platform for everybody to create and manage their online businesses.",
     features: [
-      "Browse products and services",
-      "Create a profile for both business and regular use i.e 2-in-1 account",
-      "Manage your products in your business",
-      "Manage your product orders",
-      "Manage your product requests",
-      "Service provider get paid when clients give consent",
-      "Subscribe if you want your business on the first page",
-      "Manage your wallet",
-      "Withdraw your fund anytime",
+      "Browse products and services.",
+      "Be a member and do your business online.",
+      "Manage your business - products and services - provider account.",
+      "Manage your non-business profile - consumer account.",
+      "With your wallet you consent to credit service provider when you are satisfied.",
+      "Withdraw or transfer your fund to anyone on the platform anytime.",
+      "Request for support and features through the Telegram channel link below.",
+      "More features coming..."
+    ],
+    privacyTypes: ["ALL", "USER", "ADMIN"],
+    webPages: [
+      {
+        route: "/",
+        links: [
+          { route: "/member", pageTitle: "Member" },
+          { route: "/products", pageTitle: "Products" },
+          { route: "/services", pageTitle: "Services" },
+        ],
+        privacy: "ALL",
+        pageTitle: "Home",
+        description: "List of products and services.",
+        parargraphs: [
+          "EBBS - EveryBodyBuySell is a platform for you to create and manage your online business.",
+        ],
+        requests: [
+          {
+            info: "Query for products and services data.",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "fewProductsAndervices",
+          },
+        ],
+      },
+      {
+        route: "/member",
+        links: [],
+        privacy: "ALL",
+        pageTitle: "Member",
+        description: "Authentication and authorization page.",
+        parargraphs: [
+          "Register, login or retrieve lost password. Note you must be registered to use full features available.",
+        ],
+        requests: [
+          {
+            info: "Register mutation",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "register",
+          },
+          {
+            info: "Login mutation",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "login",
+          },
+          {
+            info: "Retrieve password mutation",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "passcode, recoverPassword",
+          },
+        ],
+      },
+      {
+        route: "/services",
+        links: [],
+        privacy: "ALL",
+        pageTitle: "Services",
+        description: "List of all services",
+        parargraphs: [
+          "Browse through all services and their corresponding products.",
+        ],
+        requests: [
+          {
+            info: "Query services",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "services",
+          },
+        ],
+      },
+      {
+        route: "/products",
+        links: [],
+        privacy: "ALL",
+        pageTitle: "Products",
+        description: "List of all products",
+        parargraphs: ["Browse through all products and add to cart."],
+        requests: [
+          {
+            info: "Query products",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "products",
+          },
+        ],
+      },
     ],
     testAccount: {
-      email: "movefund@gmail.com",
-      password: "testmove",
+      email: "",
+      password: "",
     },
-    pageTitles: [
-      "Home",
-      "Dashboard",
-      "Fund Account",
-      "Send Fund",
-      "Payback Loan",
-      "Users",
-    ],
-    productCategory: [
+    productCategories: [
       "WEARS",
       "ELECTRICALS",
       "VEHICLES",
       "ELECTRONICS",
       "FOOD_DRUGS",
     ],
+    orderStatuses: ["PENDING", "SHIPPED", "DELIVERED", "CANCELED"],
     subscriptionInfos: [
       {
         type: "BUSINESS",
-        costPerDay: 1000,
+        costPerDay: 500,
       },
       {
         type: "PRODUCT",
-        costPerDay: 1500,
+        costPerDay: 500,
       },
     ],
+    maxProductAllowed: 20,
+    passwordRecoveryOption: {
+      subject: "EBBS - Password Recovery",
+      from: "<no-reply>@gmail.com",
+      body: "Hello, enter the access code to change your password on EBBS website - ",
+    },
+    generalErrorMessage: "Something went wrong, try again",
+    constants: {
+      CART_ITEMS_KEY: "ebbsCartItems",
+    },
   },
   environmentVariable: {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
@@ -60,6 +169,11 @@ const config = {
         ? "https://ebbs.vercel.app"
         : "http://localhost:3000",
     graphqlUri: "/api/graphql",
+    ebbsEmail: process.env.EBBS_EMAIL!,
+    ebbsUsername: process.env.EBBS_USERNAME!,
+    ebbsPassword: process.env.EBBS_PASSWORD!,
+    ebbsEmailHost: process.env.EBBS_EMAIL_HOST!,
+    ebbsEmailPort: process.env.EBBS_EMAIL_PORT!,
   },
 };
 
