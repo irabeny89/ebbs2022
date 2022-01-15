@@ -10,6 +10,7 @@ import Head from "next/head";
 import config from "config";
 import Link from "next/link";
 import { FaHome, FaTelegram } from "react-icons/fa";
+import { MdBusinessCenter } from "react-icons/md";
 import { CSSProperties, useState } from "react";
 import { GetStaticProps } from "next";
 import client from "@/graphql/apollo-client";
@@ -21,7 +22,6 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import { FaBoxes } from "react-icons/fa";
-import { gql } from "@apollo/client";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
 // graphql query return type
 type QueryReturnType = {
@@ -151,7 +151,15 @@ export const getStaticProps: GetStaticProps = async () => {
           </Row>
           {/* Service Section */}
           <Row className="mt-5 rounded" style={highlightStyle}>
-            <ServiceSection items={services} className="pt-4 rounded" />
+            <ServiceSection
+              items={services}
+              className="pt-4 rounded"
+              title={
+                <Col>
+                  <MdBusinessCenter size="40" className="mb-2" /> Services
+                </Col>
+              }
+            />
           </Row>
           {/* link to services page */}
           <Row className="text-center mt-4 mb-5">
