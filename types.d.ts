@@ -44,10 +44,9 @@ type UserType = {
 
 type ServiceType = {
   owner: mongoose.Types.ObjectId;
-  name: string;
+  title: string;
   logo: string;
   description: string;
-  country: string;
   state: string;
   maxProduct: number;
 } & TimestampAndId;
@@ -64,7 +63,8 @@ type ProductType = {
 } & TimestampAndId;
 
 type OrderItemType = {
-  _id: mongoose.Types.ObjectId | string;
+  _id: string;
+  providerId: string;
   name: string;
   price: number;
   quantity: number;
@@ -77,7 +77,6 @@ type OrderType = {
   status: "DELIVERED" | "PENDING" | "SHIPPED" | "CANCELED";
   items: OrderItemType[];
   phone: string;
-  country: string;
   state: string;
   address: string;
   nearestBusStop: string;
