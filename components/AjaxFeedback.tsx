@@ -1,7 +1,7 @@
 import Container from "react-bootstrap/Container";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
-import config from "config";
+import config from "../config";
 import type { AjaxFeedbackProps } from "types";
 import Row from "react-bootstrap/Row";
 
