@@ -4,14 +4,13 @@ import type { ServiceType } from "types";
 
 const schema = new Schema<ServiceType>(
   {
-    name: { type: String, required: [true, "Service name is required"] },
+    title: { type: String, required: [true, "Service name is required"] },
     logo: String,
     description: {
       type: String,
       maxlength: 255,
       required: [true, "Information about the service is required"],
     },
-    country: { type: String, required: [true, "Country is required"] },
     state: { type: String, required: [true, "State is required"] },
     maxProduct: {
       type: Number,
