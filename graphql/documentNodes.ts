@@ -17,10 +17,9 @@ export const PRODUCT_FRAGMENT = gql`
 export const SERVICE_FRAGMENT = gql`
     fragment ServiceFields on UserService {
       _id
-      name
+      title
       logo
       description
-      country
       state
       happyClients
       categories
@@ -79,7 +78,7 @@ export const FEW_SERVICES = gql`
               node {
                 ...ProductFields
                 provider {
-                  name
+                  title
                 }
               }
             }
@@ -119,7 +118,8 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
         node {
           ...ProductFields
           provider {
-            name
+            _id
+            title
           }
         }
       }
@@ -133,7 +133,7 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
               node {
                 ...ProductFields
                 provider {
-                  name
+                  title
                 }
               }
             }

@@ -13,19 +13,41 @@ const typeDefs = gql`
     services(args: PagingInput): ServiceConnection
     # list of products
     products(args: PagingInput): ProductConnection
+    # user login
+    login(email: String!, password: String!): TokenPair
   }
   # -- mutation --
   type Mutation {
+    # register new user
+    userRegister(userRegisterInput: UserRegisterInput!): TokenPair
+    # request passcode to change password
+    requestPassCode(email: String!): String!
+    # resetPassword with passcode
+    changePassword(passCode: String!, newPassword: String!): TokenPair
     # toggles liking; like if not like before vice versa
     serviceLiking(serviceId: ID!): LikeOption
+    # send purchase request
+    serviceOrder(serviceOrderInput: ServiceOrderInput!): ServiceOrder
   }
 
   # -- inputs --
-  input UserPasswordRecoveryInput {
-    passCode: String!
-    newPassword: String!
+  input ServiceOrderInput {
+    items: [OrderItemInput!]!
+    phone: String
+    state: String
+    address: String
+    nearestBusStop: String
   }
 
+  input OrderItemInput {
+    _id: ID!
+  providerId: ID!
+  name: String!
+  price: Float!
+  quantity: Int!
+  cost: Float!
+  }
+  
   input UserPasswordChangeInput {
     newPassword: String!
     oldPassword: String!
@@ -42,31 +64,14 @@ const typeDefs = gql`
     quantity: Int!
   }
 
-  input UserLoginInput {
-    email: String!
-    password: String!
-  }
-
-  input UserCreateInput {
-    firstname: String!
-    lastname: String!
-    "resident state"
-    state: String!
-    "resident country"
-    country: String!
+  input UserRegisterInput {
     username: String!
     email: String!
-    phone: String!
     password: String!
-    "business logo"
+    title: String
     logo: String
-    "business description"
     description: String
-    "business label"
-    label: String
-    "bank account number"
-    accountNumber: String
-    bank: String
+    state: String
   }
 
   input UserUpdateInput {
@@ -210,7 +215,7 @@ const typeDefs = gql`
   type UserService {
     _id: ID!
     # service name
-    name: String!
+    title: String!
     # service logo
     logo: String!
     # service description
@@ -302,8 +307,6 @@ const typeDefs = gql`
     items: [OrderItem!]!
     # the client phone to call 
     phone: String!
-    # the client home country
-    country: String!
     # the client home state
     state: String!
     # the client address
