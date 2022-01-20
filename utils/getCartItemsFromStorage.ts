@@ -1,4 +1,4 @@
-import config from "config";
+import config from "../config";
 import type { OrderItemType } from "types";
 
 const getLastCartItemsFromStorage = (
