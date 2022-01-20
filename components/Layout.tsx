@@ -1,22 +1,29 @@
 import { CSSProperties, ReactNode, useEffect } from "react";
-import Container from "react-bootstrap/Container";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
-import config from "config";
+import config from "../config";
 import { FaShoppingCart, FaTrash, FaFirstOrder } from "react-icons/fa";
 import Link from "next/link";
+import Container from "react-bootstrap/Container";
+import Form from "react-bootstrap/Form";
+import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import FormControl from "react-bootstrap/FormControl";
-import { useReactiveVar } from "@apollo/client";
+import { gql, useMutation, useReactiveVar } from "@apollo/client";
 import { cartItemsVar } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
-import useAuthPayload from "hooks/useAuthPayload";
-import type { LayoutPropsType, OrderItemType } from "types";
+import useAuthPayload from "../hooks/useAuthPayload";
+import type {
+  LayoutPropsType,
+  OrderItemType,
+  OrderType,
+  OrderVertexType,
+} from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import AjaxFeedback from "./AjaxFeedback";
@@ -41,10 +48,30 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
     const [show, setShow] = useState(false),
       // mount state
       [hasMounted, setHasMounted] = useState(false),
+      // form validation state
+      [validated, setValidated] = useState(false),
       // get reactive cart items variable
       cartItems = useReactiveVar(cartItemsVar),
       // get token payload
-      authPayload = useAuthPayload();
+      authPayload = useAuthPayload(),
+      // send order mutation
+      [sendRequest, { data, error, loading }] = useMutation<
+        {
+          serviceOrder: OrderVertexType;
+        },
+        {
+          serviceOrderInput: Pick<
+            OrderType,
+            "items" | "phone" | "state" | "address" | "nearestBusStop"
+          >;
+        }
+      >(gql`
+        mutation ServiceOrder($serviceOrderInput: ServiceOrderInput!) {
+          serviceOrder(serviceOrderInput: $serviceOrderInput) {
+            _id
+          }
+        }
+      `);
     // on mount update cart items reactive variable from local storage
     useEffect(() => {
       setHasMounted(true);
@@ -57,7 +84,13 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
         <Modal show={show} onHide={() => setShow(false)}>
           <Modal.Header closeButton>
             <Modal.Title>
-              Cart Items | {getCartItemsTotalCount(cartItems)}
+              Cart Items | {getCartItemsTotalCount(cartItems)}{" "}
+              {!authPayload && (
+                <>
+                  {" "}
+                  | <Link href="/member">Login to order</Link>
+                </>
+              )}
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
@@ -146,58 +179,144 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
                 )
               )}
             </Row>
-            {!authPayload && (
+            <AjaxFeedback error={error} loading={loading} />
+            {/* show delivery details when cart has something */}
+            {!!cartItems.length && (
+              // delivery details
               <Row>
-                <Col className="h2 text-danger">
-                  Wallet: &#8358; 0 Balance: &#8358; 0
-                </Col>
-                <Col className="h3">
-                  <Link href="/member">Login</Link>
+                <Col>
+                  <h4 className="my-5">Delivery Details: </h4>
+                  <Form
+                    noValidate
+                    validated={validated}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget);
+                      // check form validity
+                      e.currentTarget.checkValidity()
+                        ? (setValidated(false),
+                          e.currentTarget.reset(),
+                          sendRequest({
+                            variables: {
+                              serviceOrderInput: {
+                                address: formData.get("address")?.toString()!,
+                                items:
+                                  getLastCartItemsFromStorage(localStorage),
+                                nearestBusStop: formData
+                                  .get("nearestBusStop")
+                                  ?.toString()!,
+                                phone: formData.get("phone")?.toString()!,
+                                state: formData.get("state")?.toString()!,
+                              },
+                            },
+                          }))
+                        : (e.preventDefault(),
+                          e.stopPropagation(),
+                          setValidated(true));
+                    }}
+                  >
+                    <Form.Group>
+                      <Form.Label>Select state</Form.Label>
+                      <Form.Select
+                        size="lg"
+                        name="state"
+                        disabled={!authPayload}
+                      >
+                        {[
+                          "Abia",
+                          "Adamawa",
+                          "Akwa Ibom",
+                          "Anambra",
+                          "Bauchi",
+                          "Bayelsa",
+                          "Benue",
+                          "Borno",
+                          "Cross River",
+                          "Delta",
+                          "Ebonyi",
+                          "Edo",
+                          "Ekiti",
+                          "Enugu",
+                          "Gombe",
+                          "Imo",
+                          "Jigawa",
+                          "Kaduna",
+                          "Kano",
+                          "Katsina",
+                          "Kebbi",
+                          "Kogi",
+                          "Kwara",
+                          "Lagos",
+                          "Nasarawa",
+                          "Niger",
+                          "Ogun",
+                          "Ondo",
+                          "Osun",
+                          "Oyo",
+                          "Plateu",
+                          "Rivers",
+                          "Sokoto",
+                          "Taraba",
+                          "Yobe",
+                          "Zamfara",
+                        ].map((state) => (
+                          <option
+                            key={state}
+                            value={state}
+                            selected={state === "Lagos"}
+                          >
+                            {state}
+                          </option>
+                        ))}
+                      </Form.Select>
+                      <Form.Control.Feedback type="invalid">
+                        This field is required!
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                    <Form.FloatingLabel label="Address">
+                      <Form.Control
+                        placeholder="Address"
+                        aria-label="address"
+                        required
+                        className="my-3"
+                        disabled={!authPayload}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        This field is required!
+                      </Form.Control.Feedback>
+                    </Form.FloatingLabel>
+                    <Form.FloatingLabel label="Nearest Bus Stop">
+                      <Form.Control
+                        placeholder="Nearest Bus Stop"
+                        aria-label="nearest bus stop"
+                        required
+                        className="my-3"
+                        disabled={!authPayload}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        This field is required!
+                      </Form.Control.Feedback>
+                    </Form.FloatingLabel>
+                    <Form.FloatingLabel label="Phone">
+                      <Form.Control
+                        placeholder="Phone"
+                        aria-label="phone"
+                        type="phone"
+                        required
+                        className="mb-4"
+                        disabled={!authPayload}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        This field is required!
+                      </Form.Control.Feedback>
+                    </Form.FloatingLabel>
+                  </Form>
                 </Col>
               </Row>
             )}
-            {!!cartItems.length && (
-              // delivery details
-              <>
-                <Row className="my-5 h2">Delivery Details:</Row>
-                <Row className="my-3">
-                  <Col>
-                    <FloatingLabel label="Contact phone">
-                      <FormControl
-                        placeholder="Phone number to call"
-                        type="tel"
-                        disabled={!authPayload}
-                        required
-                      />
-                    </FloatingLabel>
-                  </Col>
-                </Row>
-                <Row className="my-3">
-                  <Col>
-                    <FloatingLabel label="Full drop-off address">
-                      <FormControl
-                        placeholder="Full drop-off address"
-                        disabled={!authPayload}
-                        required
-                      />
-                    </FloatingLabel>
-                  </Col>
-                </Row>
-                <Row className="my-3">
-                  <Col>
-                    <FloatingLabel label="Nearest bus stop">
-                      <FormControl
-                        placeholder="Nearest bus stop"
-                        required
-                        disabled={!authPayload}
-                      />
-                    </FloatingLabel>
-                  </Col>
-                </Row>
-              </>
-            )}
           </Modal.Body>
           <Modal.Footer>
+            <Link href="/member">Login to order</Link>
             <Button
               variant="danger"
               // on click, clear cart data from storage & memory
@@ -207,9 +326,15 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
             >
               <FaTrash size={20} className="mb-1" /> Clear cart
             </Button>
-            <Button variant="success" disabled={!authPayload}>
-              <FaFirstOrder size={20} className="mb-1" /> Send request
-            </Button>
+            {loading ? (
+              <Button>
+                <Spinner animation="grow" />
+              </Button>
+            ) : (
+              <Button variant="success" disabled={!authPayload || loading}>
+                <FaFirstOrder size={20} className="mb-1" /> Send request
+              </Button>
+            )}
           </Modal.Footer>
         </Modal>
         {/* navigation bar */}
@@ -272,16 +397,26 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
         </Row>
         {/* status bar */}
         <Row className="mb-5 mt-3">
-          <Col xs="auto">
-            <Link href="/member">login to buy</Link>
-          </Col>
+          {authPayload ? (
+            <Col xs="auto">
+              <Link href="/member/dashboard">{authPayload.username}</Link>
+            </Col>
+          ) : (
+            <Col xs="auto">
+              <Link href="/member">login here</Link>
+            </Col>
+          )}
           <Col md={{ offset: 2 }} lg={{ offset: 3 }}>
-            <FloatingLabel label="Find product or service">
-              <FormControl placeholder="Find product or service" />
+            <FloatingLabel label="Find..">
+              <FormControl placeholder="Find..." />
             </FloatingLabel>
           </Col>
           <Col xs="auto" md={{ offset: 2 }} lg={{ offset: 3 }}>
-            <Button variant="outline-dark" onClick={() => setShow(true)}>
+            <Button
+              data-testid="cartButton"
+              variant="outline-dark"
+              onClick={() => setShow(true)}
+            >
               {getCartItemsTotalCount(cartItems)} <FaShoppingCart size="25" />
             </Button>
           </Col>
