@@ -1,4 +1,10 @@
-module.exports = {
+const nextJest = require("next/jest"),
+
+createJestConfig = nextJest({
+  dir: "./"
+})
+
+module.exports = createJestConfig({
   transformIgnorePatterns: [
     '/node_modules/',
     '^.+\\.module\\.(css|sass|scss)$',
@@ -21,7 +27,7 @@ module.exports = {
     // https://jestjs.io/docs/webpack#handling-static-assets
     '^.+\\.(jpg|jpeg|png|gif|webp|svg)$': `<rootDir>/__mocks__/fileMock.js`,
 
-    // Path aliase
+    // Path alias
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/pages/(.*)$': '<rootDir>/pages/$1',
     '^@/models/(.*)$': '<rootDir>/models/$1',
@@ -34,4 +40,5 @@ module.exports = {
     '!**/*.d.ts',
     '!**/node_modules/**',
   ],
-}
+  testEnvironment: "jest-environment-jsdom"
+})
