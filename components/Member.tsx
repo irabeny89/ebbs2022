@@ -16,7 +16,7 @@ import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Row from "react-bootstrap/Row";
 import Layout from "@/components/Layout";
-import config from "config";
+import config from "../config";
 import Head from "next/head";
 import { useEffect, useState } from "react";
 import { gql, useLazyQuery, useMutation } from "@apollo/client";
