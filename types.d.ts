@@ -96,14 +96,13 @@ type CommentType = {
 } & TimestampAndId;
 
 type ProductVertexType = Partial<
-  ProductType & {
+  Omit<ProductType, "provider"> & {
     saleCount: number;
     provider: ServiceVertexType;
   }
 >;
 
-type ServiceVertexType = Partial<Omit<ServiceType, "owner">> &
-  Partial<{
+type ServiceVertexType = Partial<Omit<ServiceType, "owner"> & {
     happyClients: string[];
     products: CursorConnectionType<ProductVertexType>;
     comments: CursorConnectionType<CommentVertexType>;
