@@ -1,7 +1,7 @@
 import type { ProductCardPropType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
-import { BiCartAlt } from "react-icons/bi"
+import { BiCartAlt } from "react-icons/bi";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
 import { mockMedia } from "@/models/localData";
@@ -68,7 +68,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                 i
               </Button>
             </Card.Title>
-            <Card.Subtitle>{provider?.name}</Card.Subtitle>
+            <Card.Subtitle>{provider?.title}</Card.Subtitle>
             <Row className="my-2">
               <Col>
                 <Card.Subtitle>{category}</Card.Subtitle>
@@ -124,10 +124,10 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                 className="d-flex justify-content-center align-items-center"
                 onClick={() => {
                   const oldItems = getLastCartItemsFromStorage(localStorage),
-                    // if no items, add new else update
-                    newItems = oldItems.length
+                    // if cart has this product update it; if it doesn't add it.
+                    newItems = oldItems.find((item) => item._id === _id)
                       ? oldItems.map((item) =>
-                          item._id.toString() === _id
+                          item._id === _id
                             ? {
                                 ...item,
                                 quantity: ++item.quantity,
@@ -135,13 +135,17 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                               }
                             : item
                         )
-                      : new Array({
-                          _id: _id!,
-                          name: name!,
-                          price: price!,
-                          quantity: 1,
-                          cost: price! * 1,
-                        });
+                      : [
+                          ...oldItems,
+                          {
+                            _id: _id!,
+                            providerId: provider?._id.toString()!,
+                            name: name!,
+                            price: price!,
+                            quantity: 1,
+                            cost: price! * 1,
+                          },
+                        ];
                   // store in storage and update state
                   localStorage.setItem(
                     CART_ITEMS_KEY,
