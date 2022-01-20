@@ -12,7 +12,7 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Carousel from "react-bootstrap/Carousel";
 import { cartItemsVar } from "@/graphql/reactiveVariables";
-import config from "config";
+import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
 import { useState } from "react";
