@@ -12,7 +12,7 @@ const AjaxFeedback = ({
   ...rest
 }: AjaxFeedbackProps) => {
   return (
-    <Container {...rest}>
+    <Container {...rest} data-testid="ajax">
       {loading && (
         <Row className="justify-content-center">
           <Spinner animation="border" role="status">
