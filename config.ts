@@ -13,7 +13,7 @@ const config = {
       "With your wallet you consent to credit service provider when you are satisfied.",
       "Withdraw or transfer your fund to anyone on the platform anytime.",
       "Request for support and features through the Telegram channel link below.",
-      "More features coming..."
+      "More features coming...",
     ],
     privacyTypes: ["ALL", "USER", "ADMIN"],
     webPages: [
@@ -23,6 +23,7 @@ const config = {
           { route: "/member", pageTitle: "Member" },
           { route: "/products", pageTitle: "Products" },
           { route: "/services", pageTitle: "Services" },
+          { route: "/member/dashboard", pageTitle: "Dashboard" },
         ],
         privacy: "ALL",
         pageTitle: "Home",
@@ -32,13 +33,22 @@ const config = {
         ],
         requests: [
           {
-            info: "Query for products and services data.",
+            info: "Query for product data.",
             url:
               process.env.NODE_ENV == "production"
                 ? "https://ebbs.vercel.app/api/graphql"
                 : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
-            call: "fewProductsAndervices",
+            call: "products",
+          },
+          {
+            info: "Query for service data.",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "services",
           },
         ],
       },
@@ -49,7 +59,7 @@ const config = {
         pageTitle: "Member",
         description: "Authentication and authorization page.",
         parargraphs: [
-          "Register, login or retrieve lost password. Note you must be registered to use full features available.",
+          "Register, login or retrieve lost password. Note you must be registered to use full features of EBBS.",
         ],
         requests: [
           {
