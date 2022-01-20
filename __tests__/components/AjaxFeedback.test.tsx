@@ -1,6 +1,5 @@
 import { MockedProvider } from "@apollo/client/testing";
 import { render, screen, cleanup } from "@testing-library/react";
-import userEvents from "@testing-library/user-event";
 import AjaxFeeddback from "@/components/AjaxFeedback";
 
 describe("AjaxFeedback component", () => {
