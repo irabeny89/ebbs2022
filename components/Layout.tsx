@@ -1,15 +1,14 @@
 import { CSSProperties, ReactNode, useEffect } from "react";
-import FloatingLabel from "react-bootstrap/FloatingLabel";
 import config from "../config";
 import { FaShoppingCart, FaTrash, FaFirstOrder } from "react-icons/fa";
 import Link from "next/link";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
+import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import FormControl from "react-bootstrap/FormControl";
 import { gql, useMutation, useReactiveVar } from "@apollo/client";
 import { cartItemsVar } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
@@ -125,7 +124,7 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
                   </Col>
                   {/* item quantity input */}
                   <Col style={{ textAlign: "right" }} xs="3">
-                    <FormControl
+                    <Form.Control
                       type="number"
                       min={1}
                       name="quantity"
@@ -179,6 +178,12 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
                 )
               )}
             </Row>
+            {data && (
+              <Alert>
+                Request ID {data.serviceOrder._id}. Check your{" "}
+                <Link href="/member/dashboard">dashboard</Link> for more details
+              </Alert>
+            )}
             <AjaxFeedback error={error} loading={loading} />
             {/* show delivery details when cart has something */}
             {!!cartItems.length && (
@@ -360,6 +365,7 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
                     (page.privacy === "ADMIN" && authPayload?.aud === "ADMIN")
                       ? [
                           ...prev,
+                          // for member page nav link
                           page.pageTitle.toLowerCase() === "member" ? (
                             <NavDropdown
                               key={page.pageTitle}
@@ -371,11 +377,29 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
                               {!authPayload ? (
                                 <Link passHref href={page.route}>
                                   <NavDropdown.Item>
-                                    Login/Register
+                                    <NavDropdown.ItemText>
+                                      Login/Register
+                                    </NavDropdown.ItemText>
                                   </NavDropdown.Item>
                                 </Link>
                               ) : (
-                                <NavDropdown.Item>Logout</NavDropdown.Item>
+                                <>
+                                  <Link
+                                    passHref
+                                    href={
+                                      page.links.find(
+                                        (link) => link.pageTitle === "Dashboard"
+                                      )!.route ?? ""
+                                    }
+                                  >
+                                    <NavDropdown.Item>
+                                      <NavDropdown.ItemText>
+                                        Dashboard
+                                      </NavDropdown.ItemText>
+                                    </NavDropdown.Item>
+                                  </Link>
+                                  <NavDropdown.Item>Logout</NavDropdown.Item>
+                                </>
                               )}
                             </NavDropdown>
                           ) : (
@@ -399,17 +423,33 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
         <Row className="mb-5 mt-3">
           {authPayload ? (
             <Col xs="auto">
-              <Link href="/member/dashboard">{authPayload.username}</Link>
+              <Link
+                href={
+                  webPages.find(
+                    (page) => page.pageTitle.toLocaleLowerCase() === "dashboard"
+                  )!.route ?? ""
+                }
+              >
+                {authPayload.username}
+              </Link>
             </Col>
           ) : (
             <Col xs="auto">
-              <Link href="/member">login here</Link>
+              <Link
+                href={
+                  webPages.find(
+                    (page) => page.pageTitle.toLocaleLowerCase() === "member"
+                  )!.route ?? ""
+                }
+              >
+                login here
+              </Link>
             </Col>
           )}
           <Col md={{ offset: 2 }} lg={{ offset: 3 }}>
-            <FloatingLabel label="Find..">
-              <FormControl placeholder="Find..." />
-            </FloatingLabel>
+            <Form.FloatingLabel label="Find..">
+              <Form.Control placeholder="Find..." />
+            </Form.FloatingLabel>
           </Col>
           <Col xs="auto" md={{ offset: 2 }} lg={{ offset: 3 }}>
             <Button
