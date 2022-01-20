@@ -7,7 +7,7 @@ const productsPage = config.appData.webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "products"
   ),
   category = "ELECTRICALS";
-describe("Categorized Product component", () => {
+describe("Categorized Product Component", () => {
   afterEach(cleanup);
   beforeEach(() =>
     render(
