@@ -5,7 +5,7 @@ import Image from "next/image";
 import { BiMessageAltDots, BiLike, BiInfoCircle, BiSend } from "react-icons/bi";
 import type { ServiceLabelPropType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useState } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -24,9 +24,8 @@ const styling: { [key: string]: CSSProperties } = {
   ServiceLabel = ({
     categories,
     _id,
-    name,
+    title,
     state,
-    country,
     logo,
     comments,
     commentCount,
@@ -58,7 +57,7 @@ const styling: { [key: string]: CSSProperties } = {
         {/* info modal */}
         <Modal centered show={show} onHide={() => setShow(false)}>
           <Modal.Header closeButton>
-            <Modal.Title>{name}</Modal.Title>
+            <Modal.Title>{title}</Modal.Title>
           </Modal.Header>
           <Modal.Body>{description}</Modal.Body>
         </Modal>
@@ -120,13 +119,13 @@ const styling: { [key: string]: CSSProperties } = {
           </Col>
           <Link href={`/services/${_id}`}>
             <Col
-              title={name}
+              title={title}
               className="text-capitalize"
               style={{ cursor: "pointer" }}
             >
-              <Row className="h5">{name}</Row>
+              <Row className="h5">{title}</Row>
               <Row style={styling.smallTextStyle}>
-                {state}, {country}
+                {state}
               </Row>
             </Col>
           </Link>
