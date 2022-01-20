@@ -77,6 +77,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
     return (
       <Layout>
+        {/* tab title */}
         <Head>
           <title>
             {abbr} &trade; | {homePage?.pageTitle}
