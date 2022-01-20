@@ -33,7 +33,6 @@ const schema = new Schema<OrderType>(
       type: String,
       required: [true, "Contact phone is required"],
     },
-    country: { type: String, required: [true, "Country is required"] },
     state: { type: String, required: [true, "State is required"] },
     address: { type: String, required: [true, "Address is required"] },
     nearestBusStop: {
