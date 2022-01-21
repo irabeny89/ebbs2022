@@ -4,7 +4,6 @@ import { render, screen, cleanup } from "@testing-library/react";
 import userEvents from "@testing-library/user-event"
 
 describe("Layout component", () => {
-  screen.debug();
   beforeEach(() =>
     render(
       <MockedProvider mocks={[]} addTypename={false}>
@@ -12,7 +11,7 @@ describe("Layout component", () => {
       </MockedProvider>
     )
   );
-  afterAll(cleanup);
+  afterEach(cleanup);
   it("renders without error", () => {
     expect(screen.getByText(/test/i)).toBeInTheDocument();
   });
