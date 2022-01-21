@@ -184,7 +184,7 @@ type ContextArgType = {
 
 type ServiceCardPropType = ServiceVertexType & StyleType;
 
-type ProductCardPropType = ProductVertexType & StyleType;
+type ProductCardPropType = Required<Omit<ProductVertexType, "createdAt" | "updatedAt">> & StyleType;
 
 type HomePagePropType = {
   products: ProductCardPropType[];
