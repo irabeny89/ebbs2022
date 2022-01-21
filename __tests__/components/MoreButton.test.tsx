@@ -40,7 +40,6 @@ describe("More Button Component", () => {
         />
       </MockedProvider>
     );
-    screen.debug();
     expect(
       screen.getByRole("button", {
         name: label,
