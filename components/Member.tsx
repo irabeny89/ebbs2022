@@ -24,6 +24,12 @@ import { ServiceType, TokenPairType, UserType } from "types";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import AjaxFeedback from "@/components/AjaxFeedback";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
+import {
+  USER_LOGIN,
+  USER_PASSWORD_CHANGE,
+  USER_REGISTER,
+  USER_REQUEST_PASSCODE,
+} from "@/graphql/documentNodes";
 
 // fetch web app meta data
 const { webPages, abbr } = config.appData,
@@ -51,13 +57,7 @@ const { webPages, abbr } = config.appData,
           email: string;
           password: string;
         }
-      >(gql`
-        query UserLogin($email: String!, $password: String!) {
-          login(email: $email, password: $password) {
-            accessToken
-          }
-        }
-      `),
+      >(USER_LOGIN),
       // register mutation
       [
         registerUser,
@@ -72,43 +72,33 @@ const { webPages, abbr } = config.appData,
               Pick<ServiceType, "title" | "logo" | "description" | "state">
             >;
         }
-      >(gql`
-        mutation UserRegister($userRegisterInput: UserRegisterInput!) {
-          userRegister(userRegisterInput: $userRegisterInput) {
-            accessToken
-          }
-        }
-      `),
+      >(USER_REGISTER),
       // passcode request mutation
       [
         requestPassCode,
         { data: passCodeData, error: passCodeError, loading: passCodeLoading },
-      ] = useMutation<{ requestPassCode: string }, { email: string }>(gql`
-        mutation RequestPassCode($email: String!) {
-          requestPassCode(email: $email)
-        }
-      `),
+      ] = useMutation<{ requestPassCode: string }, { email: string }>(
+        USER_REQUEST_PASSCODE
+      ),
       [
         changePassword,
         { data: passwordData, error: passwordError, loading: passwordLoading },
       ] = useMutation<
         { changePassword: TokenPairType },
         { passCode: string; newPassword: string }
-      >(gql`
-        mutation PasswordChange($passCode: String!, $newPassword: String!) {
-          changePassword(passCode: $passCode, newPassword: $newPassword) {
-            accessToken
-          }
-        }
-      `);
-    // update access token on login
+      >(USER_PASSWORD_CHANGE);
+    // update access token on login success
     useEffect(() => {
       accessTokenVar(data?.login?.accessToken ?? "");
     }, [data]);
-    // update access token on register
+    // update access token on register success
     useEffect(() => {
       accessTokenVar(registerData?.userRegister?.accessToken ?? "");
     }, [registerData]);
+    // update access token on password change success
+    useEffect(() => {
+      accessTokenVar(passwordData?.changePassword?.accessToken ?? "");
+    }, [passwordData]);
 
     return (
       <Layout>
@@ -144,9 +134,11 @@ const { webPages, abbr } = config.appData,
               <Container>
                 <Row className="justify-content-center">
                   <Col md="7">
+                    {/* login feedback */}
                     <AjaxFeedback error={error} loading={loading} />
                     {/* login form */}
                     <Form
+                      data-testid="loginForm"
                       noValidate
                       validated={validated}
                       onSubmit={(e) => {
@@ -172,6 +164,7 @@ const { webPages, abbr } = config.appData,
                     >
                       <Form.FloatingLabel label="Email">
                         <Form.Control
+                          data-testid="loginEmail"
                           type="email"
                           aria-label="email"
                           placeholder="Email"
@@ -184,11 +177,12 @@ const { webPages, abbr } = config.appData,
                           This field is required!
                         </Form.Control.Feedback>
                       </Form.FloatingLabel>
-                      <small className="text-info">
+                      <Form.Text className="text-info">
                         Password should be 8 or more characters
-                      </small>
+                      </Form.Text>
                       <Form.FloatingLabel label="Password">
                         <Form.Control
+                          data-testid="loginPassword"
                           type="password"
                           minLength={8}
                           aria-label="password"
@@ -201,7 +195,12 @@ const { webPages, abbr } = config.appData,
                           This field is required!
                         </Form.Control.Feedback>
                       </Form.FloatingLabel>
-                      <Button size="lg" className="my-5" type="submit">
+                      <Button
+                        data-testid="loginButton"
+                        size="lg"
+                        className="my-5"
+                        type="submit"
+                      >
                         <MdSend /> Submit
                       </Button>
                     </Form>
@@ -220,6 +219,7 @@ const { webPages, abbr } = config.appData,
               <AjaxFeedback error={registerError} loading={registerLoading} />
               {/* new user register form */}
               <Form
+                data-testid="registerForm"
                 noValidate
                 validated={validated}
                 onSubmit={async (e) => {
@@ -271,6 +271,7 @@ const { webPages, abbr } = config.appData,
                   <Col md="6" className="mb-3">
                     <Form.FloatingLabel label="Username">
                       <Form.Control
+                        data-testid="registerUsername"
                         aria-label="username"
                         placeholder="Username"
                         maxLength={30}
@@ -287,6 +288,7 @@ const { webPages, abbr } = config.appData,
                   <Col md="6">
                     <Form.FloatingLabel label="Email">
                       <Form.Control
+                        data-testid="registerEmail"
                         type="email"
                         aria-label="email"
                         placeholder="Email"
@@ -302,11 +304,12 @@ const { webPages, abbr } = config.appData,
                 </Row>
                 <Row>
                   <Col md="6" className="mb-4">
-                    <small className="text-info">
+                    <Form.Text className="text-info">
                       Password should be 8 or more characters
-                    </small>
+                    </Form.Text>
                     <Form.FloatingLabel label="Password">
                       <Form.Control
+                        data-testid="registerPassword"
                         onChange={() => setShow(false)}
                         type="password"
                         minLength={8}
@@ -324,6 +327,7 @@ const { webPages, abbr } = config.appData,
                   <Col md="6" className="m-auto">
                     <Form.FloatingLabel label="Confirm Password">
                       <Form.Control
+                        data-testid="registerConfirmPassword"
                         type="password"
                         minLength={8}
                         aria-label="confirmPassword"
@@ -370,6 +374,7 @@ const { webPages, abbr } = config.appData,
                               )} ${fileSize > 1e6 ? "\u2717" : "\u2713"}`}
                           </Form.Label>
                           <Form.Control
+                            data-testid="registerLogo"
                             type="file"
                             size="lg"
                             placeholder="Service logo"
@@ -440,6 +445,7 @@ const { webPages, abbr } = config.appData,
                       <Col md="6">
                         <Form.FloatingLabel label="Service Name">
                           <Form.Control
+                            data-testid="registerServiceName"
                             placeholder="Service name"
                             aria-label="serviceName"
                             name="title"
@@ -452,7 +458,12 @@ const { webPages, abbr } = config.appData,
                     </Row>
                   </Accordion.Body>
                 </Accordion>
-                <Button size="lg" className="my-5" type="submit">
+                <Button
+                  data-testid="registerButton"
+                  size="lg"
+                  className="my-5"
+                  type="submit"
+                >
                   <MdSend /> Submit
                 </Button>
               </Form>
@@ -485,6 +496,7 @@ const { webPages, abbr } = config.appData,
                         <Accordion.Header>Request Passcode</Accordion.Header>
                         <Accordion.Body>
                           <Form
+                            data-testid="recoveryForm"
                             noValidate
                             validated={validated}
                             onSubmit={(e) => {
@@ -514,12 +526,18 @@ const { webPages, abbr } = config.appData,
                                 name="email"
                                 size="lg"
                                 required
+                                data-testid="recoveryEmail"
                               />
                               <Form.Control.Feedback type="invalid">
                                 This field is required!
                               </Form.Control.Feedback>
                             </Form.FloatingLabel>
-                            <Button size="lg" className="mt-5" type="submit">
+                            <Button
+                              size="lg"
+                              className="mt-5"
+                              type="submit"
+                              data-testid="recoverySendButton"
+                            >
                               <MdSend /> Send
                             </Button>
                           </Form>
@@ -537,6 +555,7 @@ const { webPages, abbr } = config.appData,
                     />
                     <h4 className="my-5">Change Password</h4>
                     <Form
+                      data-testid="changePasswordForm"
                       noValidate
                       validated={validated}
                       onSubmit={(e) => {
@@ -569,6 +588,7 @@ const { webPages, abbr } = config.appData,
                     >
                       <Form.FloatingLabel label="Pass Code" className="mb-3">
                         <Form.Control
+                          data-testid="changePassCode"
                           required
                           aria-label="passcode"
                           name="passCode"
@@ -579,9 +599,9 @@ const { webPages, abbr } = config.appData,
                           This field is required!
                         </Form.Control.Feedback>
                       </Form.FloatingLabel>
-                      <small className="text-info">
+                      <Form.Text className="text-info">
                         Password should be 8 or more characters
-                      </small>
+                      </Form.Text>
                       <Form.FloatingLabel label="Password" className="mb-4">
                         <Form.Control
                           onChange={() => setShowAlert(false)}
@@ -591,6 +611,7 @@ const { webPages, abbr } = config.appData,
                           placeholder="Password"
                           name="password"
                           size="lg"
+                          data-testid="changePassword"
                           required
                         />
                         <Form.Control.Feedback type="invalid">
@@ -599,6 +620,7 @@ const { webPages, abbr } = config.appData,
                       </Form.FloatingLabel>
                       <Form.FloatingLabel label="Confirm Password">
                         <Form.Control
+                          data-testid="changeConfirmPassword"
                           type="password"
                           minLength={8}
                           aria-label="confirmPassword"
@@ -616,7 +638,12 @@ const { webPages, abbr } = config.appData,
                           Passwords do not match. Try again.
                         </Alert>
                       )}
-                      <Button size="lg" className="my-5" type="submit">
+                      <Button
+                        size="lg"
+                        className="my-5"
+                        data-testid="changeSubmit"
+                        type="submit"
+                      >
                         <MdSend /> Submit
                       </Button>
                     </Form>
