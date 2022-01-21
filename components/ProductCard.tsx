@@ -4,7 +4,7 @@ import Button from "react-bootstrap/Button";
 import { BiCartAlt } from "react-icons/bi";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
-import { mockMedia } from "@/models/localData";
+import { mockMedia } from "@/models/mockData";
 import Card from "react-bootstrap/Card";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
