@@ -45,17 +45,31 @@ export const REFRESH_TOKEN_QUERY = gql`
   }
 `;
 
-export const REGISTER_MUTATION = gql`
-  mutation RegisterUser($userData: UserInput!) {
-    registerUser(userData: $userData) {
+export const USER_REGISTER = gql`
+  mutation UserRegister($userRegisterInput: UserRegisterInput!) {
+    userRegister(userRegisterInput: $userRegisterInput) {
       accessToken
     }
   }
 `;
 
-export const LOGIN_MUTATION = gql`
-  mutation Login($email: String!, $password: String!) {
+export const USER_LOGIN = gql`
+  query UserLogin($email: String!, $password: String!) {
     login(email: $email, password: $password) {
+      accessToken
+    }
+  }
+`;
+
+export const USER_REQUEST_PASSCODE = gql`
+  mutation RequestPassCode($email: String!) {
+    requestPassCode(email: $email)
+  }
+`;
+
+export const USER_PASSWORD_CHANGE = gql`
+  mutation PasswordChange($passCode: String!, $newPassword: String!) {
+    changePassword(passCode: $passCode, newPassword: $newPassword) {
       accessToken
     }
   }
