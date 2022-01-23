@@ -29,7 +29,7 @@ type QueryReturnType = {
   services: CursorConnectionType<ServiceVertexType>;
 };
 
-// fetch web app meta data
+// fetch page data
 const { webPages, abbr, features } = config.appData,
   // find home page data
   homePage = webPages.find(
