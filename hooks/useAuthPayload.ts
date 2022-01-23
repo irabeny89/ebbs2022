@@ -1,5 +1,5 @@
 import { JwtPayload, verify } from "jsonwebtoken";
-import config from "config";
+import config from "../config";
 import { UserPayloadType } from "types";
 import { useReactiveVar } from "@apollo/client";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
