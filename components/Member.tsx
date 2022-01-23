@@ -19,7 +19,7 @@ import Layout from "@/components/Layout";
 import config from "../config";
 import Head from "next/head";
 import { useEffect, useState } from "react";
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { useLazyQuery, useMutation } from "@apollo/client";
 import { ServiceType, TokenPairType, UserType } from "types";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import AjaxFeedback from "@/components/AjaxFeedback";
