@@ -4,10 +4,10 @@ type EmptyListProp = {
   message: string;
 };
 
-const EmptyList = (props: EmptyListProp) => (
+const EmptyList = ({ message }: EmptyListProp) => (
   <div className="text-center my-4">
     <FaList size={160} />
-    <p>{props.message}</p>
+    <p>{message}</p>
   </div>
 );
 
