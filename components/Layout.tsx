@@ -5,12 +5,14 @@ import Link from "next/link";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
+import ToastContainer from "react-bootstrap/ToastContainer";
+import Toast from "react-bootstrap/Toast";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { gql, useMutation, useReactiveVar } from "@apollo/client";
-import { cartItemsVar } from "@/graphql/reactiveVariables";
+import { cartItemsVar, toastsVar } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import Nav from "react-bootstrap/Nav";
@@ -53,6 +55,8 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
       cartItems = useReactiveVar(cartItemsVar),
       // get token payload
       authPayload = useAuthPayload(),
+      // get toasts
+      toasts = useReactiveVar(toastsVar),
       // send order mutation
       [sendRequest, { data, error, loading }] = useMutation<
         {
@@ -79,6 +83,28 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
 
     return hasMounted ? (
       <Container fluid as="main">
+        {/* toast */}
+        <ToastContainer position="bottom-end">
+          {toasts.map((toast) => (
+            <Toast
+              key={toast.message}
+              show={!!toast.message}
+              onClose={() => {
+                toastsVar(
+                  toasts.filter(({ message }) => toast.message !== message)
+                );
+              }}
+              // delay={3000}
+              autohide
+              bg="info"
+            >
+              <Toast.Header className="justify-content-between">
+                <strong>{toast.header ?? "Feedback"}</strong>
+              </Toast.Header>
+              <Toast.Body className="text-white">{toast.message}</Toast.Body>
+            </Toast>
+          ))}
+        </ToastContainer>
         {/* cart modal */}
         <Modal show={show} onHide={() => setShow(false)}>
           <Modal.Header closeButton>
