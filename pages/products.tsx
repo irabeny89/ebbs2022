@@ -14,9 +14,10 @@ import type {
 import { GetStaticProps } from "next";
 import { FaBoxes } from "react-icons/fa";
 import { useEffect, useRef, useState } from "react";
-import CategorizedProducts from "@/components/CategorizedProducts";
+import ProductSection from "@/components/ProductSection";
 import { PRODUCT_FRAGMENT } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
+import SortedListWithTabs from "@/components/SortedListWithTabs";
 
 // query document node
 const PRODUCTS = gql`
@@ -102,9 +103,19 @@ export const getStaticProps: GetStaticProps = async () => {
               <FaBoxes size="40" className="mb-2" /> {productsPage?.pageTitle}
             </Col>
           </Row>
-          <Row>
-            <CategorizedProducts products={_products} />
+          {/* first paragraph */}
+          <Row
+            as="p"
+            className="my-4 text-center justify-content-center display-5"
+          >
+            {productsPage?.parargraphs[0]}
           </Row>
+          <SortedListWithTabs
+            ListRenderer={ProductSection}
+            field="category"
+            list={_products}
+            rendererProps={{ className: "pt-4 rounded" }}
+          />
           <Row>
             <Col>
               {hasNextPage ? (

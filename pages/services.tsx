@@ -133,7 +133,9 @@ export const getStaticProps: GetStaticProps = async () => {
                       }
                     />
                   </Row>
-                  {hasNextPage ? (
+                </Tab>
+              ))}
+              {hasNextPage ? (
                     <MoreButton
                       {...{
                         customFetch: fetchMoreServices,
@@ -152,8 +154,6 @@ export const getStaticProps: GetStaticProps = async () => {
                       }}
                     />
                   ) : null}
-                </Tab>
-              ))}
           </Tabs>
         </Container>
       </Layout>
@@ -161,3 +161,13 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 
 export default ServicesPage;
+
+// {
+//   category === "ALL"
+//     ? _services
+//     : _services.filter((item) =>
+//         item.categories!.includes(
+//           category as ProductCategoryType
+//         )
+//       )
+// }
