@@ -18,12 +18,12 @@ const MoreButton = ({
       onClick={() =>
         hasLazyFetched.current
           ? fetchMore({
-              variables
+              variables,
             })
           : (customFetch({
               variables,
             }),
-            hasLazyFetched.current = true)
+            (hasLazyFetched.current = true))
       }
     >
       {loading ? <Spinner animation="grow" size="sm" /> : null} {label}
