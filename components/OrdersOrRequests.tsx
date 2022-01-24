@@ -7,7 +7,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
-import { OrderVertexType } from "types";
+import { OrdersOrRequestsPropType, OrderVertexType, StatusType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import getLocalePrice from "@/utils/getLocalePrice";
 import AjaxFeedback from "./AjaxFeedback";
@@ -16,7 +16,10 @@ import { SET_ORDER_STATUS } from "@/graphql/documentNodes";
 import { toastsVar } from "@/graphql/reactiveVariables";
 import { useEffect } from "react";
 
-const Orders = ({ items }: { items: OrderVertexType[] }) => {
+const OrdersOrRequests = ({
+  items,
+  statuses = ["CANCELED", "SHIPPED"],
+}: OrdersOrRequestsPropType) => {
   // order status update mutation
   const [setOrderStatus, { data: orderStatusData, error, loading }] =
     useMutation<
@@ -25,10 +28,10 @@ const Orders = ({ items }: { items: OrderVertexType[] }) => {
       },
       {
         orderId: string;
-        status: "SHIPPED" | "CANCELED";
+        status: StatusType;
       }
     >(SET_ORDER_STATUS);
-
+  // monitor status
   useEffect(() => {
     // show toast when status changed
     orderStatusData &&
@@ -38,6 +41,17 @@ const Orders = ({ items }: { items: OrderVertexType[] }) => {
         })
       );
   }, [orderStatusData]);
+  // monitor error
+  useEffect(() => {
+    // show toast when error is thrown
+    error &&
+      toastsVar(
+        new Array({
+          message: error?.message,
+          header: error.name,
+        })
+      );
+  }, [error]);
 
   return (
     <Container>
@@ -150,12 +164,11 @@ const Orders = ({ items }: { items: OrderVertexType[] }) => {
                       disabled
                     />
                   </Form.FloatingLabel>
-                  {/* order status update form */}
+                  {/* update only when status is either shipped, pending or canceled */}
                   {["SHIPPED", "PENDING", "CANCELED"].includes(
                     order?.status!
                   ) && (
                     <Card.Footer className="bg-info rounded">
-                      <AjaxFeedback {...{ loading, error }} />
                       <Form
                         onSubmit={(e) => (
                           e.preventDefault(),
@@ -164,7 +177,7 @@ const Orders = ({ items }: { items: OrderVertexType[] }) => {
                               orderId: order._id!,
                               status: new FormData(e.currentTarget).get(
                                 "status"
-                              ) as "SHIPPED" | "CANCELED",
+                              ) as StatusType,
                             },
                           })
                         )}
@@ -174,8 +187,9 @@ const Orders = ({ items }: { items: OrderVertexType[] }) => {
                             <Form.Group>
                               <Form.Label>Select order status</Form.Label>
                               <Form.Select size="lg" name="status">
-                                <option>SHIPPED</option>
-                                <option>CANCELED</option>
+                                {statuses.map((status) => (
+                                  <option key={status}>{status}</option>
+                                ))}
                               </Form.Select>
                             </Form.Group>
                           </Col>
@@ -198,4 +212,4 @@ const Orders = ({ items }: { items: OrderVertexType[] }) => {
   );
 };
 
-export default Orders;
+export default OrdersOrRequests;
