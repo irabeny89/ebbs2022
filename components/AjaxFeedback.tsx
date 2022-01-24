@@ -15,7 +15,7 @@ const AjaxFeedback = ({
     <Container {...rest} data-testid="ajax">
       {loading && (
         <Row className="justify-content-center">
-          <Spinner animation="border" role="status">
+          <Spinner animation="border" role="status" size="sm">
             {text}
           </Spinner>
         </Row>
