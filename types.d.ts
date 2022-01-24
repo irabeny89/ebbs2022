@@ -6,7 +6,12 @@ import { MicroRequest } from "apollo-server-micro/dist/types";
 import path from "path";
 import { MutableRefObject, ReactNode } from "react";
 
-type QueryVariableType = Record<"productArgs" | "serviceArgs" | "commentArgs", PagingInputType>
+type QueryVariableType = Record<
+  "productArgs" | "serviceArgs" | "commentArgs",
+  PagingInputType
+>;
+
+type StatusType = "DELIVERED" | "PENDING" | "SHIPPED" | "CANCELED";
 
 type TokenPairType = {
   accessToken: string;
@@ -74,7 +79,7 @@ type OrderItemType = {
 type OrderType = {
   client: mongoose.Types.ObjectId;
   provider: mongoose.Types.ObjectId;
-  status: "DELIVERED" | "PENDING" | "SHIPPED" | "CANCELED";
+  status: StatusType;
   items: OrderItemType[];
   phone: string;
   state: string;
@@ -102,7 +107,8 @@ type ProductVertexType = Partial<
   }
 >;
 
-type ServiceVertexType = Partial<Omit<ServiceType, "owner"> & {
+type ServiceVertexType = Partial<
+  Omit<ServiceType, "owner"> & {
     happyClients: string[];
     products: CursorConnectionType<ProductVertexType>;
     comments: CursorConnectionType<CommentVertexType>;
@@ -110,16 +116,25 @@ type ServiceVertexType = Partial<Omit<ServiceType, "owner"> & {
     categories: [ProductCategoryType];
     maxProduct: number;
     commentCount: number;
-  }>;
+  }
+>;
 
 type CommentVertexType = Partial<{
   topic: ServiceVertexType;
   poster: UserVertexType;
-}> & Omit<CommentType, "topic" | "poster">;
+}> &
+  Omit<CommentType, "topic" | "poster">;
 
-type UserVertexType = Partial<Pick<UserType, "username" | "email">> & TimestampAndId
+type UserVertexType = Partial<
+  Pick<UserType, "username" | "email"> & {
+    service: ServiceVertexType;
+    requests: CursorConnectionType<OrderVertexType>;
+  }
+> &
+  TimestampAndId;
 
-type OrderVertexType = Partial<OrderType>;
+type OrderVertexType = Partial<Omit<OrderType, "client">> &
+  Record<"client", UserVertexType>;
 
 type UserPayloadType = {
   username: string;
@@ -184,7 +199,10 @@ type ContextArgType = {
 
 type ServiceCardPropType = ServiceVertexType & StyleType;
 
-type ProductCardPropType = Required<Omit<ProductVertexType, "createdAt" | "updatedAt">> & StyleType;
+type ProductCardPropType = Required<
+  Omit<ProductVertexType, "createdAt" | "updatedAt">
+> &
+  StyleType;
 
 type HomePagePropType = {
   products: ProductCardPropType[];
@@ -233,5 +251,20 @@ type MoreButtonPropType = {
   customFetch: any;
   variables: object;
   loading: boolean;
-  label: ReactNode | string
-}
+  label: ReactNode | string;
+};
+
+type DashboardPropType = Required<UserVertexType> & Record<"info", string>;
+
+type SortedListWithTabsPropType = {
+  field: string;
+  className?: string;
+  rendererProps: { [k: string]: any };
+  list: { [k: string]: any }[];
+  ListRenderer: (props: any) => JSX.Element;
+};
+
+type OrdersOrRequestsPropType = {
+  items: OrderVertexType[];
+  statuses: StatusType[];
+} & StyleType;
