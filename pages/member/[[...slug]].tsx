@@ -25,13 +25,14 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const { data, error } = await client.query<
     Record<"me", UserVertexType>,
-    Record<"productArgs" | "commentArgs" | "orderArgs", PagingInputType>
+    Record<"productArgs" | "commentArgs" | "orderArgs" | "requestArgs", PagingInputType>
   >({
     query: MY_PROFILE,
     variables: {
       commentArgs: { last: 20 },
       orderArgs: { last: 20 },
       productArgs: { first: 20 },
+      requestArgs: { last: 20 }
     },
   });
 
