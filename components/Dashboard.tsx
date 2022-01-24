@@ -26,32 +26,61 @@ import EmptyList from "./EmptyList";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import getLocalePrice from "@/utils/getLocalePrice";
 import { useLazyQuery } from "@apollo/client";
-import { ORDER_LIST, SET_ORDER_STATUS } from "@/graphql/documentNodes";
+import {
+  ORDER_LIST,
+  REQUEST_LIST,
+  SET_ORDER_STATUS,
+} from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import { toastsVar } from "@/graphql/reactiveVariables";
 import SortedListWithTabs from "./SortedListWithTabs";
-import Orders from "./Orders";
+import OrdersOrRequests from "./OrdersOrRequests";
 import MoreButton from "./MoreButton";
 import { useEffect, useRef } from "react";
 
 // tab title style
 const tabTitleStyle = { fontSize: 16 },
-  Dashboard = ({ info, service: { orders } }: DashboardPropType) => {
+  Dashboard = ({ info, service: { orders }, requests }: DashboardPropType) => {
     // state variable
-    const hasLazyFetched = useRef(false);
+    const hasLazyFetchedOrders = useRef(false),
+      hasLazyFetchedRequests = useRef(false);
     // query more orders
     const [getMoreOrders, { data: orderData, loading, fetchMore }] =
-      useLazyQuery<
-        Record<"orders", CursorConnectionType<OrderVertexType>>,
-        Record<"orderArgs", PagingInputType>
-      >(ORDER_LIST);
+        useLazyQuery<
+          Record<"orders", CursorConnectionType<OrderVertexType>>,
+          Record<"orderArgs", PagingInputType>
+        >(ORDER_LIST),
+      // query more requests
+      [
+        getMoreRequests,
+        {
+          data: requestData,
+          loading: requestLoading,
+          fetchMore: fetchMoreRequests,
+        },
+      ] = useLazyQuery<
+        Record<"requests", CursorConnectionType<OrderVertexType>>,
+        Record<"requestArgs", PagingInputType>
+      >(REQUEST_LIST);
     // extract orders from edge
     const orderList = (
-      orders?.edges.map((orderEdge) => orderEdge.node) ?? []
-    ).concat(orderData?.orders.edges.map((orderEdge) => orderEdge.node) ?? []);
-    // indicate has lazy fetched once
+        orders?.edges.map((orderEdge) => orderEdge.node) ?? []
+      ).concat(
+        orderData?.orders.edges.map((orderEdge) => orderEdge.node) ?? []
+      ),
+      // extract requests from edge
+      requestList = (
+        requests?.edges.map((requestEdge) => requestEdge.node) ?? []
+      ).concat(
+        requestData?.requests.edges.map((requestEdge) => requestEdge.node) ?? []
+      );
+    // indicate orders has lazy fetched once
     useEffect(() => {
-      orderData && (hasLazyFetched.current = true);
+      orderData && (hasLazyFetchedOrders.current = true);
+    }, []);
+    // indicate requests has lazy fetched once
+    useEffect(() => {
+      requestData && (hasLazyFetchedRequests.current = true);
     }, []);
 
     return (
@@ -79,7 +108,7 @@ const tabTitleStyle = { fontSize: 16 },
             {/* list of sorted orders by status */}
             <SortedListWithTabs
               className=""
-              ListRenderer={Orders}
+              ListRenderer={OrdersOrRequests}
               field="status"
               list={orderList}
               rendererProps={{ className: "pt-4 rounded" }}
@@ -90,13 +119,48 @@ const tabTitleStyle = { fontSize: 16 },
                 fetchMore={fetchMore}
                 label="Load more"
                 loading={loading}
-                hasLazyFetched={hasLazyFetched}
+                hasLazyFetched={hasLazyFetchedOrders}
                 variables={{
                   orderArgs: {
                     last: 20,
-                    before: hasLazyFetched.current
+                    before: hasLazyFetchedOrders.current
                       ? orderData?.orders.pageInfo.endCursor
                       : orders.pageInfo.endCursor,
+                  },
+                }}
+              />
+            )}
+          </Tab>
+          {/* request tab */}
+          <Tab
+            eventKey="request"
+            title={<h5 style={tabTitleStyle}>Requests</h5>}
+            className="my-5"
+          >
+            {/* list of sorted orders by status */}
+            <SortedListWithTabs
+              className=""
+              ListRenderer={OrdersOrRequests}
+              field="status"
+              list={requestList}
+              rendererProps={{
+                className: "pt-4 rounded",
+                statuses: ["CANCELED", "DELIVERED"],
+              }}
+            />
+            {requests?.pageInfo.hasNextPage && (
+              <MoreButton
+                customFetch={getMoreRequests}
+                fetchMore={fetchMoreRequests}
+                label="Load more"
+                loading={requestLoading}
+                hasLazyFetched={hasLazyFetchedRequests}
+                variables={{
+                  requestArgs: {
+                    last: 20,
+                    before: hasLazyFetchedRequests.current
+                      ? requestData?.requests.pageInfo.endCursor
+                      : requests.pageInfo.endCursor,
                   },
                 }}
               />
