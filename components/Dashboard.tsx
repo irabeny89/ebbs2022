@@ -40,7 +40,7 @@ const tabTitleStyle = { fontSize: 16 },
     // state variable
     const hasLazyFetched = useRef(false);
     // query more orders
-    const [getMoreOrders, { data: orderData, error, loading, fetchMore }] =
+    const [getMoreOrders, { data: orderData, loading, fetchMore }] =
       useLazyQuery<
         Record<"orders", CursorConnectionType<OrderVertexType>>,
         Record<"orderArgs", PagingInputType>
