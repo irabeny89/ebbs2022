@@ -1,19 +1,14 @@
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
-import FormControl from "react-bootstrap/FormControl";
-import FloatingLabel from "react-bootstrap/FloatingLabel";
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { gql, useLazyQuery } from "@apollo/client";
 import client from "@/graphql/apollo-client";
 import { GetStaticProps, GetStaticPaths } from "next";
 import {
   CursorConnectionType,
   PagingInputType,
-  ProductType,
+  ProductCardPropType,
   QueryVariableType,
-  ServiceCardPropType,
   ServiceVertexType,
 } from "types";
 import Layout from "@/components/Layout";
@@ -26,10 +21,11 @@ import {
 } from "@/graphql/documentNodes";
 import { useRouter } from "next/router";
 import ServiceLabel from "@/components/ServiceLabel";
-import CategorizedProducts from "@/components/CategorizedProducts";
+import ProductSection from "@/components/ProductSection";
 import AjaxFeedback from "@/components/AjaxFeedback";
 import MoreButton from "@/components/MoreButton";
-import { useState, useRef } from "react";
+import { useRef } from "react";
+import SortedListWithTabs from "@/components/SortedListWithTabs";
 // graphql query return type
 type QueryReturnType = {
   services: CursorConnectionType<ServiceVertexType>;
@@ -164,14 +160,19 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
             </Row>
             <Row>
               {productConnection?.edges ? (
-                <CategorizedProducts
-                  products={productConnection.edges
-                    .map((edge) => edge.node)
-                    .concat(
-                      data?.service?.products?.edges.map(
-                        (edge) => edge.node
-                      )! ?? []
-                    )}
+                <SortedListWithTabs
+                  ListRenderer={ProductSection}
+                  field="category"
+                  list={
+                    productConnection.edges
+                      .map((edge) => edge.node)
+                      .concat(
+                        data?.service?.products?.edges.map(
+                          (edge) => edge.node
+                        )! ?? []
+                      ) as ProductCardPropType[]
+                  }
+                  rendererProps={{ className: "pt-4 rounded" }}
                 />
               ) : (
                 <AjaxFeedback loading />
