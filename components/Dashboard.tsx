@@ -8,11 +8,7 @@ import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Badge from "react-bootstrap/Badge";
 import Spinner from "react-bootstrap/Spinner";
-import {
-  MdDashboardCustomize,
-  MdAdd,
-  MdSend,
-} from "react-icons/md";
+import { MdDashboardCustomize, MdAdd, MdSend } from "react-icons/md";
 import {
   CursorConnectionType,
   DashboardPropType,
@@ -58,16 +54,19 @@ const tabTitleStyle = { fontSize: 16 },
       hasLazyFetchedRequests = useRef(false),
       hasLazyFetchedProducts = useRef(false);
     // query more orders
-    const [getMoreOrders, { data: orderData, loading, fetchMore }] =
-        useLazyQuery<
-          Record<"myOrders", CursorConnectionType<OrderVertexType>>,
-          Record<"orderArgs", PagingInputType>
-        >(MY_ORDERS),
+    const [
+        getMoreOrders,
+        { data: orderData, error: orderError, loading, fetchMore },
+      ] = useLazyQuery<
+        Record<"myOrders", CursorConnectionType<OrderVertexType>>,
+        Record<"orderArgs", PagingInputType>
+      >(MY_ORDERS),
       // query more requests
       [
         getMoreRequests,
         {
           data: requestData,
+          error: requestError,
           loading: requestLoading,
           fetchMore: fetchMoreRequests,
         },
@@ -80,6 +79,7 @@ const tabTitleStyle = { fontSize: 16 },
         getMoreProducts,
         {
           data: productData,
+          error: productError,
           loading: productLoading,
           fetchMore: fetchMoreProducts,
         },
@@ -123,15 +123,25 @@ const tabTitleStyle = { fontSize: 16 },
     // indicate orders has lazy fetched once
     useEffect(() => {
       orderData && (hasLazyFetchedOrders.current = true);
-    }, []);
+      orderError &&
+        toastsVar([{ header: orderError.name, message: orderError.message }]);
+    }, [orderError, orderData]);
     // indicate requests has lazy fetched once
     useEffect(() => {
       requestData && (hasLazyFetchedRequests.current = true);
-    }, []);
+      requestError &&
+        toastsVar([
+          { header: requestError.name, message: requestError.message },
+        ]);
+    }, [requestData, requestError]);
     // indicate products has lazy fetched once
     useEffect(() => {
       productData && (hasLazyFetchedProducts.current = true);
-    }, []);
+      productError &&
+        toastsVar([
+          { header: productError.name, message: productError.message },
+        ]);
+    }, [productData, productError]);
     // toast when new product is added or when errored
     useEffect(() => {
       newProductData &&
