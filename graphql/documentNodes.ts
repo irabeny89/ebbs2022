@@ -35,19 +35,43 @@ export const SERVICE_FRAGMENT = gql`
       hasNextPage
       hasPreviousPage
     }
+  `,
+  COMMENT_FRAGMENT = gql`
+    fragment CommentFields on ServiceComment {
+      _id
+      post
+      poster {
+        username
+      }
+      createdAt
+    }
+  `,
+  ORDER_FRAGMENT = gql`
+    fragment OrderFields on ServiceOrder {
+      _id
+      client {
+        username
+      }
+      status
+      items {
+        name
+        price
+        quantity
+        cost
+      }
+      phone
+      state
+      address
+      nearestBusStop
+      deliveryDate
+      totalCost
+      createdAt
+    }
   `;
 // query operations
 export const REFRESH_TOKEN_QUERY = gql`
   query RefreshToken {
     refreshToken {
-      accessToken
-    }
-  }
-`;
-
-export const USER_REGISTER = gql`
-  mutation UserRegister($userRegisterInput: UserRegisterInput!) {
-    userRegister(userRegisterInput: $userRegisterInput) {
       accessToken
     }
   }
@@ -61,16 +85,82 @@ export const USER_LOGIN = gql`
   }
 `;
 
-export const USER_REQUEST_PASSCODE = gql`
-  mutation RequestPassCode($email: String!) {
-    requestPassCode(email: $email)
-  }
-`;
-
 export const USER_PASSWORD_CHANGE = gql`
   mutation PasswordChange($passCode: String!, $newPassword: String!) {
     changePassword(passCode: $passCode, newPassword: $newPassword) {
       accessToken
+    }
+  }
+`;
+
+export const MY_PROFILE = gql`
+  ${PRODUCT_FRAGMENT}
+  ${COMMENT_FRAGMENT}
+  ${ORDER_FRAGMENT}
+  query MyProfile(
+    $productArgs: PagingInput!
+    $commentArgs: PagingInput!
+    $orderArgs: PagingInput!
+    $requestArgs: PagingInput!
+  ) {
+    me {
+      _id
+      username
+      email
+      requests(args: $requestArgs) {
+        edges {
+          node {
+            ...OrderFields
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+      service {
+        _id
+        title
+        logo
+        description
+        country
+        state
+        happyClients
+        products(args: $productArgs) {
+          edges {
+            node {
+              ...ProductFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        comments(args: $commentArgs) {
+          edges {
+            node {
+              ...CommentFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        orders(args: $orderArgs) {
+          edges {
+            node {
+              ...OrderFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        createdAt
+      }
     }
   }
 `;
@@ -166,6 +256,87 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
           }
         }
       }
+    }
+  }
+`;
+
+export const MY_ORDERS = gql`
+  ${ORDER_FRAGMENT}
+  query OrderList($orderArgs: PagingInput!) {
+    myOrders(args: $orderArgs) {
+      edges {
+        node {
+          ...OrderFields
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`;
+
+export const MY_REQUESTS = gql`
+  ${ORDER_FRAGMENT}
+  query RequestList($requestArgs: PagingInput!) {
+    myRequests(args: $requestArgs) {
+      edges {
+        node {
+          ...OrderFields
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`;
+
+export const MY_PRODUCTS = gql`
+  ${PRODUCT_FRAGMENT}
+  query MyProducts($productArgs: PagingInput!) {
+    myProducts(args: $productArgs) {
+      edges {
+        node {
+          ...ProductFields
+        }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`;
+// mutation operations
+export const USER_REGISTER = gql`
+  mutation UserRegister($userRegisterInput: UserRegisterInput!) {
+    userRegister(userRegisterInput: $userRegisterInput) {
+      accessToken
+    }
+  }
+`;
+
+export const USER_REQUEST_PASSCODE = gql`
+  mutation RequestPassCode($email: String!) {
+    requestPassCode(email: $email)
+  }
+`;
+
+export const SET_ORDER_STATUS = gql`
+  mutation SetOrderStatus($orderId: ID!, $status: StatusOptions!) {
+    orderStatus(orderId: $orderId, status: $status) {
+      status
+    }
+  }
+`;
+
+export const ADD_NEW_PRODUCT = gql`
+  mutation AddNewProduct($newProduct: NewProductInput!) {
+    newProduct(args: $newProduct) {
+      name
     }
   }
 `;
