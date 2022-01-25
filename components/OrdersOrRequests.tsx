@@ -19,6 +19,7 @@ import { useEffect } from "react";
 const OrdersOrRequests = ({
   items,
   statuses = ["CANCELED", "SHIPPED"],
+  ...rest
 }: OrdersOrRequestsPropType) => {
   // order status update mutation
   const [setOrderStatus, { data: orderStatusData, error, loading }] =
@@ -54,7 +55,7 @@ const OrdersOrRequests = ({
   }, [error]);
 
   return (
-    <Container>
+    <Container {...rest}>
       <Row>
         {items.map((order) => (
           <Col md="6" lg="4" className="my-3" key={order._id!}>
