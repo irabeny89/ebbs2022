@@ -1,21 +1,28 @@
-import type { ProductCardPropType } from "types";
+import type { ProductCardPropType, ProductVertexType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
-import { BiCartAlt } from "react-icons/bi";
-import getCompactNumberFormat from "../utils/getCompactNumberFormat";
-import Image from "next/image";
-import { mockMedia } from "@/models/mockData";
 import Card from "react-bootstrap/Card";
+import Spinner from "react-bootstrap/Spinner";
 import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Carousel from "react-bootstrap/Carousel";
-import { cartItemsVar } from "@/graphql/reactiveVariables";
+import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
+import getCompactNumberFormat from "../utils/getCompactNumberFormat";
+import Image from "next/image";
+import { mockMedia } from "@/models/mockData";
+import { cartItemsVar, toastsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useMutation } from "@apollo/client";
+import {
+  DELETE_MY_PRODUCT,
+  MY_PRODUCTS,
+  FEW_PRODUCTS_AND_SERVICES,
+} from "@/graphql/documentNodes";
 
 const { CART_ITEMS_KEY } = config.appData.constants,
   // custom style
@@ -43,8 +50,34 @@ const { CART_ITEMS_KEY } = config.appData.constants,
     className,
     style,
   }: ProductCardPropType) => {
-    // modal state
-    const [show, setShow] = useState(false);
+    // product info modal state
+    const [show, setShow] = useState(false),
+      // product delete modal dialog state
+      [showDialog, setShowDialog] = useState(false);
+    // deletion mutation
+    const [deleteProduct, { data, error, loading }] = useMutation<
+      Record<"deleteMyProduct", ProductVertexType>,
+      Record<"productId", string>
+    >(DELETE_MY_PRODUCT);
+
+    // toast on product delete
+    useEffect(() => {
+      data &&
+        (setShowDialog(false),
+        toastsVar([
+          {
+            message: `${data.deleteMyProduct.name} is deleted.`,
+          },
+        ]));
+      error &&
+        (setShowDialog(false),
+        toastsVar([
+          {
+            header: error.name,
+            message: "Delete failed.",
+          },
+        ]));
+    }, [data, error]);
 
     return (
       <Container fluid {...{ className, style }}>
@@ -54,6 +87,42 @@ const { CART_ITEMS_KEY } = config.appData.constants,
             <Modal.Title>{name}</Modal.Title>
           </Modal.Header>
           <Modal.Body>{description}</Modal.Body>
+        </Modal>
+        {/* delete modal dialog */}
+        <Modal
+          centered
+          show={showDialog}
+          onHide={() => setShowDialog(false)}
+          size="sm"
+        >
+          <Modal.Dialog className="m-0">
+            <Modal.Header className="h3 bg-warning">
+              Delete{" "}
+              <Badge className="bg-secondary" pill>
+                {name}
+              </Badge>
+              ?
+            </Modal.Header>
+            <Modal.Body>Are you sure? This cannot be undone.</Modal.Body>
+            <Modal.Footer>
+              <Button
+                variant="danger"
+                onClick={() =>
+                  deleteProduct({
+                    variables: {
+                      productId: _id,
+                    },
+                    refetchQueries: [FEW_PRODUCTS_AND_SERVICES, MY_PRODUCTS],
+                  })
+                }
+              >
+                {loading && <Spinner animation="grow" size="sm" />}Delete
+              </Button>
+              <Button variant="secondary" onClick={() => setShowDialog(false)}>
+                Cancel
+              </Button>
+            </Modal.Footer>
+          </Modal.Dialog>
         </Modal>
         <Card style={cardStyling.cardStyle}>
           <Card.Header className="text-capitalize text-center">
@@ -66,6 +135,14 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                 onClick={() => setShow(true)}
               >
                 i
+              </Button>{" "}
+              <Button
+                size="sm"
+                className="rounded py-0"
+                variant="outline-danger"
+                onClick={() => setShowDialog(true)}
+              >
+                <MdDeleteForever />
               </Button>
             </Card.Title>
             <Card.Subtitle>{provider?.title}</Card.Subtitle>
@@ -154,7 +231,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                   cartItemsVar(newItems);
                 }}
               >
-                <BiCartAlt />
+                <MdShoppingCart />
                 <div className="mx-1">Add to cart</div>
               </Button>
             </Row>
