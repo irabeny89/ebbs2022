@@ -1,22 +1,15 @@
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
-import Table from "react-bootstrap/Table";
-import Accordion from "react-bootstrap/Accordion";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import Badge from "react-bootstrap/Badge";
-import Card from "react-bootstrap/Card";
 import Spinner from "react-bootstrap/Spinner";
 import {
   MdDashboardCustomize,
-  MdDashboard,
-  MdControlPoint,
-  MdAdminPanelSettings,
-  MdSettingsApplications,
   MdAdd,
   MdSend,
 } from "react-icons/md";
@@ -25,19 +18,16 @@ import {
   DashboardPropType,
   OrderVertexType,
   PagingInputType,
-  ProductCategoryType,
   ProductType,
   ProductVertexType,
 } from "types";
-import EmptyList from "./EmptyList";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import getLocalePrice from "@/utils/getLocalePrice";
 import { useLazyQuery, useMutation } from "@apollo/client";
 import {
   ADD_NEW_PRODUCT,
-  ORDER_LIST,
-  REQUEST_LIST,
-  SET_ORDER_STATUS,
+  MY_PRODUCTS,
+  MY_ORDERS,
+  MY_REQUESTS,
 } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import { toastsVar } from "@/graphql/reactiveVariables";
@@ -46,10 +36,15 @@ import OrdersOrRequests from "./OrdersOrRequests";
 import MoreButton from "./MoreButton";
 import { useEffect, useRef, useState } from "react";
 import config from "../config";
+import ProductList from "./ProductList";
 
 // tab title style
 const tabTitleStyle = { fontSize: 16 },
-  Dashboard = ({ info, service: { orders }, requests }: DashboardPropType) => {
+  Dashboard = ({
+    info,
+    service: { orders, products },
+    requests,
+  }: DashboardPropType) => {
     // state variable for product creation form
     const [validated, setValidated] = useState(false),
       // image file size state
@@ -60,13 +55,14 @@ const tabTitleStyle = { fontSize: 16 },
       [show, setShow] = useState(false);
     // ref mutable object
     const hasLazyFetchedOrders = useRef(false),
-      hasLazyFetchedRequests = useRef(false);
+      hasLazyFetchedRequests = useRef(false),
+      hasLazyFetchedProducts = useRef(false);
     // query more orders
     const [getMoreOrders, { data: orderData, loading, fetchMore }] =
         useLazyQuery<
-          Record<"orders", CursorConnectionType<OrderVertexType>>,
+          Record<"myOrders", CursorConnectionType<OrderVertexType>>,
           Record<"orderArgs", PagingInputType>
-        >(ORDER_LIST),
+        >(MY_ORDERS),
       // query more requests
       [
         getMoreRequests,
@@ -76,9 +72,21 @@ const tabTitleStyle = { fontSize: 16 },
           fetchMore: fetchMoreRequests,
         },
       ] = useLazyQuery<
-        Record<"requests", CursorConnectionType<OrderVertexType>>,
+        Record<"myRequests", CursorConnectionType<OrderVertexType>>,
         Record<"requestArgs", PagingInputType>
-      >(REQUEST_LIST),
+      >(MY_REQUESTS),
+      // query more products
+      [
+        getMoreProducts,
+        {
+          data: productData,
+          loading: productLoading,
+          fetchMore: fetchMoreProducts,
+        },
+      ] = useLazyQuery<
+        Record<"myProducts", CursorConnectionType<ProductVertexType>>,
+        Record<"productArgs", PagingInputType>
+      >(MY_PRODUCTS),
       // add new product mutation
       [
         addProduct,
@@ -93,15 +101,24 @@ const tabTitleStyle = { fontSize: 16 },
       >(ADD_NEW_PRODUCT);
     // extract orders from edge
     const orderList = (
-        orders?.edges.map((orderEdge) => orderEdge.node) ?? []
+        orders?.edges?.map((orderEdge) => orderEdge.node) ?? []
       ).concat(
-        orderData?.orders.edges.map((orderEdge) => orderEdge.node) ?? []
+        orderData?.myOrders?.edges?.map((orderEdge) => orderEdge.node) ?? []
       ),
       // extract requests from edge
       requestList = (
-        requests?.edges.map((requestEdge) => requestEdge.node) ?? []
+        requests?.edges?.map((requestEdge) => requestEdge.node) ?? []
       ).concat(
-        requestData?.requests.edges.map((requestEdge) => requestEdge.node) ?? []
+        requestData?.myRequests?.edges.map((requestEdge) => requestEdge.node) ??
+          []
+      ),
+      // extract products from edge
+      productList = (
+        products?.edges?.map((productEdge) => productEdge.node) ?? []
+      ).concat(
+        productData?.myProducts?.edges?.map(
+          (productEdge) => productEdge.node
+        ) ?? []
       );
     // indicate orders has lazy fetched once
     useEffect(() => {
@@ -111,7 +128,11 @@ const tabTitleStyle = { fontSize: 16 },
     useEffect(() => {
       requestData && (hasLazyFetchedRequests.current = true);
     }, []);
-    // toast when new product is added
+    // indicate products has lazy fetched once
+    useEffect(() => {
+      productData && (hasLazyFetchedProducts.current = true);
+    }, []);
+    // toast when new product is added or when errored
     useEffect(() => {
       newProductData &&
         (setShow(false),
@@ -381,7 +402,7 @@ const tabTitleStyle = { fontSize: 16 },
                   orderArgs: {
                     last: 20,
                     before: hasLazyFetchedOrders.current
-                      ? orderData?.orders.pageInfo.endCursor
+                      ? orderData?.myOrders.pageInfo.endCursor
                       : orders.pageInfo.endCursor,
                   },
                 }}
@@ -416,7 +437,7 @@ const tabTitleStyle = { fontSize: 16 },
                   requestArgs: {
                     last: 20,
                     before: hasLazyFetchedRequests.current
-                      ? requestData?.requests.pageInfo.endCursor
+                      ? requestData?.myRequests.pageInfo.endCursor
                       : requests.pageInfo.endCursor,
                   },
                 }}
@@ -429,7 +450,7 @@ const tabTitleStyle = { fontSize: 16 },
             title={<h5 style={tabTitleStyle}>Products</h5>}
             className="my-5"
           >
-            <Row>
+            <Row className="mb-5">
               <Col>
                 <Button onClick={() => setShow(true)}>
                   <AjaxFeedback loading={newProductLoading} />{" "}
@@ -437,6 +458,30 @@ const tabTitleStyle = { fontSize: 16 },
                 </Button>
               </Col>
             </Row>
+            <SortedListWithTabs
+              className=""
+              ListRenderer={ProductList}
+              field="category"
+              list={productList}
+              rendererProps={{ className: "d-flex flex-wrap pt-4" }}
+            />
+            {products?.pageInfo.hasNextPage && (
+              <MoreButton
+                customFetch={getMoreProducts}
+                fetchMore={fetchMoreProducts}
+                label="Load more"
+                loading={productLoading}
+                hasLazyFetched={hasLazyFetchedProducts}
+                variables={{
+                  productArgs: {
+                    last: 20,
+                    before: hasLazyFetchedProducts.current
+                      ? productData?.myProducts.pageInfo.endCursor
+                      : products.pageInfo.endCursor,
+                  },
+                }}
+              />
+            )}
           </Tab>
         </Tabs>
       </Container>
