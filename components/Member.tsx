@@ -222,7 +222,7 @@ const { webPages, abbr } = config.appData,
                 data-testid="registerForm"
                 noValidate
                 validated={validated}
-                onSubmit={async (e) => {
+                onSubmit={(e) => {
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget),
                     username = formData.get("username")?.toString()!,
