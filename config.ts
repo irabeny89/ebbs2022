@@ -16,6 +16,38 @@ const config = {
       "More features coming...",
     ],
     privacyTypes: ["ALL", "USER", "ADMIN"],
+    testAccount: {
+      email: "",
+      password: "",
+    },
+    productCategories: [
+      "WEARS",
+      "ELECTRICALS",
+      "VEHICLES",
+      "ELECTRONICS",
+      "FOOD_DRUGS",
+    ],
+    orderStatuses: ["PENDING", "SHIPPED", "DELIVERED", "CANCELED"],
+    subscriptionInfos: [
+      {
+        type: "BUSINESS",
+        costPerDay: 500,
+      },
+      {
+        type: "PRODUCT",
+        costPerDay: 500,
+      },
+    ],
+    maxProductAllowed: 20,
+    passwordRecoveryOption: {
+      subject: "EBBS - Password Recovery",
+      from: "<no-reply>@gmail.com",
+      body: "Hello, enter the access code to change your password on EBBS website - ",
+    },
+    generalErrorMessage: "Something went wrong, try again",
+    constants: {
+      CART_ITEMS_KEY: "ebbsCartItems",
+    },
     webPages: [
       {
         route: "/",
@@ -131,39 +163,28 @@ const config = {
           },
         ],
       },
-    ],
-    testAccount: {
-      email: "",
-      password: "",
-    },
-    productCategories: [
-      "WEARS",
-      "ELECTRICALS",
-      "VEHICLES",
-      "ELECTRONICS",
-      "FOOD_DRUGS",
-    ],
-    orderStatuses: ["PENDING", "SHIPPED", "DELIVERED", "CANCELED"],
-    subscriptionInfos: [
       {
-        type: "BUSINESS",
-        costPerDay: 500,
-      },
-      {
-        type: "PRODUCT",
-        costPerDay: 500,
+        route: "/member/dashboard",
+        links: [],
+        privacy: "USER",
+        pageTitle: "Dashboard",
+        description: "Dashboard to manage profile.",
+        parargraphs: [
+          "Manage your profile - orders, requests, add or remove products, edit service etc.",
+        ],
+        requests: [
+          {
+            info: "Query user data.",
+            url:
+              process.env.NODE_ENV == "production"
+                ? "https://ebbs.vercel.app/api/graphql"
+                : "http://localhost:3000/api/graphql",
+            httpMethod: "POST",
+            call: "user",
+          },
+        ],
       },
     ],
-    maxProductAllowed: 20,
-    passwordRecoveryOption: {
-      subject: "EBBS - Password Recovery",
-      from: "<no-reply>@gmail.com",
-      body: "Hello, enter the access code to change your password on EBBS website - ",
-    },
-    generalErrorMessage: "Something went wrong, try again",
-    constants: {
-      CART_ITEMS_KEY: "ebbsCartItems",
-    },
   },
   environmentVariable: {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
