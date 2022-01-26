@@ -33,22 +33,24 @@ const typeDefs = gql`
     "resetPassword with passcode"
     changePassword(passCode: String!, newPassword: String!): TokenPair
     "toggles liking; like if not liked before vice versa"
-    serviceLiking(serviceId: ID!): LikeOption
+    serviceLiking(serviceId: ID!): UserService
     "send purchase request; creates new order"
-    serviceOrder(serviceOrderInput: ServiceOrderInput!): ServiceOrder
+    serviceOrder(args: ServiceOrderInput!): ServiceOrder
     "set order status; updates order status"
     orderStatus(orderId: ID!, status: StatusOptions!): ServiceOrder
     "new product creation"
     newProduct(args: NewProductInput!): ServiceProduct
+    "delete my product"
+    deleteMyProduct(productId: ID!): ServiceProduct
   }
 
   # -- inputs --
   input ServiceOrderInput {
     items: [OrderItemInput!]!
-    phone: String
-    state: String
-    address: String
-    nearestBusStop: String
+    phone: String!
+    state: String!
+    address: String!
+    nearestBusStop: String!
   }
 
   input OrderItemInput {
@@ -111,11 +113,6 @@ const typeDefs = gql`
     before: String
   }
   # -- enumerations --
-  enum LikeOption {
-    LIKE
-    UNLIKE
-  }
-  
   enum CategoryOption {
     WEARS
     ELECTRICALS
@@ -249,7 +246,9 @@ const typeDefs = gql`
     country: String!
     """service home state"""
     state: String!
-    """number of likes for the service"""
+    "number of likes for the service"
+    likeCount: Int!
+    "list of users who likes the service"
     happyClients: [ID!]!
     """list of service products"""
     products(args: PagingInput!): ProductConnection
