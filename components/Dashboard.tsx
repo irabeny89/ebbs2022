@@ -124,14 +124,14 @@ const tabTitleStyle = { fontSize: 16 },
     useEffect(() => {
       orderData && (hasLazyFetchedOrders.current = true);
       orderError &&
-        toastsVar([{ header: orderError.name, message: orderError.message }]);
+        toastsVar([{ header: orderError.name, message: "Something failed!" }]);
     }, [orderError, orderData]);
     // indicate requests has lazy fetched once
     useEffect(() => {
       requestData && (hasLazyFetchedRequests.current = true);
       requestError &&
         toastsVar([
-          { header: requestError.name, message: requestError.message },
+          { header: requestError.name, message: "Something failed!" },
         ]);
     }, [requestData, requestError]);
     // indicate products has lazy fetched once
@@ -139,7 +139,7 @@ const tabTitleStyle = { fontSize: 16 },
       productData && (hasLazyFetchedProducts.current = true);
       productError &&
         toastsVar([
-          { header: productError.name, message: productError.message },
+          { header: productError.name, message: "Something failed!" },
         ]);
     }, [productData, productError]);
     // toast when new product is added or when errored
@@ -150,9 +150,10 @@ const tabTitleStyle = { fontSize: 16 },
           { message: `New product added: ${newProductData.newProduct.name}` },
         ]));
       newProductError &&
+        (setShow(false),
         toastsVar([
-          { header: newProductError.name, message: newProductError.message },
-        ]);
+          { header: newProductError.name, message: "Something failed!" },
+        ]));
     }, [newProductData, newProductError]);
     // cleanup state when modal closed
     useEffect(() => {
@@ -183,7 +184,12 @@ const tabTitleStyle = { fontSize: 16 },
                 ).reduce(
                   (prev, entry) =>
                     entry[0] === "tags"
-                      ? { ...prev, [entry[0]]: entry[1].split(" ") }
+                      ? {
+                          ...prev,
+                          [entry[0]]: entry[1]
+                            .split(" ")
+                            .filter((tag: string) => tag !== ""),
+                        }
                       : entry[0] === "images"
                       ? { ...prev, [entry[0]]: ["cid"] }
                       : entry[0] === "video"
@@ -206,6 +212,7 @@ const tabTitleStyle = { fontSize: 16 },
                       variables: {
                         newProduct,
                       },
+                      refetchQueries: [MY_PRODUCTS],
                     }))
                   : (e.preventDefault(),
                     e.stopPropagation(),
@@ -493,6 +500,7 @@ const tabTitleStyle = { fontSize: 16 },
               />
             )}
           </Tab>
+          {/* comment tab */}
         </Tabs>
       </Container>
     );
