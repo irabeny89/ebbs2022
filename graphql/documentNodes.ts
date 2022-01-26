@@ -340,3 +340,11 @@ export const ADD_NEW_PRODUCT = gql`
     }
   }
 `;
+
+export const DELETE_MY_PRODUCT = gql`
+  mutation DeleteMyProduct($productId: ID!) {
+    deleteMyProduct(productId: $productId) {
+      name
+    }
+  }
+`;
