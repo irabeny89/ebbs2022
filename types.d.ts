@@ -61,7 +61,7 @@ type ProductType = {
   description: string;
   category: ProductCategoryType;
   images: string[];
-  video: string;
+  video?: string;
   tags: string[];
   price: number;
   provider: mongoose.Types.ObjectId;
@@ -116,6 +116,7 @@ type ServiceVertexType = Partial<
     categories: [ProductCategoryType];
     maxProduct: number;
     commentCount: number;
+    likeCount: number
   }
 >;
 
@@ -197,7 +198,7 @@ type ContextArgType = {
   res: NextApiResponse;
 };
 
-type ServiceCardPropType = ServiceVertexType & StyleType;
+type ServiceCardPropType = Required<ServiceVertexType> & StyleType;
 
 type ProductCardPropType = Required<
   Omit<ProductVertexType, "createdAt" | "updatedAt">

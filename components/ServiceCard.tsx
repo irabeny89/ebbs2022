@@ -1,4 +1,4 @@
-import type { ServiceCardPropType } from "types";
+import type { ProductCardPropType, ServiceCardPropType } from "types";
 import ProductList from "./ProductList";
 import ServiceLabel from "./ServiceLabel";
 import Row from "react-bootstrap/Row";
@@ -15,7 +15,7 @@ const ServiceCard = ({
     <Row>
       <ProductList
         carousel
-        items={productConnection?.edges.map((edge) => edge.node)!}
+        items={productConnection?.edges.map((edge) => edge.node) as ProductCardPropType[]}
         className="d-flex flex-wrap"
       />
     </Row>
