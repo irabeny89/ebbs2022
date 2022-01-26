@@ -348,3 +348,19 @@ export const DELETE_MY_PRODUCT = gql`
     }
   }
 `;
+
+export const SERVICE_LIKE_TOGGLE = gql`
+  mutation ServiceLikeToggle($serviceId: ID!) {
+    serviceLiking(serviceId: $serviceId) {
+      likeCount
+    }
+  }
+`;
+
+export const SERVICE_ORDER = gql`
+mutation ServiceOrder($serviceOrderInput: ServiceOrderInput!) {
+  serviceOrder(args: $serviceOrderInput) {
+    _id
+  }
+}
+`
