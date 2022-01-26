@@ -28,6 +28,7 @@ import type {
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import AjaxFeedback from "./AjaxFeedback";
+import { SERVICE_ORDER } from "@/graphql/documentNodes";
 
 // get cart items total count
 const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
@@ -45,7 +46,7 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
   },
   // layout component
   Layout = ({ children }: LayoutPropsType) => {
-    // state variable to handle modal clicks
+    // state variable to handle cart modal clicks
     const [show, setShow] = useState(false),
       // mount state
       [hasMounted, setHasMounted] = useState(false),
@@ -59,27 +60,36 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
       toasts = useReactiveVar(toastsVar),
       // send order mutation
       [sendRequest, { data, error, loading }] = useMutation<
-        {
-          serviceOrder: OrderVertexType;
-        },
-        {
-          serviceOrderInput: Pick<
+        Record<"serviceOrder", OrderVertexType>,
+        Record<
+          "serviceOrderInput",
+          Pick<
             OrderType,
             "items" | "phone" | "state" | "address" | "nearestBusStop"
-          >;
-        }
-      >(gql`
-        mutation ServiceOrder($serviceOrderInput: ServiceOrderInput!) {
-          serviceOrder(serviceOrderInput: $serviceOrderInput) {
-            _id
-          }
-        }
-      `);
+          >
+        >
+      >(SERVICE_ORDER);
     // on mount update cart items reactive variable from local storage
     useEffect(() => {
       setHasMounted(true);
       cartItemsVar(getLastCartItemsFromStorage(localStorage));
     }, []);
+    // show toast when order is sent ok
+    data &&
+      setShow(false) &&
+      toastsVar([
+        {
+          message: "Order sent successfully.",
+        },
+      ]);
+    // show taost when order errored
+    error &&
+      toastsVar([
+        {
+          header: error.name,
+          message: "Something failed!",
+        },
+      ]);
 
     return hasMounted ? (
       <Container fluid as="main">
@@ -210,7 +220,6 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
                 <Link href="/member/dashboard">dashboard</Link> for more details
               </Alert>
             )}
-            <AjaxFeedback error={error} loading={loading} />
             {/* show delivery details when cart has something */}
             {!!cartItems.length && (
               // delivery details
