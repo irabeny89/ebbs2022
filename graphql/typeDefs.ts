@@ -42,6 +42,8 @@ const typeDefs = gql`
     newProduct(args: NewProductInput!): ServiceProduct
     "delete my product"
     deleteMyProduct(productId: ID!): ServiceProduct
+    "comment on a service"
+    myComment(serviceId: ID!, post: String!): ServiceComment
   }
 
   # -- inputs --

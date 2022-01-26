@@ -39,6 +39,9 @@ export const SERVICE_FRAGMENT = gql`
   COMMENT_FRAGMENT = gql`
     fragment CommentFields on ServiceComment {
       _id
+      topic {
+        title
+      }
       post
       poster {
         username
@@ -358,9 +361,17 @@ export const SERVICE_LIKE_TOGGLE = gql`
 `;
 
 export const SERVICE_ORDER = gql`
-mutation ServiceOrder($serviceOrderInput: ServiceOrderInput!) {
-  serviceOrder(args: $serviceOrderInput) {
-    _id
+  mutation ServiceOrder($serviceOrderInput: ServiceOrderInput!) {
+    serviceOrder(args: $serviceOrderInput) {
+      _id
+    }
   }
-}
-`
+`;
+
+export const MY_COMMENT = gql`
+  mutation MyComment($serviceId: ID!, $post: String!) {
+    myComment(serviceId: $serviceId, post: $post) {
+      _id
+    }
+  }
+`;
