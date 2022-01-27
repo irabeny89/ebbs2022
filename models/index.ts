@@ -1,7 +1,7 @@
 import mongoose, { connect } from "mongoose";
-import config from "config";
+import config from "../config";
 
-const { dbUrl } = config.environmentVariable
+const { dbUrl } = config.environmentVariable;
 
 const dbConnection = async () => {
   if (mongoose.connections[0].readyState !== 1) {
