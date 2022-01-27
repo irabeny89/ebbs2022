@@ -2,9 +2,12 @@ import { ApolloClient, InMemoryCache, HttpLink, from } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { RetryLink } from "@apollo/client/link/retry";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
-import config from "config";
+import config from "../config";
 
-const { graphqlUri, host } = config.environmentVariable,
+const {
+    environmentVariable: { graphqlUri, host },
+    appData: { abbr },
+  } = config,
   httpLink = new HttpLink({
     uri: host + graphqlUri,
     headers: {
@@ -52,6 +55,8 @@ const { graphqlUri, host } = config.environmentVariable,
     },
   }),
   client = new ApolloClient({
+    name: abbr,
+    version: "1.0.0",
     cache: new InMemoryCache(),
     link: from([errorLink, retryLink, httpLink]),
   });

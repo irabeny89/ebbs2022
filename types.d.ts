@@ -6,10 +6,18 @@ import { MicroRequest } from "apollo-server-micro/dist/types";
 import path from "path";
 import { MutableRefObject, ReactNode } from "react";
 
-type QueryVariableType = Record<
-  "productArgs" | "serviceArgs" | "commentArgs",
-  PagingInputType
->;
+type UserPayloadType = {
+  serviceId?: string;
+  username: string;
+  audience: "ADMIN" | "USER";
+};
+
+type EmailOptionsType = {
+  subject: string;
+  from: string;
+  to: string;
+  body: string;
+};
 
 type StatusType = "DELIVERED" | "PENDING" | "SHIPPED" | "CANCELED";
 
@@ -114,9 +122,10 @@ type ServiceVertexType = Partial<
     comments: CursorConnectionType<CommentVertexType>;
     orders: CursorConnectionType<OrderVertexType>;
     categories: [ProductCategoryType];
-    maxProduct: number;
     commentCount: number;
-    likeCount: number
+    productCount: number;
+    orderCount: number;
+    likeCount: number;
   }
 >;
 
@@ -130,25 +139,13 @@ type UserVertexType = Partial<
   Pick<UserType, "username" | "email"> & {
     service: ServiceVertexType;
     requests: CursorConnectionType<OrderVertexType>;
+    requestCount: number;
   }
 > &
   TimestampAndId;
 
 type OrderVertexType = Partial<Omit<OrderType, "client">> &
   Record<"client", UserVertexType>;
-
-type UserPayloadType = {
-  username: string;
-  id: string;
-  audience: "ADMIN" | "USER";
-};
-
-type EmailOptionsType = {
-  subject: string;
-  from: string;
-  to: string;
-  body: string;
-};
 
 type PaginationInfoType = {
   totalPages: number;
@@ -181,16 +178,16 @@ type PagingInputType = Partial<{
   first: number;
   after: string;
   last: number;
-  before: number;
+  before: string;
 }>;
 
 type GraphContextType = {
   UserModel: Model<UserType>;
-  UserServiceModel: Model<ServiceType>;
-  ServiceCommentModel: Model<CommentType>;
-  ServiceOrderModel: Model<OrderType>;
-  ServiceProductModel: Model<ProductType>;
-  ServiceLikeModel: Model<LikeType>;
+  ServiceModel: Model<ServiceType>;
+  CommentModel: Model<CommentType>;
+  OrderModel: Model<OrderType>;
+  ProductModel: Model<ProductType>;
+  LikeModel: Model<LikeType>;
 } & ContextArgType;
 
 type ContextArgType = {
@@ -250,7 +247,6 @@ type MoreButtonPropType = {
   hasLazyFetched: MutableRefObject<boolean>;
   fetchMore: any;
   customFetch: any;
-  variables: object;
   loading: boolean;
   label: ReactNode | string;
 };
@@ -258,6 +254,7 @@ type MoreButtonPropType = {
 type DashboardPropType = Required<UserVertexType> & Record<"info", string>;
 
 type SortedListWithTabsPropType = {
+  tabsVariantStyle?: "pills" | "tabs"
   field: string;
   className?: string;
   rendererProps: { [k: string]: any };

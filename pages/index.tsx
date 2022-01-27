@@ -1,8 +1,8 @@
 import type {
   CursorConnectionType,
   HomePagePropType,
+  PagingInputType,
   ProductVertexType,
-  QueryVariableType,
   ServiceVertexType,
 } from "types";
 import Layout from "@/components/Layout";
@@ -23,12 +23,6 @@ import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import { FaBoxes } from "react-icons/fa";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
-// graphql query return type
-type QueryReturnType = {
-  products: CursorConnectionType<ProductVertexType>;
-  services: CursorConnectionType<ServiceVertexType>;
-};
-
 // fetch page data
 const { webPages, abbr, features } = config.appData,
   // find home page data
@@ -45,7 +39,13 @@ export const getStaticProps: GetStaticProps = async () => {
     const {
       data: { products, services },
       error,
-    } = await client.query<QueryReturnType, QueryVariableType>({
+    } = await client.query<
+      {
+        products: CursorConnectionType<ProductVertexType>;
+        services: CursorConnectionType<ServiceVertexType>;
+      },
+      Record<"productArgs" | "commentArgs" | "serviceArgs", PagingInputType>
+    >({
       query: FEW_PRODUCTS_AND_SERVICES,
       variables: {
         commentArgs: {

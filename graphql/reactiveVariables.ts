@@ -1,6 +1,5 @@
 import { makeVar } from "@apollo/client";
 import { JwtPayload } from "jsonwebtoken";
-import { ReactNode } from "react";
 import type { OrderItemType, UserPayloadType } from "types";
 
 export const accessTokenVar = makeVar("");

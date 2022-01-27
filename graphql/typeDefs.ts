@@ -228,6 +228,8 @@ const typeDefs = gql`
     email: String!
     "user products requests"
     requests(args: PagingInput!): OrderConnection
+    "total number of user request"
+    requestCount: Int!
     "the user's service"
     service: UserService
     "product creation date"
@@ -262,6 +264,10 @@ const typeDefs = gql`
     categories: [CategoryOption]!
     """max product allowed per service"""
     maxProduct: Int!
+    """the total number of orders per service"""
+    orderCount: Int!
+    """the total number of products per service"""
+    productCount: Int!
     """the total number of comments per service"""
     commentCount: Int!
     """product creation date"""

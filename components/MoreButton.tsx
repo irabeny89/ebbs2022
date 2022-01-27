@@ -6,23 +6,17 @@ const MoreButton = ({
   hasLazyFetched,
   fetchMore,
   customFetch,
-  variables,
   loading,
   label = "more",
 }: MoreButtonPropType) => {
   return (
     <Button
       variant="outline-primary"
-      size="sm"
       className="m-3"
       onClick={() =>
         hasLazyFetched.current
-          ? fetchMore({
-              variables,
-            })
-          : (customFetch({
-              variables,
-            }),
+          ? fetchMore()
+          : (customFetch(),
             (hasLazyFetched.current = true))
       }
     >

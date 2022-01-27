@@ -1,20 +1,19 @@
 import { gql } from "@apollo/client";
 // fragments
 export const PRODUCT_FRAGMENT = gql`
-  fragment ProductFields on ServiceProduct {
-    _id
-    name
-    description
-    category
-    images
-    video
-    tags
-    price
-    saleCount
-  }
-`;
-
-export const SERVICE_FRAGMENT = gql`
+    fragment ProductFields on ServiceProduct {
+      _id
+      name
+      description
+      category
+      images
+      video
+      tags
+      price
+      saleCount
+    }
+  `,
+  SERVICE_FRAGMENT = gql`
     fragment ServiceFields on UserService {
       _id
       title
@@ -110,6 +109,7 @@ export const MY_PROFILE = gql`
       _id
       username
       email
+      requestCount
       requests(args: $requestArgs) {
         edges {
           node {
@@ -129,6 +129,9 @@ export const MY_PROFILE = gql`
         country
         state
         happyClients
+        productCount
+        orderCount
+        commentCount
         products(args: $productArgs) {
           edges {
             node {

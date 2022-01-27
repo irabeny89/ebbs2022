@@ -2,19 +2,22 @@ import FormControl from "react-bootstrap/FormControl";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Card from "react-bootstrap/Card";
 import Image from "next/image";
-import { BiMessageAltDots, BiLike, BiInfoCircle, BiSend } from "react-icons/bi";
-import type { ServiceLabelPropType } from "types";
-import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import { CSSProperties, useState } from "react";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
-import { gql, useMutation } from "@apollo/client";
+import Spinner from "react-bootstrap/Spinner";
+import { BiMessageAltDots, BiLike, BiInfoCircle, BiSend } from "react-icons/bi";
+import type { ServiceLabelPropType, ServiceVertexType } from "types";
+import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
+import { CSSProperties, useEffect, useState } from "react";
+import { useMutation } from "@apollo/client";
 import AjaxFeedback from "./AjaxFeedback";
 import Link from "next/link";
 import useAuthPayload from "hooks/useAuthPayload";
+import { SERVICE_LIKE_TOGGLE } from "@/graphql/documentNodes";
+import { toastsVar } from "@/graphql/reactiveVariables";
 
 const styling: { [key: string]: CSSProperties } = {
     smallTextStyle: {
@@ -41,16 +44,19 @@ const styling: { [key: string]: CSSProperties } = {
       // the auth payload
       authPayload = useAuthPayload(),
       // service liking mutation
-      [likeOrUnlike, { loading, data }] = useMutation<
-        Record<"serviceLiking", "LIKE" | "UNLIKE">,
-        {
-          serviceId: string;
-        }
-      >(gql`
-        mutation ServiceLiking($serviceId: ID!, $option: LikeOption!) {
-          serviceLiking(serviceId: $serviceId,)
-        }
-      `);
+      [likeOrUnlike, { loading, data, error }] = useMutation<
+        Record<"serviceLiking", ServiceVertexType>,
+        Record<"serviceId", string>
+      >(SERVICE_LIKE_TOGGLE, {
+        fetchPolicy: "network-only"
+      });
+
+      useEffect(() => {
+        error && toastsVar([{
+          header: error.name,
+          message: "Something failed!"
+        }])
+      }, [error])
 
     return _id ? (
       <Container {...{ style, className }}>
@@ -139,7 +145,7 @@ const styling: { [key: string]: CSSProperties } = {
               variant={happyClients?.includes(authPayload?.sub!) ? "primary" : "outline-primary"}
               onClick={() => likeOrUnlike({variables: { serviceId: _id }})}
             >
-              <BiLike size={18} /> {getCompactNumberFormat(happyClients!.length)}
+              {loading && <Spinner animation="grow" size="sm" />}<BiLike size={18} /> {getCompactNumberFormat(data?.serviceLiking?.likeCount ?? happyClients!.length)}
             </Button>
           </Col>
           <Col>

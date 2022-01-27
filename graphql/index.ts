@@ -6,11 +6,11 @@ import {
 import typeDefs from "@/graphql/typeDefs";
 import resolvers from "@/graphql/resolvers";
 import UserModel from "@/models/userModel";
-import UserServiceModel from "@/models/serviceModel";
-import ServiceProductModel from "@/models/productModel";
-import ServiceCommentModel from "@/models/commentModel";
-import ServiceLikeModel from "@/models/likeModel";
-import ServiceOrderModel from "@/models/orderModel";
+import ServiceModel from "@/models/serviceModel";
+import ProductModel from "@/models/productModel";
+import CommentModel from "@/models/commentModel";
+import LikeModel from "@/models/likeModel";
+import OrderModel from "@/models/orderModel";
 import dbConnection from "@/models/index";
 import { ContextArgType, GraphContextType } from "types";
 import { randomInt } from "crypto";
@@ -29,11 +29,11 @@ const apolloServer = new ApolloServer({
       req,
       res,
       UserModel,
-      ServiceCommentModel,
-      ServiceOrderModel,
-      ServiceProductModel,
-      UserServiceModel,
-      ServiceLikeModel
+      CommentModel,
+      OrderModel,
+      ProductModel,
+      ServiceModel,
+      LikeModel
     };
   },
   mocks: {

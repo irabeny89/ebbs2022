@@ -44,11 +44,11 @@ const tabTitleStyle = { fontSize: 16 };
 // dashboard component
 const Dashboard = ({
   info,
-  service: { orders, products, comments, _id },
+  service: { orders, products, comments, _id, orderCount, productCount, commentCount },
   requests,
+  requestCount,
 }: DashboardPropType) => {
   // use auth payload
-
   const authPayload = useAuthPayload();
   // state variable for product creation form
   const [validated, setValidated] = useState(false),
@@ -69,7 +69,14 @@ const Dashboard = ({
     ] = useLazyQuery<
       Record<"myOrders", CursorConnectionType<OrderVertexType>>,
       Record<"orderArgs", PagingInputType>
-    >(MY_ORDERS),
+    >(MY_ORDERS, {
+      variables: {
+        orderArgs: {
+          last: 20,
+          before: orders?.pageInfo.endCursor,
+        },
+      },
+    }),
     // query more requests
     [
       getMoreRequests,
@@ -82,7 +89,14 @@ const Dashboard = ({
     ] = useLazyQuery<
       Record<"myRequests", CursorConnectionType<OrderVertexType>>,
       Record<"requestArgs", PagingInputType>
-    >(MY_REQUESTS),
+    >(MY_REQUESTS, {
+      variables: {
+        requestArgs: {
+          last: 20,
+          before: requests.pageInfo.endCursor,
+        },
+      },
+    }),
     // query more products
     [
       getMoreProducts,
@@ -95,7 +109,14 @@ const Dashboard = ({
     ] = useLazyQuery<
       Record<"myProducts", CursorConnectionType<ProductVertexType>>,
       Record<"productArgs", PagingInputType>
-    >(MY_PRODUCTS),
+    >(MY_PRODUCTS, {
+      variables: {
+        productArgs: {
+          last: 20,
+          before: products?.pageInfo.endCursor,
+        },
+      },
+    }),
     // add new product mutation
     [
       addProduct,
@@ -107,15 +128,14 @@ const Dashboard = ({
     ] = useMutation<
       Record<"newProduct", ProductVertexType>,
       Record<"newProduct", Omit<ProductType, "provider">>
-    >(ADD_NEW_PRODUCT, { refetchQueries: [MY_PROFILE] }),
+    >(ADD_NEW_PRODUCT, { refetchQueries: [MY_PRODUCTS] }),
     // reply comment mutation
-    [sendPost, { data: postData, loading: postLoading, error: postError }] =
-      useMutation<
-        Record<"myComment", CommentVertexType>,
-        Record<"serviceId" | "post", string>
-      >(MY_COMMENT, {
-        refetchQueries: [MY_PROFILE],
-      });
+    [sendPost, { error: postError }] = useMutation<
+      Record<"myComment", CommentVertexType>,
+      Record<"serviceId" | "post", string>
+    >(MY_COMMENT, {
+      refetchQueries: [MY_PROFILE],
+    });
   // extract orders from edge
   const orderList = (
       orders?.edges?.map((orderEdge) => orderEdge.node) ?? []
@@ -136,8 +156,9 @@ const Dashboard = ({
       productData?.myProducts?.edges?.map((productEdge) => productEdge.node) ??
         []
     ),
-    // extract comments from edge
-    commentList = comments?.edges?.map((commentEdge) => commentEdge.node) ?? [];
+    // extract comments from edge and reverse
+    commentList =
+      comments?.edges?.map((commentEdge) => commentEdge.node).reverse() ?? [];
   // indicate orders has lazy fetched once
   orderData && (hasLazyFetchedOrders.current = true);
   // toast on error
@@ -411,7 +432,14 @@ const Dashboard = ({
         {/* orders tab */}
         <Tab
           eventKey="orders"
-          title={<h5 style={tabTitleStyle}>Orders</h5>}
+          title={
+            <h5 style={tabTitleStyle}>
+              Orders
+              <Badge pill className="bg-info">
+                {getCompactNumberFormat(orderCount!)}
+              </Badge>
+            </h5>
+          }
           className="my-5"
         >
           {/* list of sorted orders by status */}
@@ -421,33 +449,43 @@ const Dashboard = ({
             field="status"
             list={orderList}
             rendererProps={{ className: "pt-4 rounded" }}
+            tabsVariantStyle="pills"
           />
           {orders?.pageInfo.hasNextPage && (
             <MoreButton
               customFetch={getMoreOrders}
-              fetchMore={fetchMore}
+              fetchMore={() =>
+                fetchMore({
+                  variables: {
+                    orderArgs: {
+                      last: 20,
+                      before: orderData?.myOrders.pageInfo.endCursor,
+                    },
+                  },
+                })
+              }
               label="Load more"
               loading={loading}
               hasLazyFetched={hasLazyFetchedOrders}
-              variables={{
-                orderArgs: {
-                  last: 20,
-                  before: hasLazyFetchedOrders.current
-                    ? orderData?.myOrders.pageInfo.endCursor
-                    : orders.pageInfo.endCursor,
-                },
-              }}
             />
           )}
         </Tab>
         {/* requests tab */}
         <Tab
           eventKey="requests"
-          title={<h5 style={tabTitleStyle}>Requests</h5>}
+          title={
+            <h5 style={tabTitleStyle}>
+              Requests
+              <Badge pill className="bg-info">
+                {getCompactNumberFormat(requestCount)}
+              </Badge>
+            </h5>
+          }
           className="my-5"
         >
           {/* list of sorted orders by status */}
           <SortedListWithTabs
+          tabsVariantStyle="pills"
             className=""
             ListRenderer={OrdersOrRequests}
             field="status"
@@ -460,25 +498,33 @@ const Dashboard = ({
           {requests?.pageInfo.hasNextPage && (
             <MoreButton
               customFetch={getMoreRequests}
-              fetchMore={fetchMoreRequests}
+              fetchMore={() =>
+                fetchMoreRequests({
+                  variables: {
+                    requestArgs: {
+                      last: 20,
+                      before: requestData?.myRequests.pageInfo.endCursor,
+                    },
+                  },
+                })
+              }
               label="Load more"
               loading={requestLoading}
               hasLazyFetched={hasLazyFetchedRequests}
-              variables={{
-                requestArgs: {
-                  last: 20,
-                  before: hasLazyFetchedRequests.current
-                    ? requestData?.myRequests.pageInfo.endCursor
-                    : requests.pageInfo.endCursor,
-                },
-              }}
             />
           )}
         </Tab>
         {/* products tab */}
         <Tab
           eventKey="products"
-          title={<h5 style={tabTitleStyle}>Products</h5>}
+          title={
+            <h5 style={tabTitleStyle}>
+              Products
+              <Badge pill className="bg-info">
+                {getCompactNumberFormat(productCount!)}
+              </Badge>
+            </h5>
+          }
           className="my-5"
         >
           <Row className="mb-5">
@@ -490,6 +536,7 @@ const Dashboard = ({
             </Col>
           </Row>
           <SortedListWithTabs
+          tabsVariantStyle="pills"
             className=""
             ListRenderer={ProductList}
             field="category"
@@ -499,25 +546,33 @@ const Dashboard = ({
           {products?.pageInfo.hasNextPage && (
             <MoreButton
               customFetch={getMoreProducts}
-              fetchMore={fetchMoreProducts}
+              fetchMore={() =>
+                fetchMoreProducts({
+                  variables: {
+                    productArgs: {
+                      last: 20,
+                      before: productData?.myProducts.pageInfo.endCursor,
+                    },
+                  },
+                })
+              }
               label="Load more"
               loading={productLoading}
               hasLazyFetched={hasLazyFetchedProducts}
-              variables={{
-                productArgs: {
-                  last: 20,
-                  before: hasLazyFetchedProducts.current
-                    ? productData?.myProducts.pageInfo.endCursor
-                    : products.pageInfo.endCursor,
-                },
-              }}
             />
           )}
         </Tab>
         {/* comments tab */}
         <Tab
           eventKey="comments"
-          title={<h5 style={tabTitleStyle}>Comments</h5>}
+          title={
+            <h5 style={tabTitleStyle}>
+              Comments
+              <Badge pill className="bg-info">
+                {getCompactNumberFormat(commentCount!)}
+              </Badge>
+            </h5>
+          }
           className="my-5"
         >
           <Container>
@@ -579,6 +634,11 @@ const Dashboard = ({
           </Container>
         </Tab>
         {/* user profile tab */}
+        <Tab
+          eventKey="profile"
+          title={<h5 style={tabTitleStyle}>Profile</h5>}
+          className="my-5"
+        ></Tab>
       </Tabs>
     </Container>
   );

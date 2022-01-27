@@ -31,13 +31,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     variables: {
       commentArgs: { last: 20 },
       orderArgs: { last: 20 },
-      productArgs: { first: 20 },
+      productArgs: { last: 20 },
       requestArgs: { last: 20 }
     },
+    fetchPolicy: "no-cache"
   });
 
-  return error ? { notFound: true } : { props: params?.slug ? data.me : {}, revalidate: 10 };
+  return error ? { notFound: true } : { props: params?.slug ? data.me : {}, revalidate: 5 };
 },
+// member page component
   MemberPage = (props: Required<UserVertexType>) => {
     const { slug } = useRouter().query as {
       slug?: string[];
