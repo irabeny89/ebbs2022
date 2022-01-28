@@ -126,12 +126,13 @@ export const MY_PROFILE = gql`
         title
         logo
         description
-        country
         state
         happyClients
         productCount
         orderCount
         commentCount
+        maxProduct
+        categories
         products(args: $productArgs) {
           edges {
             node {
@@ -374,6 +375,14 @@ export const SERVICE_ORDER = gql`
 export const MY_COMMENT = gql`
   mutation MyComment($serviceId: ID!, $post: String!) {
     myComment(serviceId: $serviceId, post: $post) {
+      _id
+    }
+  }
+`;
+
+export const MY_SERVICE_UPDATE = gql`
+  mutation MyServiceUpdate($serviceUpdate: MyServiceUpdateInput!) {
+    myServiceUpdate(args: $serviceUpdate) {
       _id
     }
   }

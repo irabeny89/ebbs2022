@@ -456,12 +456,29 @@ const { webPages, abbr } = config.appData,
                         </Form.FloatingLabel>
                       </Col>
                     </Row>
+                    <Row className="mb-4">
+                      <Col md="6">
+                        <Form.FloatingLabel label="Service Description">
+                          <Form.Control
+                            data-testid="registerServiceDescription"
+                            placeholder="Service Description"
+                            aria-label="service Description"
+                            name="description"
+                            as="textarea"
+                            style={{ height: "6rem" }}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            This field is required!
+                          </Form.Control.Feedback>
+                        </Form.FloatingLabel>
+                      </Col>
+                    </Row>
                   </Accordion.Body>
                 </Accordion>
                 <Button
                   data-testid="registerButton"
                   size="lg"
-                  className="my-5"
+                  className="my-4"
                   type="submit"
                 >
                   <MdSend /> Submit

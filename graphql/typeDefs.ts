@@ -40,10 +40,12 @@ const typeDefs = gql`
     orderStatus(orderId: ID!, status: StatusOptions!): ServiceOrder
     "new product creation"
     newProduct(args: NewProductInput!): ServiceProduct
-    "delete my product"
+    "delete product by an authorized user"
     deleteMyProduct(productId: ID!): ServiceProduct
-    "comment on a service"
+    "comment on a service by an authorized user"
     myComment(serviceId: ID!, post: String!): ServiceComment
+    "update service by an authorized user"
+    myServiceUpdate(args: MyServiceUpdateInput!): UserService
   }
 
   # -- inputs --
@@ -87,6 +89,13 @@ const typeDefs = gql`
     logo: String
     description: String
     state: String
+  }
+
+  input MyServiceUpdateInput {
+    logo: String
+    description: String
+    state: String
+    title: String
   }
 
   input UserUpdateInput {
@@ -246,8 +255,6 @@ const typeDefs = gql`
     logo: String!
     """service description"""
     description: String!
-    """service home country"""
-    country: String!
     """service home state"""
     state: String!
     "number of likes for the service"
@@ -292,27 +299,27 @@ const typeDefs = gql`
   # product object type
   type ServiceProduct {
     _id: ID!
-    # the product name
+    "the product name"
     name: String!
-    # the product description
+    "the product description"
     description: String!
-    # the product category
+    "the product category"
     category: CategoryOption!
-    # the product images
+    "the product images"
     images: [String!]!
-    # the product video clip - optional
+    "the product video clip - optional"
     video: String
-    # the related names for the product
+    "the related names for the product"
     tags: [String]!
-    # the product price
+    "the product price"
     price: Float!
-    # the product sales count
+    "the product sales count"
     saleCount: Int!
-    # the service the product belongs to
+    "the service the product belongs to"
     provider: UserService!
-    # product creation date
+    "product creation date"
     createdAt: String!
-    # product modification date
+    "product modification date"
     updatedAt: String!
   }
 

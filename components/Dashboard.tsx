@@ -18,6 +18,8 @@ import {
   PagingInputType,
   ProductType,
   ProductVertexType,
+  ServiceType,
+  ServiceVertexType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { useLazyQuery, useMutation } from "@apollo/client";
@@ -28,6 +30,7 @@ import {
   MY_REQUESTS,
   MY_PROFILE,
   MY_COMMENT,
+  MY_SERVICE_UPDATE,
 } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import { toastsVar } from "@/graphql/reactiveVariables";
@@ -44,14 +47,31 @@ const tabTitleStyle = { fontSize: 16 };
 // dashboard component
 const Dashboard = ({
   info,
-  service: { orders, products, comments, _id, orderCount, productCount, commentCount },
+  username,
+  service: {
+    orders,
+    products,
+    comments,
+    _id,
+    orderCount,
+    productCount,
+    commentCount,
+    maxProduct,
+    categories,
+    state,
+    title,
+    description,
+  },
   requests,
   requestCount,
+  email,
 }: DashboardPropType) => {
   // use auth payload
   const authPayload = useAuthPayload();
-  // state variable for product creation form
+  // state variable for form
   const [validated, setValidated] = useState(false),
+    // file size state
+    [fileSize, setFileSize] = useState(0),
     // image file size state
     [fileSizes, setFileSizes] = useState<number[]>([]),
     // video file size state
@@ -135,6 +155,18 @@ const Dashboard = ({
       Record<"serviceId" | "post", string>
     >(MY_COMMENT, {
       refetchQueries: [MY_PROFILE],
+    }),
+    [
+      updateService,
+      { error: serviceUpdateError, loading: serviceUpdateLoading },
+    ] = useMutation<
+      Record<"myServiceUpdate", ServiceVertexType>,
+      Record<
+        "serviceUpdate",
+        Pick<ServiceType, "title" | "description" | "logo" | "state">
+      >
+    >(MY_SERVICE_UPDATE, {
+      refetchQueries: [MY_PROFILE],
     });
   // extract orders from edge
   const orderList = (
@@ -194,11 +226,20 @@ const Dashboard = ({
         message: "Something failed!",
       },
     ]);
+  // toast on service update error
+  serviceUpdateError &&
+    toastsVar([
+      {
+        header: serviceUpdateError.name,
+        message: "Something failed!",
+      },
+    ]);
   // cleanup state when modal closed
   useEffect(() => {
     return () => {
       setFileSizes([]);
       setVideoFileSize(0);
+      setValidated(false);
     };
   }, [show]);
 
@@ -485,7 +526,7 @@ const Dashboard = ({
         >
           {/* list of sorted orders by status */}
           <SortedListWithTabs
-          tabsVariantStyle="pills"
+            tabsVariantStyle="pills"
             className=""
             ListRenderer={OrdersOrRequests}
             field="status"
@@ -536,7 +577,7 @@ const Dashboard = ({
             </Col>
           </Row>
           <SortedListWithTabs
-          tabsVariantStyle="pills"
+            tabsVariantStyle="pills"
             className=""
             ListRenderer={ProductList}
             field="category"
@@ -586,7 +627,7 @@ const Dashboard = ({
                         "bg-info"
                       }`}
                     >
-                      <Card.Title>{comment.topic?.title}</Card.Title>
+                      <Card.Title>{comment?.poster?.username}</Card.Title>
                       <Card.Subtitle>{new Date().toUTCString()}</Card.Subtitle>
                     </Card.Header>
                     <Card.Body>
@@ -638,7 +679,201 @@ const Dashboard = ({
           eventKey="profile"
           title={<h5 style={tabTitleStyle}>Profile</h5>}
           className="my-5"
-        ></Tab>
+        >
+          <Container>
+            <Row className="align-items-center justify-content-between">
+              <Col sm="5" className="mb-4">
+                <Row>
+                  <Col>
+                    <h5>Username:</h5>
+                  </Col>
+                  <Col>
+                    <Badge className="bg-secondary h5" pill>
+                      {username}
+                    </Badge>
+                  </Col>
+                  <hr />
+                </Row>
+                <Row>
+                  <Col>
+                    <h5>Email:</h5>
+                  </Col>
+                  <Col>
+                    <Badge className="bg-secondary h5" pill>
+                      {email}
+                    </Badge>
+                  </Col>
+                  <hr />
+                </Row>
+                <Row>
+                  <Col>
+                    <h5>Max Products: </h5>
+                  </Col>
+                  <Col>
+                    <Badge>{maxProduct}</Badge>
+                  </Col>
+                  <hr />
+                </Row>
+                <Row>
+                  <Col>
+                    <h5>Current Products: </h5>
+                  </Col>
+                  <Col>
+                    <Badge>{productCount}</Badge>
+                  </Col>
+                  <hr />
+                </Row>
+                <h5>Categories: </h5>
+                <Row>
+                  {categories &&
+                    categories.map((category) => (
+                      <Col xs="auto">
+                        <Badge className="bg-secondary">{category}</Badge>
+                      </Col>
+                    ))}
+                </Row>
+                <hr />
+              </Col>
+              <Col sm="5">
+                <Row className="mb-4">
+                  <Col className="h4">Update Service:</Col>
+                </Row>
+                <Form
+                  noValidate
+                  validated={validated}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+
+                    const serviceUpdate = Array.from(
+                      new FormData(e.currentTarget).entries()
+                    ).reduce(
+                      (prev, input) => ({
+                        ...prev,
+                        [input[0]]: input[0] === "logo" ? "cid" : input[1],
+                      }),
+                      {}
+                    ) as Pick<
+                      ServiceType,
+                      "title" | "description" | "logo" | "state"
+                    >;
+
+                    fileSize < 1e6 && e.currentTarget.checkValidity()
+                      ? (setValidated(true),
+                        updateService({
+                          variables: { serviceUpdate },
+                        }),
+                        e.currentTarget.reset())
+                      : (e.preventDefault(),
+                        e.stopPropagation(),
+                        setValidated(false));
+                  }}
+                >
+                  <Form.Group>
+                    <Form.Label
+                      className={`${fileSize > 1e6 && "text-danger"}`}
+                    >
+                      Logo(.jpg, .png & .jpeg - 1MB max){" "}
+                      {!!fileSize &&
+                        `| ${getCompactNumberFormat(fileSize).replace(
+                          "B",
+                          "G"
+                        )} ${fileSize > 1e6 ? "\u2717" : "\u2713"}`}
+                    </Form.Label>
+                    <Form.Control
+                      type="file"
+                      size="lg"
+                      placeholder="Service logo"
+                      aria-label="serviceLogo"
+                      name="logo"
+                      accept=".jpeg,.jpg,.png"
+                      onChange={(e: any) => {
+                        setFileSize(e.target.files[0].size);
+                      }}
+                    />
+                  </Form.Group>
+                  <Form.Group className="my-3">
+                    <Form.Label>Select state</Form.Label>
+                    <Form.Select size="lg" defaultValue={state} name="state">
+                      {[
+                        "Abia",
+                        "Adamawa",
+                        "Akwa Ibom",
+                        "Anambra",
+                        "Bauchi",
+                        "Bayelsa",
+                        "Benue",
+                        "Borno",
+                        "Cross River",
+                        "Delta",
+                        "Ebonyi",
+                        "Edo",
+                        "Ekiti",
+                        "Enugu",
+                        "Gombe",
+                        "Imo",
+                        "Jigawa",
+                        "Kaduna",
+                        "Kano",
+                        "Katsina",
+                        "Kebbi",
+                        "Kogi",
+                        "Kwara",
+                        "Lagos",
+                        "Nasarawa",
+                        "Niger",
+                        "Ogun",
+                        "Ondo",
+                        "Osun",
+                        "Oyo",
+                        "Plateu",
+                        "Rivers",
+                        "Sokoto",
+                        "Taraba",
+                        "Yobe",
+                        "Zamfara",
+                      ].map((state) => (
+                        <option
+                          key={state}
+                          value={state}
+                          selected={state === "Lagos"}
+                        >
+                          {state}
+                        </option>
+                      ))}
+                    </Form.Select>
+                  </Form.Group>
+                  <Form.FloatingLabel label="Service Name">
+                    <Form.Control
+                      placeholder="Service name"
+                      aria-label="serviceName"
+                      defaultValue={title}
+                      name="title"
+                    />
+                  </Form.FloatingLabel>
+                  <Form.FloatingLabel
+                    label="Service Description"
+                    className="mt-3"
+                  >
+                    <Form.Control
+                      defaultValue={description}
+                      placeholder="Service Description"
+                      aria-label="service Description"
+                      name="description"
+                      as="textarea"
+                      style={{ height: "6rem" }}
+                    />
+                  </Form.FloatingLabel>
+                  <Button size="lg" className="my-5 w-100" type="submit">
+                    {serviceUpdateLoading && (
+                      <Spinner animation="grow" size="sm" />
+                    )}
+                    <MdSend /> Submit
+                  </Button>
+                </Form>
+              </Col>
+            </Row>
+          </Container>
+        </Tab>
       </Tabs>
     </Container>
   );

@@ -8,7 +8,7 @@ export const mockImages = [
 // mock video
 export const mockVideo = {
   type: "video",
-  src: "/Sinzu Money has a mad update for Spending..mp4",
+  src: "/laptop-extra-screen.mp4",
 };
 // mock media
 export const mockMedia = [...mockImages, mockVideo];
