@@ -6,7 +6,7 @@ const typeDefs = gql`
     "Hello world test"
     hello: String!
     "refresh auth token"
-    refreshToken: TokenPair
+    refreshToken: String!
     "single service"
     service(serviceId: ID): UserService
     "list of all services"

@@ -5,7 +5,7 @@ import config from "config";
 import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import { gql, useLazyQuery } from "@apollo/client";
+import { useLazyQuery } from "@apollo/client";
 import type {
   CursorConnectionType,
   PagingInputType,
@@ -13,79 +13,49 @@ import type {
 } from "types";
 import { GetStaticProps } from "next";
 import { FaBoxes } from "react-icons/fa";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import ProductSection from "@/components/ProductSection";
-import { PRODUCT_FRAGMENT } from "@/graphql/documentNodes";
+import { PRODUCTS } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
 import SortedListWithTabs from "@/components/SortedListWithTabs";
 
-// query document node
-const PRODUCTS = gql`
-  ${PRODUCT_FRAGMENT}
-  query Products($args: PagingInput) {
-    products(args: $args) {
-      edges {
-        node {
-          ...ProductFields
-        }
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-`;
-
-// fetch data at build time
-export const getStaticProps: GetStaticProps = async () => {
-    const { data, error } = await client.query<
-      {
-        products: CursorConnectionType<ProductCardPropType>;
-      },
-      PagingInputType
-    >({
-      query: PRODUCTS,
-      variables: { first: 100 },
-    });
-
-    return error ? { notFound: true } : { props: data.products };
-  },
-  // fetch web app meta data
-  { webPages, abbr } = config.appData,
+// fetch web app meta data
+const { webPages, abbr } = config.appData,
   // find products page data
   productsPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "products"
-  ),
+  );
+// fetch data at build time
+export const getStaticProps: GetStaticProps = async () => {
+    const { data, error } = await client.query<
+      Record<"products", CursorConnectionType<ProductCardPropType>>,
+      Record<"args", PagingInputType>
+    >({
+      query: PRODUCTS,
+      variables: { args: { last: 20 } },
+      fetchPolicy: "no-cache",
+    });
+
+    return error ? { notFound: true } : { props: data.products, revalidate: 5 };
+  },
   // products page component
   ProductsPage = ({
     edges,
     pageInfo: { endCursor, hasNextPage },
   }: CursorConnectionType<ProductCardPropType>) => {
     // ref for lazy fetch flag
-    const hasLazyFetched = useRef(false),
-      // omit cursor property from edge node
-      products = edges.map((item) => item.node),
-      // create state variable for products list
-      [_products, setProducts] = useState(products),
-      // lazy fetch more products
-      [fetchMoreProducts, { data, loading, fetchMore }] = useLazyQuery<
-        {
-          products: CursorConnectionType<ProductCardPropType>;
-        },
-        {
-          first: number;
-          after: string;
-        }
-      >(PRODUCTS);
-    // preventing infinite loop
-    useEffect(() => {
-      if (data)
-        setProducts([
-          ..._products,
-          ...data!.products.edges.map((item) => item.node),
-        ]);
-    }, [data]);
+    const hasLazyFetched = useRef(false);
+    // omit cursor property from edge node
+    const products = edges.map((item) => item.node);
+    // lazy fetch more products
+    const [fetchMoreProducts, { data, loading, fetchMore }] = useLazyQuery<
+      Record<"products", CursorConnectionType<ProductCardPropType>>,
+      Record<"args", PagingInputType>
+    >(PRODUCTS, {
+      variables: {
+        args: { last: 20, before: endCursor },
+      },
+    });
 
     return (
       <Layout>
@@ -113,7 +83,9 @@ export const getStaticProps: GetStaticProps = async () => {
           <SortedListWithTabs
             ListRenderer={ProductSection}
             field="category"
-            list={_products}
+            list={products
+              .concat(data?.products.edges.map((edge) => edge.node) ?? [])
+              .reverse()}
             rendererProps={{ className: "pt-4 rounded" }}
           />
           <Row>
@@ -122,14 +94,18 @@ export const getStaticProps: GetStaticProps = async () => {
                 <MoreButton
                   {...{
                     customFetch: fetchMoreProducts,
-                    fetchMore,
+                    fetchMore: () =>
+                      fetchMore({
+                        variables: {
+                          args: {
+                            last: 20,
+                            before: data?.products?.pageInfo?.endCursor,
+                          },
+                        },
+                      }),
                     hasLazyFetched,
                     label: "More products",
                     loading,
-                    variables: {
-                      first: 50,
-                      after: data?.products?.pageInfo?.endCursor ?? endCursor,
-                    },
                   }}
                 />
               ) : null}

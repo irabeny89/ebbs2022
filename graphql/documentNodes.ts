@@ -70,12 +70,11 @@ export const PRODUCT_FRAGMENT = gql`
       createdAt
     }
   `;
+
 // query operations
 export const REFRESH_TOKEN_QUERY = gql`
   query RefreshToken {
-    refreshToken {
-      accessToken
-    }
+    refreshToken
   }
 `;
 
@@ -91,83 +90,6 @@ export const USER_PASSWORD_CHANGE = gql`
   mutation PasswordChange($passCode: String!, $newPassword: String!) {
     changePassword(passCode: $passCode, newPassword: $newPassword) {
       accessToken
-    }
-  }
-`;
-
-export const MY_PROFILE = gql`
-  ${PRODUCT_FRAGMENT}
-  ${COMMENT_FRAGMENT}
-  ${ORDER_FRAGMENT}
-  query MyProfile(
-    $productArgs: PagingInput!
-    $commentArgs: PagingInput!
-    $orderArgs: PagingInput!
-    $requestArgs: PagingInput!
-  ) {
-    me {
-      _id
-      username
-      email
-      requestCount
-      requests(args: $requestArgs) {
-        edges {
-          node {
-            ...OrderFields
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
-      service {
-        _id
-        title
-        logo
-        description
-        state
-        happyClients
-        productCount
-        orderCount
-        commentCount
-        maxProduct
-        categories
-        products(args: $productArgs) {
-          edges {
-            node {
-              ...ProductFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        comments(args: $commentArgs) {
-          edges {
-            node {
-              ...CommentFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        orders(args: $orderArgs) {
-          edges {
-            node {
-              ...OrderFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        createdAt
-      }
     }
   }
 `;
@@ -267,6 +189,100 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
   }
 `;
 
+export const PRODUCTS = gql`
+  ${PRODUCT_FRAGMENT}
+  query Products($args: PagingInput!) {
+    products(args: $args) {
+      edges {
+        node {
+          ...ProductFields
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
+export const MY_PROFILE = gql`
+  ${PRODUCT_FRAGMENT}
+  ${COMMENT_FRAGMENT}
+  ${ORDER_FRAGMENT}
+  query MyProfile(
+    $productArgs: PagingInput!
+    $commentArgs: PagingInput!
+    $orderArgs: PagingInput!
+    $requestArgs: PagingInput!
+  ) {
+    me {
+      _id
+      username
+      email
+      requestCount
+      requests(args: $requestArgs) {
+        edges {
+          node {
+            ...OrderFields
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+      service {
+        _id
+        title
+        logo
+        description
+        state
+        happyClients
+        productCount
+        orderCount
+        commentCount
+        maxProduct
+        categories
+        products(args: $productArgs) {
+          edges {
+            node {
+              ...ProductFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        comments(args: $commentArgs) {
+          edges {
+            node {
+              ...CommentFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        orders(args: $orderArgs) {
+          edges {
+            node {
+              ...OrderFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+        createdAt
+      }
+    }
+  }
+`;
+
 export const MY_ORDERS = gql`
   ${ORDER_FRAGMENT}
   query OrderList($orderArgs: PagingInput!) {
@@ -317,6 +333,7 @@ export const MY_PRODUCTS = gql`
     }
   }
 `;
+
 // mutation operations
 export const USER_REGISTER = gql`
   mutation UserRegister($userRegisterInput: UserRegisterInput!) {

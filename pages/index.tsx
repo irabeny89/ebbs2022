@@ -49,15 +49,16 @@ export const getStaticProps: GetStaticProps = async () => {
       query: FEW_PRODUCTS_AND_SERVICES,
       variables: {
         commentArgs: {
-          last: 30,
+          last: 20,
         },
         productArgs: {
-          first: 20,
+          last: 20,
         },
         serviceArgs: {
-          first: 20,
+          last: 20,
         },
       },
+      fetchPolicy: "no-cache",
     });
 
     return error
@@ -67,7 +68,7 @@ export const getStaticProps: GetStaticProps = async () => {
             products: products.edges.map((edge) => edge.node),
             services: services.edges.map((edge) => edge.node),
           },
-          revalidate: 10,
+          revalidate: 5,
         };
   },
   // home page component
@@ -140,15 +141,7 @@ export const getStaticProps: GetStaticProps = async () => {
           </Row>
           {/* link to products page */}
           <Row className="text-center mt-4 mb-5">
-            <Link
-              href={
-                homePage?.links.find(
-                  (link) => link.pageTitle.toLowerCase() === "products"
-                )?.route ?? ""
-              }
-            >
-              Go see all products
-            </Link>
+            <Link href="/products">Go see all products</Link>
           </Row>
           {/* Service Section */}
           <Row className="mt-5 rounded" style={highlightStyle}>
@@ -164,15 +157,7 @@ export const getStaticProps: GetStaticProps = async () => {
           </Row>
           {/* link to services page */}
           <Row className="text-center mt-4 mb-5">
-            <Link
-              href={
-                homePage?.links.find(
-                  (link) => link.pageTitle.toLowerCase() === "services"
-                )?.route ?? ""
-              }
-            >
-              Go see all services
-            </Link>
+            <Link href="/services">Go see all services</Link>
           </Row>
         </Container>
       </Layout>
