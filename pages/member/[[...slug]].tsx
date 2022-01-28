@@ -19,27 +19,32 @@ const { webPages, abbr } = config.appData,
 
 // ssg path
 export const getStaticPaths: GetStaticPaths = async () => {
-    return { paths: [{ params: { slug: ["dashboard"] } }], fallback: true };
-  }
-  // ssg
+  return { paths: [{ params: { slug: ["dashboard"] } }], fallback: true };
+};
+// ssg
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const { data, error } = await client.query<
-    Record<"me", UserVertexType>,
-    Record<"productArgs" | "commentArgs" | "orderArgs" | "requestArgs", PagingInputType>
-  >({
-    query: MY_PROFILE,
-    variables: {
-      commentArgs: { last: 20 },
-      orderArgs: { last: 20 },
-      productArgs: { last: 20 },
-      requestArgs: { last: 20 }
-    },
-    fetchPolicy: "no-cache"
-  });
+    const { data, error } = await client.query<
+      Record<"me", UserVertexType>,
+      Record<
+        "productArgs" | "commentArgs" | "orderArgs" | "requestArgs",
+        PagingInputType
+      >
+    >({
+      query: MY_PROFILE,
+      variables: {
+        commentArgs: { last: 20 },
+        orderArgs: { last: 20 },
+        productArgs: { last: 20 },
+        requestArgs: { last: 20 },
+      },
+      fetchPolicy: "no-cache",
+    });
 
-  return error ? { notFound: true } : { props: params?.slug ? data.me : {}, revalidate: 5 };
-},
-// member page component
+    return error
+      ? { notFound: true }
+      : { props: params?.slug ? data.me : {}, revalidate: 5 };
+  },
+  // member page component
   MemberPage = (props: Required<UserVertexType>) => {
     const { slug } = useRouter().query as {
       slug?: string[];
