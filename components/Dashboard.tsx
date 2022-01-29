@@ -727,7 +727,7 @@ const Dashboard = ({
                 <Row>
                   {categories &&
                     categories.map((category) => (
-                      <Col xs="auto">
+                      <Col xs="auto" key={category}>
                         <Badge className="bg-secondary">{category}</Badge>
                       </Col>
                     ))}
@@ -793,7 +793,7 @@ const Dashboard = ({
                   </Form.Group>
                   <Form.Group className="my-3">
                     <Form.Label>Select state</Form.Label>
-                    <Form.Select size="lg" defaultValue={state} name="state">
+                    <Form.Select size="lg" defaultValue={state ?? "Lagos"} name="state">
                       {[
                         "Abia",
                         "Adamawa",
@@ -835,7 +835,6 @@ const Dashboard = ({
                         <option
                           key={state}
                           value={state}
-                          selected={state === "Lagos"}
                         >
                           {state}
                         </option>
