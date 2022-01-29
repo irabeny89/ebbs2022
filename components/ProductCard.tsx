@@ -125,6 +125,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
             </Modal.Footer>
           </Modal.Dialog>
         </Modal>
+        {/* product card */}
         <Card style={cardStyling.cardStyle}>
           <Card.Header className="text-capitalize text-center">
             <Card.Title>

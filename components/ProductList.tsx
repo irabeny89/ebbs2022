@@ -31,7 +31,7 @@ const ProductList = ({
           }
         >
           {items.map((product) => (
-            <Carousel.Item key={product._id!.toString()}>
+            <Carousel.Item key={product._id}>
               <Row className="text-black">
                 <ProductCard {...product} />
               </Row>
@@ -43,10 +43,7 @@ const ProductList = ({
       // product list - no carousel
       <Container fluid {...rest}>
         {items.map((product) => (
-          <Row
-            className="text-black my-2 mx-auto mx-lg-2"
-            key={product._id!.toString()}
-          >
+          <Row className="text-black my-2 mx-auto mx-lg-2" key={product._id}>
             <ProductCard {...product} />
           </Row>
         ))}

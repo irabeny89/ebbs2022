@@ -38,6 +38,7 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
     author,
     constants: { CART_ITEMS_KEY },
     webPages,
+    generalErrorMessage,
   } = config.appData;
 // layout style
 const mainStyle: CSSProperties = {
@@ -100,12 +101,11 @@ const Layout = ({ children }: LayoutPropsType) => {
                 toasts.filter(({ message }) => toast.message !== message)
               );
             }}
-            // delay={3000}
             autohide
-            bg="info"
+            bg={toast.message === generalErrorMessage ? "danger" : "info"}
           >
-            <Toast.Header className="justify-content-between">
-              <strong>{toast.header ?? "Feedback"}</strong>
+            <Toast.Header className="justify-content-between h5">
+              {toast.header ?? "Feedback"}
             </Toast.Header>
             <Toast.Body className="text-white">{toast.message}</Toast.Body>
           </Toast>

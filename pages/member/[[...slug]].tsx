@@ -15,6 +15,10 @@ const { webPages, abbr } = config.appData,
   // find home page data
   dashboardPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "dashboard"
+  ),
+  // find member page data
+  memberPage = webPages.find(
+    ({ pageTitle }) => pageTitle.toLowerCase() === "member"
   );
 
 // ssg path
@@ -64,7 +68,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
         <ErrorPage title="404" message="Page Not Found!" />
       )
     ) : (
-      <Member />
+      <Layout>
+        {/* tab title */}
+        <Head>
+          <title>
+            {abbr} &trade; | {memberPage?.pageTitle}
+          </title>
+        </Head>
+        <Member />
+      </Layout>
     );
   };
 

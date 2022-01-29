@@ -20,18 +20,18 @@ const typeDefs = gql`
     "list of my requests belonging to an authorized & authenticated user"
     myRequests(args: PagingInput!): OrderConnection
     "user login"
-    login(email: String!, password: String!): TokenPair
+    login(email: String!, password: String!): String!
     "user profile data"
     me: User
   }
   # -- mutation --
   type Mutation {
     "register new user"
-    userRegister(userRegisterInput: UserRegisterInput!): TokenPair
+    userRegister(userRegisterInput: UserRegisterInput!): String!
     "request passcode to change password"
     requestPassCode(email: String!): String!
     "resetPassword with passcode"
-    changePassword(passCode: String!, newPassword: String!): TokenPair
+    changePassword(passCode: String!, newPassword: String!): String!
     "toggles liking; like if not liked before vice versa"
     serviceLiking(serviceId: ID!): UserService
     "send purchase request; creates new order"
@@ -159,13 +159,6 @@ const typeDefs = gql`
     USER
   }
   # -- paging object types --
-  # the token payload
-  type TokenPair {
-    # the access token
-    accessToken: String
-    # the refresh token for access token renewal
-    refreshToken: String
-  }
   # the pagination object
   type PageInfo {
     # the start cursor of a list
