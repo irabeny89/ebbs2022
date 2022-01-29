@@ -85,6 +85,70 @@ export const USER_LOGIN = gql`
   }
 `;
 
+export const SERVICE = gql`
+  ${PRODUCT_FRAGMENT}
+  ${SERVICE_FRAGMENT}
+  query UserService(
+    $serviceId: ID!
+    $productArgs: PagingInput!
+    $commentArgs: PagingInput!
+  ) {
+    service(serviceId: $serviceId) {
+      ...ServiceFields
+      products(args: $productArgs) {
+        edges {
+          node {
+            ...ProductFields
+            provider {
+              _id
+              title
+            }
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+      comments(args: $commentArgs) {
+        edges {
+          node {
+            _id
+            post
+            poster {
+              username
+            }
+            createdAt
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const SERVICE_PRODUCT = gql`
+  ${PRODUCT_FRAGMENT}
+  query ServiceProducts($productArgs: PagingInput!, $serviceId: ID!) {
+    service(serviceId: $serviceId) {
+      products(args: $productArgs) {
+        edges {
+          node {
+            ...ProductFields
+            provider {
+              _id
+              title
+            }
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+    }
+  }
+`;
+
 export const FEW_SERVICES = gql`
   ${PRODUCT_FRAGMENT}
   ${SERVICE_FRAGMENT}
@@ -182,7 +246,7 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
   }
 `;
 
-export const PRODUCTS = gql`
+export const FEW_PRODUCTS = gql`
   ${PRODUCT_FRAGMENT}
   query Products($args: PagingInput!) {
     products(args: $args) {

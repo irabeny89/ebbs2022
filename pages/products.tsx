@@ -15,7 +15,7 @@ import { GetStaticProps } from "next";
 import { FaBoxes } from "react-icons/fa";
 import { useRef } from "react";
 import ProductSection from "@/components/ProductSection";
-import { PRODUCTS } from "@/graphql/documentNodes";
+import { FEW_PRODUCTS } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
 import SortedListWithTabs from "@/components/SortedListWithTabs";
 
@@ -31,7 +31,7 @@ export const getStaticProps: GetStaticProps = async () => {
       Record<"products", CursorConnectionType<ProductCardPropType>>,
       Record<"args", PagingInputType>
     >({
-      query: PRODUCTS,
+      query: FEW_PRODUCTS,
       variables: { args: { last: 20 } },
       fetchPolicy: "no-cache",
     });
@@ -51,7 +51,7 @@ export const getStaticProps: GetStaticProps = async () => {
     const [fetchMoreProducts, { data, loading, fetchMore }] = useLazyQuery<
       Record<"products", CursorConnectionType<ProductCardPropType>>,
       Record<"args", PagingInputType>
-    >(PRODUCTS, {
+    >(FEW_PRODUCTS, {
       variables: {
         args: { last: 20, before: endCursor },
       },

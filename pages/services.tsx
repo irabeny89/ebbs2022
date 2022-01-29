@@ -8,55 +8,52 @@ import { useLazyQuery } from "@apollo/client";
 import { GetStaticProps } from "next";
 import type {
   CursorConnectionType,
+  PagingInputType,
   ProductCategoryType,
-  QueryVariableType,
   ServiceCardPropType,
+  ServiceReturnType,
+  ServiceVariableType,
   ServiceVertexType,
 } from "types";
 import Layout from "@/components/Layout";
 import Head from "next/head";
 import config from "config";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { FaBoxes } from "react-icons/fa";
 import ServiceSection from "@/components/ServiceSection";
 import { FEW_SERVICES } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
-// graphql query return type
-type QueryReturnType = {
-  services: CursorConnectionType<ServiceVertexType>;
-};
-
-const variables = {
-  commentArgs: {
-    last: 50,
-  },
-  productArgs: {
-    first: 10,
-  },
-  serviceArgs: {
-    first: 100,
-  },
-};
-
-// get data at build time
-export const getStaticProps: GetStaticProps = async () => {
-    // fetch list
-    const { data, error } = await client.query<
-      QueryReturnType,
-      QueryVariableType
-    >({
-      query: FEW_SERVICES,
-      variables,
-    });
-
-    return error ? { notFound: true } : { props: data.services };
-  },
-  // fetch web app meta data
-  { webPages, abbr } = config.appData,
+// fetch web app meta data
+const { webPages, abbr } = config.appData,
   // find products page data
   servicesPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "services"
-  ),
+  );
+
+// get data at build time - ssg
+export const getStaticProps: GetStaticProps = async () => {
+    // fetch list
+    const { data, error } = await client.query<
+      ServiceReturnType,
+      ServiceVariableType
+    >({
+      query: FEW_SERVICES,
+      variables: {
+        commentArgs: {
+          last: 20,
+        },
+        productArgs: {
+          last: 5,
+        },
+        serviceArgs: {
+          last: 20,
+        },
+      },
+      fetchPolicy: "no-cache",
+    });
+
+    return error ? { notFound: true } : { props: data.services, revalidate: 5 };
+  },
   // services page component
   ServicesPage = ({
     edges,
@@ -64,23 +61,28 @@ export const getStaticProps: GetStaticProps = async () => {
   }: CursorConnectionType<ServiceCardPropType>) => {
     // ref for lazy fetch flag
     const hasLazyFetched = useRef(false),
-      // omit cursor property from edge node
-      services = edges.map((item) => item.node),
-      // create state variable for products list
-      [_services, setProducts] = useState(services),
       // lazy fetch more products
       [fetchMoreServices, { data, loading, fetchMore }] = useLazyQuery<
-        QueryReturnType,
-        QueryVariableType
-      >(FEW_SERVICES);
-    // preventing infinite loop
-    useEffect(() => {
-      if (data)
-        setProducts([
-          ..._services,
-          ...data!.services.edges.map((item) => item.node),
-        ]);
-    }, [data]);
+        ServiceReturnType,
+        ServiceVariableType
+      >(FEW_SERVICES, {
+        variables: {
+          serviceArgs: {
+            last: 20,
+            before: endCursor,
+          },
+          commentArgs: {
+            last: 20,
+          },
+          productArgs: {
+            last: 5,
+          },
+        },
+      });
+    // omit cursor property from edge node
+    const services = [...(data?.services.edges ?? []), ...edges].map(
+      (edge) => edge.node
+    );
 
     return (
       <Layout>
@@ -109,7 +111,7 @@ export const getStaticProps: GetStaticProps = async () => {
           <Tabs id="category-tabs" defaultActiveKey="ALL">
             {/* render category as tabs */}
             {["ALL"]
-              .concat(..._services.map((item) => item.categories!))
+              .concat(...services.map((item) => item.categories!))
               // deduplicate categories
               .reduce(
                 (prev: string[], cat) =>
@@ -124,36 +126,42 @@ export const getStaticProps: GetStaticProps = async () => {
                       // render filtered services based on product categories
                       items={
                         category === "ALL"
-                          ? _services
-                          : _services.filter((item) =>
+                          ? (services as ServiceCardPropType[])
+                          : (services.filter((item) =>
                               item.categories!.includes(
                                 category as ProductCategoryType
                               )
-                            )
+                            ) as ServiceCardPropType[])
                       }
                     />
                   </Row>
                 </Tab>
               ))}
-              {hasNextPage ? (
-                    <MoreButton
-                      {...{
-                        customFetch: fetchMoreServices,
-                        fetchMore,
-                        hasLazyFetched,
-                        label: "More services",
-                        loading,
-                        variables: {
-                          ...variables,
-                          serviceArgs: {
-                            first: 50,
-                            after:
-                              data?.services?.pageInfo?.endCursor ?? endCursor,
-                          },
+            {hasNextPage ? (
+              <MoreButton
+                {...{
+                  customFetch: fetchMoreServices,
+                  fetchMore: () =>
+                    fetchMore({
+                      variables: {
+                        serviceArgs: {
+                          last: 20,
+                          before: endCursor,
                         },
-                      }}
-                    />
-                  ) : null}
+                        commentArgs: {
+                          last: 20,
+                        },
+                        productArgs: {
+                          last: 5,
+                        },
+                      },
+                    }),
+                  hasLazyFetched,
+                  label: "More services",
+                  loading,
+                }}
+              />
+            ) : null}
           </Tabs>
         </Container>
       </Layout>
@@ -161,13 +169,3 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 
 export default ServicesPage;
-
-// {
-//   category === "ALL"
-//     ? _services
-//     : _services.filter((item) =>
-//         item.categories!.includes(
-//           category as ProductCategoryType
-//         )
-//       )
-// }

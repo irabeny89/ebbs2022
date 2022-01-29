@@ -174,12 +174,20 @@ type PageInfoType = {
 };
 
 type PagingInputType = Partial<{
-  id: Pick<TimestampAndId, "_id">;
+  id: string;
   first: number;
   after: string;
   last: number;
   before: string;
+  search: string
 }>;
+
+type ServiceReturnType = Record<"services", CursorConnectionType<ServiceVertexType>>
+
+type ServiceVariableType = Record<
+"commentArgs" | "productArgs" | "serviceArgs",
+PagingInputType
+>;
 
 type GraphContextType = {
   UserModel: Model<UserType>;
@@ -256,11 +264,10 @@ type DashboardPropType = Required<UserVertexType> & Record<"info", string>;
 type SortedListWithTabsPropType = {
   tabsVariantStyle?: "pills" | "tabs"
   field: string;
-  className?: string;
-  rendererProps: { [k: string]: any };
+  rendererProps?: { [k: string]: any };
   list: { [k: string]: any }[];
   ListRenderer: (props: any) => JSX.Element;
-};
+} & StyleType;
 
 type OrdersOrRequestsPropType = {
   items: OrderVertexType[];

@@ -726,8 +726,8 @@ const Dashboard = ({
                 <h5>Categories: </h5>
                 <Row>
                   {categories &&
-                    categories.map((category) => (
-                      <Col xs="auto" key={category}>
+                    categories.map((category, i) => (
+                      <Col xs="auto" key={category+i}>
                         <Badge className="bg-secondary">{category}</Badge>
                       </Col>
                     ))}

@@ -11,7 +11,7 @@ import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import { useMutation, useReactiveVar } from "@apollo/client";
+import { useLazyQuery, useMutation, useReactiveVar } from "@apollo/client";
 import { cartItemsVar, toastsVar } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
@@ -20,14 +20,21 @@ import Navbar from "react-bootstrap/Navbar";
 import NavDropdown from "react-bootstrap/NavDropdown";
 import useAuthPayload from "../hooks/useAuthPayload";
 import type {
+  CursorConnectionType,
   LayoutPropsType,
   OrderItemType,
   OrderType,
   OrderVertexType,
+  PagingInputType,
+  ProductVertexType,
+  ServiceVertexType,
 } from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
-import { SERVICE_ORDER } from "@/graphql/documentNodes";
+import { FEW_PRODUCTS, SERVICE_ORDER } from "@/graphql/documentNodes";
+import SortedListWithTabs from "./SortedListWithTabs";
+import ProductList from "./ProductList";
+import MoreButton from "./MoreButton";
 
 // get cart items total count
 const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
@@ -48,14 +55,16 @@ const mainStyle: CSSProperties = {
 const Layout = ({ children }: LayoutPropsType) => {
   // state variable to handle cart modal clicks
   const [show, setShow] = useState(false),
+    // state variable for search list modal
+    [showSearch, setShowSearch] = useState(false),
     // form validation state
     [validated, setValidated] = useState(false),
     // get reactive cart items variable
     cartItems = useReactiveVar(cartItemsVar),
-    // get token payload
-    authPayload = useAuthPayload(),
     // get toasts
     toasts = useReactiveVar(toastsVar),
+    // get token payload
+    authPayload = useAuthPayload(),
     // send order mutation
     [sendRequest, { data, error, loading }] = useMutation<
       Record<"serviceOrder", OrderVertexType>,
@@ -66,27 +75,51 @@ const Layout = ({ children }: LayoutPropsType) => {
           "items" | "phone" | "state" | "address" | "nearestBusStop"
         >
       >
-    >(SERVICE_ORDER);
+    >(SERVICE_ORDER),
+    // search for products
+    [
+      searchProduct,
+      {
+        data: searchData,
+        error: searchError,
+        loading: searchLoading,
+        fetchMore,
+      },
+    ] = useLazyQuery<
+      Record<"products", CursorConnectionType<ProductVertexType>>,
+      Record<"args", PagingInputType>
+    >(FEW_PRODUCTS);
   // on mount update cart items reactive variable from local storage
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
   }, []);
-  // show toast when order is sent ok
-  data &&
-    setShow(false) &&
-    toastsVar([
-      {
-        message: "Order sent successfully.",
-      },
-    ]);
-  // show toast when order errored
-  error &&
-    toastsVar([
-      {
-        header: error.name,
-        message: "Something failed!",
-      },
-    ]);
+  // toast effects
+  useEffect(() => {
+    // show toast when order is sent ok
+    data &&
+      setShow(false) &&
+      toastsVar([
+        {
+          message: "Order sent successfully.",
+        },
+      ]);
+    // show search result when ready
+    searchData && setShowSearch(true);
+    // show toast when search errored
+    searchError &&
+      toastsVar([{ header: searchError.name, message: generalErrorMessage }]);
+    // show toast when order errored
+    error &&
+      toastsVar([
+        {
+          header: error.name,
+          message: generalErrorMessage,
+        },
+      ]);
+  }, [error, searchError, data, searchData]);
+  // extract products from connection
+  const foundProducts =
+    searchData?.products.edges.map((edge) => edge.node) ?? [];
 
   return (
     <Container fluid as="main">
@@ -367,6 +400,46 @@ const Layout = ({ children }: LayoutPropsType) => {
           )}
         </Modal.Footer>
       </Modal>
+      {/* search result modal */}
+      <Modal show={showSearch} onHide={() => setShowSearch(false)} fullscreen>
+        <Modal.Header closeButton>
+          <Modal.Title>Search results</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Modal.Title>
+            Products Found: {foundProducts.length}
+            {searchData?.products.pageInfo.hasNextPage && "+"}
+          </Modal.Title>
+          <br />
+          <SortedListWithTabs
+            ListRenderer={ProductList}
+            field="category"
+            list={foundProducts}
+            rendererProps={{ className: "d-flex flex-wrap" }}
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          {searchData?.products.pageInfo.hasNextPage && (
+            <Button
+              size="lg"
+              variant="outline-info"
+              onClick={() =>
+                fetchMore({
+                  variables: {
+                    args: {
+                      first: 20,
+                      after: searchData.products.pageInfo.endCursor,
+                    },
+                  },
+                })
+              }
+            >
+              {searchLoading && <Spinner animation="grow" size="sm" />} Load
+              more
+            </Button>
+          )}
+        </Modal.Footer>
+      </Modal>
       {/* navigation bar */}
       <Row as="header">
         <Navbar collapseOnSelect expand="md">
@@ -443,9 +516,45 @@ const Layout = ({ children }: LayoutPropsType) => {
       {/* status bar */}
       <Row className="mb-5 mt-3">
         <Col md={{ offset: 2 }} lg={{ offset: 3 }}>
-          <Form.FloatingLabel label="Find..">
-            <Form.Control placeholder="Find..." />
-          </Form.FloatingLabel>
+          <Form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const search = new FormData(e.currentTarget).get("search") as
+                | string
+                | undefined;
+
+              search
+                ? searchProduct({
+                    variables: {
+                      args: {
+                        search,
+                        first: 20,
+                      },
+                    },
+                  })
+                : (e.preventDefault(), e.stopPropagation());
+            }}
+          >
+            <Form.Group>
+              <Row>
+                <Col>
+                  <Form.FloatingLabel label="Search...">
+                    <Form.Control
+                      placeholder="Find..."
+                      arial-label="search product or service"
+                      name="search"
+                    />
+                  </Form.FloatingLabel>
+                </Col>
+                <Col>
+                  <Button size="lg" type="submit" variant="outline-info">
+                    {searchLoading && <Spinner size="sm" animation="grow" />}
+                    Search
+                  </Button>
+                </Col>
+              </Row>
+            </Form.Group>
+          </Form>
         </Col>
         <Col xs="auto" md={{ offset: 2 }} lg={{ offset: 3 }}>
           <Button

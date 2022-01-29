@@ -11,13 +11,13 @@ const MoreButton = ({
 }: MoreButtonPropType) => {
   return (
     <Button
+      size="lg"
       variant="outline-primary"
       className="m-3"
       onClick={() =>
         hasLazyFetched.current
           ? fetchMore()
-          : (customFetch(),
-            (hasLazyFetched.current = true))
+          : (customFetch(), (hasLazyFetched.current = true))
       }
     >
       {loading ? <Spinner animation="grow" size="sm" /> : null} {label}

@@ -122,6 +122,8 @@ const typeDefs = gql`
     last: Int
     # backward paging befor this cursor eg startCursor"
     before: String
+    # search text
+    search: String
   }
   # -- enumerations --
   enum CategoryOption {
@@ -161,13 +163,13 @@ const typeDefs = gql`
   # -- paging object types --
   # the pagination object
   type PageInfo {
-    # the start cursor of a list
+    "the start cursor of a list"
     startCursor: String!
-    # the end cursor of a list
+    "the end cursor of a list"
     endCursor: String!
-    # the next page indicator when moving forward in a list
+    "the next page indicator when moving forward in a list"
     hasNextPage: Boolean!
-    # the previous page indicator when moving backwards in a list
+    "the previous page indicator when moving backwards in a list"
     hasPreviousPage: Boolean!
   }
 
@@ -220,6 +222,11 @@ const typeDefs = gql`
     edges: [ServiceEdge!]!
     pageInfo: PageInfo!
   }
+
+  type SearchPayload {
+    products(args: PagingInput!): ProductConnection!
+    services(args: PagingInput!): ServiceConnection!
+  }
   # -- vertices/nodes --
   # user object type
   type User {
@@ -229,7 +236,7 @@ const typeDefs = gql`
     "the user's email"
     email: String!
     "user products requests"
-    requests(args: PagingInput!): OrderConnection
+    requests(args: PagingInput!): OrderConnection!
     "total number of user request"
     requestCount: Int!
     "the user's service"
@@ -255,11 +262,11 @@ const typeDefs = gql`
     "list of users who likes the service"
     happyClients: [ID!]!
     """list of service products"""
-    products(args: PagingInput!): ProductConnection
+    products(args: PagingInput!): ProductConnection!
     """comments from clients"""
-    comments(args: PagingInput!): CommentConnection
+    comments(args: PagingInput!): CommentConnection!
     """service orders from clients"""
-    orders(args: PagingInput!): OrderConnection
+    orders(args: PagingInput!): OrderConnection!
     """all product categories"""
     categories: [CategoryOption]!
     """max product allowed per service"""
@@ -315,7 +322,7 @@ const typeDefs = gql`
     "product modification date"
     updatedAt: String!
   }
-
+  # order item object type
   type OrderItem {
     # the ordered product name
     name: String!
@@ -326,32 +333,32 @@ const typeDefs = gql`
     # the cost of the item(s) - price * quantity
     cost: Float!
   }
-
+  # order object type
   type ServiceOrder {
     _id: ID!
-    # the user who placed the order
+    "the user who placed the order"
     client: User!
-    # the service provider in charge of delivery
+    "the service provider in charge of delivery"
     provider: UserService!
-    # delivery status
+    "delivery status"
     status: StatusOptions!
-    # the products in the order
+    "the products in the order"
     items: [OrderItem!]!
-    # the client phone to call 
+    "the client phone to call "
     phone: String!
-    # the client home state
+    "the client home state"
     state: String!
-    # the client address
+    "the client address"
     address: String!
-    # the client nearest bus stop
+    "the client nearest bus stop"
     nearestBusStop: String!
-    # the delivery date specified by the service provider
+    "the delivery date specified by the service provider"
     deliveryDate: String!
-    # the items total cost
+    "the items total cost"
     totalCost: Float!
-    # product creation date
+    "product creation date"
     createdAt: String!
-    # product modification date
+    "product modification date"
     updatedAt: String!
   }
 `;

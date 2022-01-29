@@ -12,8 +12,8 @@ const SortedListWithTabs = ({
   field,
   className = "bg-danger my-0",
   ListRenderer,
-  rendererProps,
-  tabsVariantStyle
+  rendererProps = {},
+  tabsVariantStyle,
 }: SortedListWithTabsPropType) => {
   return (
     <Tabs id="category-tabs" defaultActiveKey="ALL" variant={tabsVariantStyle}>
@@ -26,20 +26,35 @@ const SortedListWithTabs = ({
         )
         // return and render the tabs for the category list
         .map((category: string) => (
-          <Tab title={<>{category}<Badge pill className="bg-info">
-          {getCompactNumberFormat(category === "ALL"
-                    ? list.length
-                    : list.filter((item) => item[field] === category).length)}
-        </Badge></>} eventKey={category} key={category}>
+          <Tab
+            title={
+              <>
+                {category}
+                <Badge pill className="bg-info">
+                  {getCompactNumberFormat(
+                    category === "ALL"
+                      ? list.length
+                      : list.filter((item) => item[field] === category).length
+                  )}
+                </Badge>
+              </>
+            }
+            eventKey={category}
+            key={category}
+          >
             <Row className={className}>
-              {list.length ? <ListRenderer
-                {...rendererProps}
-                items={
-                  category === "ALL"
-                    ? list
-                    : list.filter((item) => item[field] === category)
-                }
-              /> : <EmptyList message="No item yet" />}
+              {list.length ? (
+                <ListRenderer
+                  {...rendererProps}
+                  items={
+                    category === "ALL"
+                      ? list
+                      : list.filter((item) => item[field] === category)
+                  }
+                />
+              ) : (
+                <EmptyList message="No item yet" />
+              )}
             </Row>
           </Tab>
         ))}
