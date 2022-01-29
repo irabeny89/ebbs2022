@@ -77,25 +77,36 @@ const styling: { [key: string]: CSSProperties } = {
           <Modal.Body>{description}</Modal.Body>
         </Modal>
         {/* comments modal */}
-        <Modal show={showComment} onHide={() => setShowComment(false)}>
+        <Modal
+          show={showComment}
+          onHide={() => setShowComment(false)}
+          size="xl"
+        >
           <Modal.Header closeButton>
             <Modal.Title>
               <BiMessageAltDots /> Comments
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {comments?.edges
-              .map((edge) => edge.node)
-              .map((comment) => (
-                <Card key={comment._id} className="mb-3">
-                  <Card.Header>
-                    <Card.Title>{comment.poster!.username}</Card.Title>
-                    <Card.Subtitle>{comment.createdAt}</Card.Subtitle>
-                  </Card.Header>
-                  <Card.Body>{comment.post}</Card.Body>
-                </Card>
-              ))}
-            <hr />
+            <Container fluid>
+              <Row>
+                {comments?.edges
+                  .map((edge) => edge.node)
+                  .map((comment) => (
+                    <Col>
+                      <Card key={comment._id} className="mb-3">
+                        <Card.Header>
+                          <Card.Title>{comment.poster!.username}</Card.Title>
+                          <Card.Subtitle>{comment.createdAt}</Card.Subtitle>
+                        </Card.Header>
+                        <Card.Body>{comment.post}</Card.Body>
+                      </Card>
+                    </Col>
+                  ))}
+              </Row>
+            </Container>
+          </Modal.Body>
+          <Modal.Footer>
             {!!authPayload && (
               <>
                 <FloatingLabel label="Enter comment">
@@ -112,7 +123,7 @@ const styling: { [key: string]: CSSProperties } = {
                 </Button>
               </>
             )}
-          </Modal.Body>
+          </Modal.Footer>
         </Modal>
         {/* service label */}
         <Row
