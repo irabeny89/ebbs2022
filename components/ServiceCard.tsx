@@ -15,7 +15,11 @@ const ServiceCard = ({
     <Row>
       <ProductList
         carousel
-        items={productConnection?.edges.map((edge) => edge.node) as ProductCardPropType[]}
+        items={
+          productConnection?.edges.map(
+            (edge) => edge.node
+          ) as ProductCardPropType[]
+        }
         className="d-flex flex-wrap"
       />
     </Row>

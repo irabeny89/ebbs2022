@@ -78,7 +78,7 @@ const Layout = ({ children }: LayoutPropsType) => {
         message: "Order sent successfully.",
       },
     ]);
-  // show taost when order errored
+  // show toast when order errored
   error &&
     toastsVar([
       {
@@ -442,31 +442,6 @@ const Layout = ({ children }: LayoutPropsType) => {
       </Row>
       {/* status bar */}
       <Row className="mb-5 mt-3">
-        {authPayload ? (
-          <Col xs="auto">
-            <Link
-              href={
-                webPages.find(
-                  (page) => page.pageTitle.toLocaleLowerCase() === "dashboard"
-                )!.route ?? ""
-              }
-            >
-              {authPayload.username}
-            </Link>
-          </Col>
-        ) : (
-          <Col xs="auto">
-            <Link
-              href={
-                webPages.find(
-                  (page) => page.pageTitle.toLocaleLowerCase() === "member"
-                )!.route ?? ""
-              }
-            >
-              login here
-            </Link>
-          </Col>
-        )}
         <Col md={{ offset: 2 }} lg={{ offset: 3 }}>
           <Form.FloatingLabel label="Find..">
             <Form.Control placeholder="Find..." />

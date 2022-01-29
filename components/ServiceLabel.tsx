@@ -16,7 +16,11 @@ import { useMutation } from "@apollo/client";
 import AjaxFeedback from "./AjaxFeedback";
 import Link from "next/link";
 import useAuthPayload from "hooks/useAuthPayload";
-import { SERVICE_LIKE_TOGGLE } from "@/graphql/documentNodes";
+import {
+  FEW_PRODUCTS_AND_SERVICES,
+  FEW_SERVICES,
+  SERVICE_LIKE_TOGGLE,
+} from "@/graphql/documentNodes";
 import { toastsVar } from "@/graphql/reactiveVariables";
 
 const styling: { [key: string]: CSSProperties } = {
@@ -34,6 +38,7 @@ const styling: { [key: string]: CSSProperties } = {
     commentCount,
     description,
     happyClients,
+    likeCount,
     className,
     style,
   }: ServiceLabelPropType) => {
@@ -48,19 +53,23 @@ const styling: { [key: string]: CSSProperties } = {
         Record<"serviceLiking", ServiceVertexType>,
         Record<"serviceId", string>
       >(SERVICE_LIKE_TOGGLE, {
-        fetchPolicy: "network-only"
+        variables: { serviceId: _id! },
+        refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
       });
 
-      useEffect(() => {
-        error && toastsVar([{
-          header: error.name,
-          message: "Something failed!"
-        }])
-      }, [error])
+    useEffect(() => {
+      error &&
+        toastsVar([
+          {
+            header: error.name,
+            message: "Something failed!",
+          },
+        ]);
+    }, [error]);
 
     return _id ? (
       <Container {...{ style, className }}>
-        {/* info modal */}
+        {/* service info modal */}
         <Modal centered show={show} onHide={() => setShow(false)}>
           <Modal.Header closeButton>
             <Modal.Title>{title}</Modal.Title>
@@ -94,7 +103,7 @@ const styling: { [key: string]: CSSProperties } = {
                     placeholder="Enter text"
                     as="textarea"
                     style={{
-                      height: "4rem"
+                      height: "4rem",
                     }}
                   ></FormControl>
                 </FloatingLabel>
@@ -130,9 +139,7 @@ const styling: { [key: string]: CSSProperties } = {
               style={{ cursor: "pointer" }}
             >
               <Row className="h5">{title}</Row>
-              <Row style={styling.smallTextStyle}>
-                {state}
-              </Row>
+              <Row style={styling.smallTextStyle}>{state}</Row>
             </Col>
           </Link>
         </Row>
@@ -142,10 +149,18 @@ const styling: { [key: string]: CSSProperties } = {
               disabled={!authPayload}
               size="sm"
               className="py-0 w-100"
-              variant={happyClients?.includes(authPayload?.sub!) ? "primary" : "outline-primary"}
-              onClick={() => likeOrUnlike({variables: { serviceId: _id }})}
+              variant={
+                happyClients?.includes(authPayload?.sub!)
+                  ? "primary"
+                  : "outline-primary"
+              }
+              onClick={() => likeOrUnlike()}
             >
-              {loading && <Spinner animation="grow" size="sm" />}<BiLike size={18} /> {getCompactNumberFormat(data?.serviceLiking?.likeCount ?? happyClients!.length)}
+              {loading && <Spinner animation="grow" size="sm" />}
+              <BiLike size={18} />{" "}
+              {getCompactNumberFormat(
+                data?.serviceLiking?.likeCount ?? likeCount!
+              )}
             </Button>
           </Col>
           <Col>

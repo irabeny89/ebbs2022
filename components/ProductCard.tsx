@@ -23,6 +23,7 @@ import {
   MY_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
 } from "@/graphql/documentNodes";
+import useAuthPayload from "hooks/useAuthPayload";
 
 const { CART_ITEMS_KEY } = config.appData.constants,
   // custom style
@@ -50,6 +51,8 @@ const { CART_ITEMS_KEY } = config.appData.constants,
     className,
     style,
   }: ProductCardPropType) => {
+    // get auth payload
+    const authPayload = useAuthPayload();
     // product info modal state
     const [show, setShow] = useState(false),
       // product delete modal dialog state
@@ -61,23 +64,21 @@ const { CART_ITEMS_KEY } = config.appData.constants,
     >(DELETE_MY_PRODUCT);
 
     // toast on product delete
-    useEffect(() => {
-      data &&
-        (setShowDialog(false),
-        toastsVar([
-          {
-            message: `${data.deleteMyProduct.name} is deleted.`,
-          },
-        ]));
-      error &&
-        (setShowDialog(false),
-        toastsVar([
-          {
-            header: error.name,
-            message: "Delete failed.",
-          },
-        ]));
-    }, [data, error]);
+    data &&
+      (setShowDialog(false),
+      toastsVar([
+        {
+          message: `${data.deleteMyProduct.name} is deleted.`,
+        },
+      ]));
+    error &&
+      (setShowDialog(false),
+      toastsVar([
+        {
+          header: error.name,
+          message: "Delete failed.",
+        },
+      ]));
 
     return (
       <Container fluid {...{ className, style }}>
@@ -136,14 +137,16 @@ const { CART_ITEMS_KEY } = config.appData.constants,
               >
                 i
               </Button>{" "}
-              <Button
-                size="sm"
-                className="rounded py-0"
-                variant="outline-danger"
-                onClick={() => setShowDialog(true)}
-              >
-                <MdDeleteForever />
-              </Button>
+              {authPayload?.serviceId === provider._id && (
+                <Button
+                  size="sm"
+                  className="rounded py-0"
+                  variant="outline-danger"
+                  onClick={() => setShowDialog(true)}
+                >
+                  <MdDeleteForever />
+                </Button>
+              )}
             </Card.Title>
             <Card.Subtitle>{provider?.title}</Card.Subtitle>
             <Row className="my-2">

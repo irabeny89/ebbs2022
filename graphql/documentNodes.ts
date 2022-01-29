@@ -21,6 +21,7 @@ export const PRODUCT_FRAGMENT = gql`
       description
       state
       happyClients
+      likeCount
       categories
       commentCount
     }
@@ -111,6 +112,7 @@ export const FEW_SERVICES = gql`
               node {
                 ...ProductFields
                 provider {
+                  _id
                   title
                 }
               }
@@ -166,6 +168,7 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
               node {
                 ...ProductFields
                 provider {
+                  _id
                   title
                 }
               }
@@ -196,6 +199,10 @@ export const PRODUCTS = gql`
       edges {
         node {
           ...ProductFields
+          provider {
+            _id
+            title
+          }
         }
       }
       pageInfo {
