@@ -93,8 +93,8 @@ const styling: { [key: string]: CSSProperties } = {
                 {comments?.edges
                   .map((edge) => edge.node)
                   .map((comment) => (
-                    <Col>
-                      <Card key={comment._id} className="mb-3">
+                    <Col key={comment._id}>
+                      <Card className="mb-3">
                         <Card.Header>
                           <Card.Title>{comment.poster!.username}</Card.Title>
                           <Card.Subtitle>{comment.createdAt}</Card.Subtitle>
