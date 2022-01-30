@@ -3,12 +3,14 @@ import { onError } from "@apollo/client/link/error";
 import { RetryLink } from "@apollo/client/link/retry";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import config from "../config";
+import axios from "axios";
 
 const {
-    environmentVariable: { graphqlUri, host },
-    appData: { abbr },
-  } = config,
-  httpLink = new HttpLink({
+  environmentVariable: { graphqlUri, host },
+  appData: { abbr },
+} = config;
+
+const httpLink = new HttpLink({
     uri: host + graphqlUri,
     headers: {
       authorization: accessTokenVar() ? `Bearer ${accessTokenVar()}` : "",
@@ -17,25 +19,34 @@ const {
   errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
     if (graphQLErrors) {
       graphQLErrors.forEach(
-        ({ message, locations, path, extensions: { code } }) => {
+        async ({ message, locations, path, extensions: { code } }) => {
           console.log(
-            `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(
-              locations
-            )}, Path: ${path}`
+            `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
           );
           switch (code) {
             case "UNAUTHENTICATED":
-              const oldHeaders = operation.getContext().headers;
-              operation.setContext({
-                headers: {
-                  ...oldHeaders,
-                  authorization: accessTokenVar()
-                    ? `Bearer ${accessTokenVar()}`
-                    : "",
-                },
-              });
+              try {
+                const {
+                  data: { refreshToken },
+                } = await axios.post(host + graphqlUri, {
+                  query: "query{refreshToken}",
+                });
+                
+                accessTokenVar(refreshToken);
 
-              return forward(operation);
+                operation.setContext({
+                  headers: {
+                    ...operation.getContext().headers,
+                    authorization: `Bearer ${refreshToken}`,
+                  },
+                });
+
+                return forward(operation);
+              } catch (err) {
+                console.error(err);
+              } finally {
+                return forward(operation);
+              }
           }
         }
       );
