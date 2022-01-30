@@ -10,6 +10,7 @@ type UserPayloadType = {
   serviceId?: string;
   username: string;
   audience: "ADMIN" | "USER";
+  id: string;
 };
 
 type EmailOptionsType = {

@@ -188,7 +188,6 @@ const config = {
   environmentVariable: {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET!,
-    tokenIssuer: "https://ebbs.vercel.app",
     nodeEnvironment: process.env.NODE_ENV,
     dbUrl:
       process.env.NODE_ENV == "production"

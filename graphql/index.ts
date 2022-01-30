@@ -40,27 +40,27 @@ const apolloServer = new ApolloServer({
       LikeModel,
     };
   },
-  mocks: {
-    Int: () => randomInt(1000001),
-    Float: () => randomInt(1000000001) / 100,
-    User: () => ({
-      username: () => getMockField("username"),
-      email: () => getMockField("email"),
-    }),
-    ServiceProduct: () => ({
-      name: () => getMockField("productName"),
-    }),
-    UserService: () => ({
-      maxProduct: () => config.appData.maxProductAllowed,
-      categories: () => [...new Array(3)],
-      state: () => "Lagos",
-      description: () => "The best product on the best business platform.",
-      title: () => getMockField("serviceTitle")
-    }),
-    ServiceComment: () => ({
-      post: () => getMockField("commentPost")
-    })
-  },
+  // mocks: {
+  //   Int: () => randomInt(1000001),
+  //   Float: () => randomInt(1000000001) / 100,
+  //   User: () => ({
+  //     username: () => getMockField("username"),
+  //     email: () => getMockField("email"),
+  //   }),
+  //   ServiceProduct: () => ({
+  //     name: () => getMockField("productName"),
+  //   }),
+  //   UserService: () => ({
+  //     maxProduct: () => config.appData.maxProductAllowed,
+  //     categories: () => [...new Array(3)],
+  //     state: () => "Lagos",
+  //     description: () => "The best product on the best business platform.",
+  //     title: () => getMockField("serviceTitle")
+  //   }),
+  //   ServiceComment: () => ({
+  //     post: () => getMockField("commentPost")
+  //   })
+  // },
 });
 
 export default apolloServer;

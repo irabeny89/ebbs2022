@@ -12,12 +12,12 @@ const {
   environmentVariable: {
     jwtAccessSecret,
     jwtRefreshSecret,
-    tokenIssuer,
     nodeEnvironment,
     ebbsEmailHost,
     ebbsEmailPort,
     ebbsPassword,
     ebbsUsername,
+    host,
   },
 } = config;
 
@@ -121,43 +121,40 @@ const generateToken = (
 
 // generate access & refresh token
 const createTokenPair = ({
-  id,
   audience,
   username,
+  serviceId,
+  id,
 }: UserPayloadType): TokenPairType => ({
-  accessToken: generateToken({ username }, jwtAccessSecret, {
-    subject: `${id}`,
-    expiresIn: "10m",
+  accessToken: generateToken({ username, serviceId }, jwtAccessSecret, {
+    subject: id,
+    expiresIn: "20m",
     audience,
-    issuer: tokenIssuer || "http://localhost:3000/api/graphql",
+    issuer: host,
     algorithm: "HS256",
-  })!,
-  refreshToken: generateToken({ username }, jwtRefreshSecret, {
-    subject: `${id}`,
+  }),
+  refreshToken: generateToken({ username, serviceId }, jwtRefreshSecret, {
+    subject: id,
     expiresIn: "30d",
     audience,
-    issuer: tokenIssuer || "http://localhost:3000/api/graphql",
+    issuer: host,
     algorithm: "HS256",
-  })!,
+  }),
 });
 
 // generate access & refresh token while safely
 // storing refresh token in cookie for later use
 export const authUser = (
-  { id, audience, username }: UserPayloadType,
+  payload: UserPayloadType,
   res: NextApiResponse
 ) => {
-  const tokenPair = createTokenPair({
-    id,
-    audience,
-    username,
-  });
+  const tokenPair = createTokenPair(payload);
   // 30 days refresh token in the cookie
   setCookie(res, "token", tokenPair.refreshToken, {
     maxAge: 2592000000,
     httpOnly: true,
     sameSite: "lax",
-    secure: nodeEnvironment == "production" ? true : false,
+    secure: nodeEnvironment === "production" ?? false,
     path: "/api/graphql",
   });
 

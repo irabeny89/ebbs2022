@@ -18,7 +18,7 @@ const resolvers = {
     hello,
     // getUsers,
     // getMyProfile,
-    // refreshToken,
+    refreshToken,
   },
   // Mutation: {
   //   register,
