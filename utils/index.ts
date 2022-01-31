@@ -3,10 +3,15 @@ import { AuthenticationError } from "apollo-server-micro";
 import { promisify } from "util";
 import { serialize, CookieSerializeOptions } from "cookie";
 import { NextApiResponse } from "next";
-import { EmailOptionsType, TokenPairType, UserPayloadType } from "types";
+import { TokenPairType, UserPayloadType } from "types";
 import { JwtPayload, Secret, sign, SignOptions, verify } from "jsonwebtoken";
 import config from "../config";
-import { createTestAccount, createTransport } from "nodemailer";
+import {
+  createTestAccount,
+  createTransport,
+  getTestMessageUrl,
+} from "nodemailer";
+import Mail from "nodemailer/lib/mailer";
 
 const {
   environmentVariable: {
@@ -134,10 +139,7 @@ const createTokenPair = ({
 
 // generate access & refresh token while safely
 // storing refresh token in cookie for later use
-export const authUser = (
-  payload: UserPayloadType,
-  res: NextApiResponse
-) => {
+export const authUser = (payload: UserPayloadType, res: NextApiResponse) => {
   const tokenPair = createTokenPair(payload);
   // 30 days refresh token in the cookie
   setCookie(res, "token", tokenPair.refreshToken, {
@@ -151,18 +153,20 @@ export const authUser = (
   return tokenPair;
 };
 
-export const sendEmails = async (emailOptions: EmailOptionsType) => {
+export const sendEmail = async (emailOptions: Mail.Options) => {
   const { smtp, user, pass } = await createTestAccount(),
     // email transporter config
     transportOptions = {
       host: process.env.NODE_ENV === "production" ? ebbsEmailHost : smtp.host,
-      port: process.env.NODE_ENV === "production" ? +ebbsEmailPort : smtp.port,
-      secure: process.env.NODE_ENV === "production" ? true : smtp.secure,
+      port: process.env.NODE_ENV === "production" ? ebbsEmailPort : smtp.port,
+      secure: process.env.NODE_ENV === "production",
       auth: {
         user: process.env.NODE_ENV === "production" ? ebbsUsername : user,
         pass: process.env.NODE_ENV === "production" ? ebbsPassword : pass,
       },
-    };
-  // returs the result after sending mail
-  return await createTransport(transportOptions).sendMail(emailOptions);
+    },
+    // send and get response info
+    info = await createTransport(transportOptions).sendMail(emailOptions);
+  // return the result & message url of test account after sending mail
+  return { ...info, testAccountMessageUrl: getTestMessageUrl(info) };
 };

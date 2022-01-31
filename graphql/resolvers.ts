@@ -182,7 +182,7 @@ const resolvers = {
     requestPassCode: async (
       _: any,
       { email }: { email: string },
-      { UserModel }: GraphContextType
+      { UserModel, sendEmail }: GraphContextType
     ) => {
       try {
         // handle error if user is not found
@@ -193,37 +193,22 @@ const resolvers = {
         );
         // generate pass code
         const passCode = randomBytes(16).toString("hex");
-        // ethereal test account
-        const testAccount =
-            process.env.NODE_ENV !== "production"
-              ? await createTestAccount()
-              : { user: "", pass: "" },
-          // send pass code to user email
-          info = await createTransport({
-            host: ebbsEmailHost,
-            secure: process.env.NODE_ENV === "production",
-            auth: {
-              user:
-                process.env.NODE_ENV === "production"
-                  ? ebbsUsername
-                  : testAccount.user,
-              pass:
-                process.env.NODE_ENV === "production"
-                  ? ebbsPassword
-                  : testAccount.pass,
-            },
-          }).sendMail({
-            from: `${ebbsTitle}`,
-            to: email,
-            subject: `${abbr} Pass Code`,
-            html: `<h1>${ebbsTitle}</h1>
-          <h2>Pass Code: ${passCode}</h2>
-          <p>It expires in ${passCodeDuration} minutes</p>`,
-          });
-        // log infoonse from email
-        process.env.NODE_ENV === "development" &&
-          (console.log(info), console.log(getTestMessageUrl(info)));
-        // update user with passcode & expires in 15 minutes
+        // send email and log link for test account
+        console.log(
+          `test email link: ${
+            (
+              await sendEmail({
+                from: `${ebbsTitle}`,
+                to: email,
+                subject: `${abbr} Pass Code`,
+                html: `<h1>${ebbsTitle}</h1>
+        <h2>Pass Code: ${passCode}</h2>
+        <p>It expires in ${passCodeDuration} minutes</p>`,
+              })
+            ).testAccountMessageUrl
+          }`
+        );
+        // update user document with passcode; it expires in 15 minutes
         await UserModel.findOneAndUpdate(
           { email },
           {

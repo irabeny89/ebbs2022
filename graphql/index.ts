@@ -14,6 +14,7 @@ import OrderModel from "@/models/orderModel";
 import dbConnection from "@/models/index";
 import type { GraphContextType } from "types";
 import config from "../config";
+import { sendEmail } from "../utils";
 
 const { ebbsEmailHost, ebbsUsername, ebbsPassword } =
   config.environmentVariable;
@@ -40,6 +41,7 @@ const apolloServer = new ApolloServer({
       ProductModel,
       ServiceModel,
       LikeModel,
+      sendEmail
     };
   },
 });

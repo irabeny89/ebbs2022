@@ -5,19 +5,14 @@ import { JwtPayload } from "jsonwebtoken";
 import { MicroRequest } from "apollo-server-micro/dist/types";
 import path from "path";
 import { MutableRefObject, ReactNode } from "react";
+import Mail from "nodemailer/lib/mailer";
+import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 type UserPayloadType = {
   serviceId?: string;
   username: string;
   audience: "ADMIN" | "USER";
   id: string;
-};
-
-type EmailOptionsType = {
-  subject: string;
-  from: string;
-  to: string;
-  body: string;
 };
 
 type StatusType = "DELIVERED" | "PENDING" | "SHIPPED" | "CANCELED";
@@ -201,7 +196,7 @@ type ServiceVariableType = Record<
   PagingInputType
 >;
 
-type ChangePasswordVariableType = Record<"passCode" | "newPassword", string>
+type ChangePasswordVariableType = Record<"passCode" | "newPassword", string>;
 
 type GraphContextType = {
   UserModel: Model<UserType>;
@@ -212,6 +207,12 @@ type GraphContextType = {
   LikeModel: Model<LikeType>;
   req: NextApiRequest;
   res: NextApiResponse;
+  sendEmail: (
+    emailOptions: Mail.Options
+  ) => Promise<
+    SMTPTransport.SentMessageInfo &
+      Record<"testAccountMessageUrl", string | false>
+  >;
 };
 
 type ServiceCardPropType = Required<ServiceVertexType> & StyleType;

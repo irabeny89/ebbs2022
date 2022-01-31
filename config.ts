@@ -192,10 +192,8 @@ const config = {
     ebbsEmail: process.env.EBBS_EMAIL!,
     ebbsUsername: process.env.EBBS_USERNAME!,
     ebbsPassword: process.env.EBBS_PASSWORD!,
-    ebbsEmailHost: isProductionEnv
-      ? process.env.EBBS_EMAIL_HOST!
-      : "smtp.ethereal.email",
-    ebbsEmailPort: isProductionEnv ? +process.env.EBBS_EMAIL_PORT! : 587,
+    ebbsEmailHost: process.env.EBBS_EMAIL_HOST!,
+    ebbsEmailPort: +process.env.EBBS_EMAIL_PORT!,
   },
 };
 
