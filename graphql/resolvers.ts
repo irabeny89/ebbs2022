@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 import config from "../config";
 import { verify, JwtPayload } from "jsonwebtoken";
 import type {
+  ChangePasswordVariableType,
   GraphContextType,
   UserLoginVariableType,
   UserPayloadType,
@@ -180,7 +181,7 @@ const resolvers = {
         handleError(
           !(await UserModel.findOne({ email }).select("_id").lean().exec()),
           UserInputError,
-          generalErrorMessage
+          "User not found."
         );
         // generate pass code
         const passCode = randomBytes(16).toString("hex");
@@ -190,7 +191,7 @@ const resolvers = {
               ? await createTestAccount()
               : { user: "", pass: "" },
           // send pass code to user email
-          resp = await createTransport({
+          info = await createTransport({
             host: ebbsEmailHost,
             secure: process.env.NODE_ENV === "production",
             auth: {
@@ -211,9 +212,9 @@ const resolvers = {
           <h2>Pass Code: ${passCode}</h2>
           <p>It expires in ${passCodeDuration} minutes</p>`,
           });
-        // log response from email
+        // log infoonse from email
         process.env.NODE_ENV === "development" &&
-          (console.log(resp), console.log(getTestMessageUrl(resp)));
+          (console.log(info), console.log(getTestMessageUrl(info)));
         // update user with passcode & expires in 15 minutes
         await UserModel.findOneAndUpdate(
           { email },
@@ -228,7 +229,34 @@ const resolvers = {
           .select("_id")
           .lean()
           .exec();
-        return "Passcode sent to email successfully";
+        return "Passcode sent to your email successfully";
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, UserInputError, generalErrorMessage);
+      }
+    },
+    changePassword: async (
+      _: any,
+      { newPassword, passCode }: ChangePasswordVariableType,
+      { UserModel }: GraphContextType
+    ) => {
+      try {
+        // find by passcode
+        const user = await UserModel.findOne({ passCode })
+          .select("codeEnd")
+          .lean()
+          .exec();
+        // throw error if user is not found or cod eexpires
+        handleError(
+          !user || user?.codeEnd < new Date(),
+          UserInputError,
+          "Wrong or expired passcode. Try again."
+        );
+        // if user exist
+        await UserModel.findByIdAndUpdate(user?._id, {
+          $set: { ...(await getHashedPassword(newPassword)) },
+        });
+        return "Password changed successfully.";
       } catch (error) {
         // NOTE: log error to debug
         handleError(error, UserInputError, generalErrorMessage);

@@ -19,7 +19,13 @@ import Spinner from "react-bootstrap/Spinner";
 import config from "../config";
 import { useEffect, useState } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import { ServiceType, UserLoginVariableType, UserRegisterVariableType, UserType } from "types";
+import {
+  ChangePasswordVariableType,
+  ServiceType,
+  UserLoginVariableType,
+  UserRegisterVariableType,
+  UserType,
+} from "types";
 import { accessTokenVar, toastsVar } from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import {
@@ -63,10 +69,9 @@ const Member = () => {
     [
       registerUser,
       { data: registerData, error: registerError, loading: registerLoading },
-    ] = useMutation<
-      Record<"userRegister", string>,
-      UserRegisterVariableType
-    >(USER_REGISTER),
+    ] = useMutation<Record<"userRegister", string>, UserRegisterVariableType>(
+      USER_REGISTER
+    ),
     // passcode request mutation
     [
       requestPassCode,
@@ -80,7 +85,7 @@ const Member = () => {
       { data: passwordData, error: passwordError, loading: passwordLoading },
     ] = useMutation<
       Record<"changePassword", string>,
-      Record<"passCode" | "newPassword", string>
+      ChangePasswordVariableType
     >(USER_PASSWORD_CHANGE);
 
   // toast error on login fail

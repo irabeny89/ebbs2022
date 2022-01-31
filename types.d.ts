@@ -201,6 +201,8 @@ type ServiceVariableType = Record<
   PagingInputType
 >;
 
+type ChangePasswordVariableType = Record<"passCode" | "newPassword", string>
+
 type GraphContextType = {
   UserModel: Model<UserType>;
   ServiceModel: Model<ServiceType>;
