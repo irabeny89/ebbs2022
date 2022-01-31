@@ -21,6 +21,8 @@ const typeDefs = gql`
     myRequests(args: PagingInput!): OrderConnection
     "user login"
     login(email: String!, password: String!): String!
+    "log user out"
+    logout: String!
     "user profile data"
     me: User
   }

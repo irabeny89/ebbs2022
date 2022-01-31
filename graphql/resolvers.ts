@@ -13,11 +13,13 @@ import {
   comparePassword,
   getHashedPassword,
   handleError,
+  setCookie,
 } from "../utils";
 import {
   AuthenticationError,
   UserInputError,
   ValidationError,
+  ApolloError,
 } from "apollo-server-micro";
 import {
   createTransport,
@@ -36,12 +38,18 @@ const {
 } = config;
 
 const resolvers = {
-  ProductConnection: {
-    edges: () => {},
-    pageInfo: () => {},
-  },
   Query: {
     hello: () => "world!",
+    logout: (_: any, __: any, { res }: GraphContextType) => (
+      setCookie(res, "token", "", {
+        maxAge: 0,
+        httpOnly: true,
+        sameSite: true,
+        secure: process.env.NODE_ENV == "production" ? true : false,
+        path: "/api/graphql",
+      }),
+      "Logged out successfully."
+    ),
     login: async (
       _: any,
       { email, password }: UserLoginVariableType,

@@ -25,7 +25,7 @@ export const AUTHORIZATION_ERROR_MESSAGE = "Authorization failed";
 
 export const LOGIN_ERROR_MESSAGE = "Enter correct email and password";
 
-const setCookie = (
+export const setCookie = (
   res: NextApiResponse,
   name: string,
   value: unknown,
