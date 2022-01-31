@@ -1,3 +1,5 @@
+const isProductionEnv = process.env.NODE_ENV === "production";
+
 const config = {
   appData: {
     author: "Ernest Irabor",
@@ -37,6 +39,7 @@ const config = {
         costPerDay: 500,
       },
     ],
+    passCodeDuration: 15,
     maxProductAllowed: 20,
     passwordRecoveryOption: {
       subject: "EBBS - Password Recovery",
@@ -65,19 +68,17 @@ const config = {
         requests: [
           {
             info: "Query for product data.",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "products",
           },
           {
             info: "Query for service data.",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "services",
           },
@@ -95,28 +96,25 @@ const config = {
         requests: [
           {
             info: "Register mutation",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "register",
           },
           {
             info: "Login mutation",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "login",
           },
           {
             info: "Retrieve password mutation",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "passcode, recoverPassword",
           },
@@ -134,10 +132,9 @@ const config = {
         requests: [
           {
             info: "Query services",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "services",
           },
@@ -153,10 +150,9 @@ const config = {
         requests: [
           {
             info: "Query products",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "products",
           },
@@ -174,10 +170,9 @@ const config = {
         requests: [
           {
             info: "Query user data.",
-            url:
-              process.env.NODE_ENV == "production"
-                ? "https://ebbs.vercel.app/api/graphql"
-                : "http://localhost:3000/api/graphql",
+            url: isProductionEnv
+              ? "https://ebbs.vercel.app/api/graphql"
+              : "http://localhost:3000/api/graphql",
             httpMethod: "POST",
             call: "user",
           },
@@ -189,20 +184,18 @@ const config = {
     jwtAccessSecret: process.env.JWT_ACCESS_SECRET!,
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET!,
     nodeEnvironment: process.env.NODE_ENV,
-    dbUrl:
-      process.env.NODE_ENV == "production"
-        ? process.env.DB_URL_ATLAS!
-        : process.env.DB_URL_COMPASS!,
-    host:
-      process.env.NODE_ENV == "production"
-        ? "https://ebbs.vercel.app"
-        : "http://localhost:3000",
+    dbUrl: isProductionEnv
+      ? process.env.DB_URL_ATLAS!
+      : process.env.DB_URL_COMPASS!,
+    host: isProductionEnv ? "https://ebbs.vercel.app" : "http://localhost:3000",
     graphqlUri: "/api/graphql",
     ebbsEmail: process.env.EBBS_EMAIL!,
     ebbsUsername: process.env.EBBS_USERNAME!,
     ebbsPassword: process.env.EBBS_PASSWORD!,
-    ebbsEmailHost: process.env.EBBS_EMAIL_HOST!,
-    ebbsEmailPort: process.env.EBBS_EMAIL_PORT!,
+    ebbsEmailHost: isProductionEnv
+      ? process.env.EBBS_EMAIL_HOST!
+      : "smtp.ethereal.email",
+    ebbsEmailPort: isProductionEnv ? +process.env.EBBS_EMAIL_PORT! : 587,
   },
 };
 

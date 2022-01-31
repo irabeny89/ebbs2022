@@ -35,7 +35,7 @@ type ProductCategoryType =
   | "FOOD_DRUGS";
 
 type TimestampAndId = {
-  _id?: string;
+  _id?: string | mongoose.Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 };
@@ -57,7 +57,7 @@ type UserType = {
 } & TimestampAndId;
 
 type ServiceType = {
-  owner: mongoose.Types.ObjectId;
+  owner: mongoose.Types.ObjectId | string;
   title: string;
   logo: string;
   description: string;
@@ -180,14 +180,25 @@ type PagingInputType = Partial<{
   after: string;
   last: number;
   before: string;
-  search: string
+  search: string;
 }>;
 
-type ServiceReturnType = Record<"services", CursorConnectionType<ServiceVertexType>>
+type UserRegisterVariableType = Record<
+  "userRegisterInput",
+  Pick<UserType, "username" | "email" | "password"> &
+    Partial<Pick<ServiceType, "title" | "logo" | "description" | "state">>
+>;
+
+type UserLoginVariableType = Record<"email" | "password", string>;
+
+type ServiceReturnType = Record<
+  "services",
+  CursorConnectionType<ServiceVertexType>
+>;
 
 type ServiceVariableType = Record<
-"commentArgs" | "productArgs" | "serviceArgs",
-PagingInputType
+  "commentArgs" | "productArgs" | "serviceArgs",
+  PagingInputType
 >;
 
 type GraphContextType = {
@@ -197,9 +208,6 @@ type GraphContextType = {
   OrderModel: Model<OrderType>;
   ProductModel: Model<ProductType>;
   LikeModel: Model<LikeType>;
-} & ContextArgType;
-
-type ContextArgType = {
   req: NextApiRequest;
   res: NextApiResponse;
 };
@@ -263,7 +271,7 @@ type MoreButtonPropType = {
 type DashboardPropType = Required<UserVertexType> & Record<"info", string>;
 
 type SortedListWithTabsPropType = {
-  tabsVariantStyle?: "pills" | "tabs"
+  tabsVariantStyle?: "pills" | "tabs";
   field: string;
   rendererProps?: { [k: string]: any };
   list: { [k: string]: any }[];

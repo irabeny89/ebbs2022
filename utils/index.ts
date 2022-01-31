@@ -21,22 +21,11 @@ const {
   },
 } = config;
 
-export const CREDITS_LOANS_WITHDRAWALS_POPULATION = {
-  path: "credits loans withdrawals",
-};
-
-export const DEBITS_POPULATION = {
-  path: "debits",
-  populate: {
-    path: "to",
-  },
-};
-
 export const AUTHORIZATION_ERROR_MESSAGE = "Authorization failed";
 
 export const LOGIN_ERROR_MESSAGE = "Enter correct email and password";
 
-export const setCookie = (
+const setCookie = (
   res: NextApiResponse,
   name: string,
   value: unknown,
@@ -51,7 +40,7 @@ export const setCookie = (
   res.setHeader("Set-Cookie", serialize(name, String(stringValue), options));
 };
 
-export const getHashPayload = async (password: string) => {
+export const getHashedPassword = async (password: string) => {
   const salt = randomBytes(32).toString("hex");
 
   return {
@@ -78,12 +67,12 @@ const hashPassword = async (password: string, salt: string) =>
   (await asyncScrypt(password, salt, 64)).toString("hex");
 
 export const comparePassword = async (
-  hashedpassword: string,
+  hashedPassword: string,
   password: string,
   salt: string
 ) => {
   const isValid = timingSafeEqual(
-    Buffer.from(hashedpassword),
+    Buffer.from(hashedPassword),
     Buffer.from(await hashPassword(password, salt))
   );
   handleError(
@@ -94,7 +83,7 @@ export const comparePassword = async (
 
   return isValid;
 };
-
+// check admin user
 export const isAdminUser = (accessToken: string) => {
   try {
     const payload = verify(accessToken, jwtAccessSecret) as JwtPayload &
@@ -115,6 +104,7 @@ const generateToken = (
   try {
     return sign(payload, secretOrPrivateKey, options);
   } catch (error) {
+    // log error to debug
     throw new AuthenticationError(AUTHORIZATION_ERROR_MESSAGE);
   }
 };

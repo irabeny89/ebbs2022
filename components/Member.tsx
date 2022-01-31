@@ -19,7 +19,7 @@ import Spinner from "react-bootstrap/Spinner";
 import config from "../config";
 import { useEffect, useState } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import { ServiceType, UserType } from "types";
+import { ServiceType, UserLoginVariableType, UserRegisterVariableType, UserType } from "types";
 import { accessTokenVar, toastsVar } from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import {
@@ -57,7 +57,7 @@ const Member = () => {
     // login mutation
     [login, { data, error, loading }] = useLazyQuery<
       Record<"login", string>,
-      Record<"email" | "password", string>
+      UserLoginVariableType
     >(USER_LOGIN),
     // register mutation
     [
@@ -65,11 +65,7 @@ const Member = () => {
       { data: registerData, error: registerError, loading: registerLoading },
     ] = useMutation<
       Record<"userRegister", string>,
-      Record<
-        "userRegisterInput",
-        Pick<UserType, "username" | "email" | "password"> &
-          Partial<Pick<ServiceType, "title" | "logo" | "description" | "state">>
-      >
+      UserRegisterVariableType
     >(USER_REGISTER),
     // passcode request mutation
     [

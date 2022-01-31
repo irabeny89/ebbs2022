@@ -18,7 +18,7 @@ const schema = new Schema<UserType>(
       required: [true, "Email is required"],
       lowercase: true,
     },
-    password: { type: String, required: [true, "Password is required"], minlength: 8 },
+    password: { type: String, required: [true, "Password is required"] },
     salt: { type: String, required: [true, "Salt is required"] },
     passCode: String,
     codeStart: Date,
