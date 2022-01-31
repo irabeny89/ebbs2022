@@ -405,8 +405,8 @@ export const MY_PRODUCTS = gql`
 
 // mutation operations
 export const USER_REGISTER = gql`
-  mutation UserRegister($userRegisterInput: UserRegisterInput!) {
-    userRegister(userRegisterInput: $userRegisterInput)
+  mutation register($registerInput: UserRegisterInput!) {
+    register(registerInput: $registerInput)
   }
 `;
 

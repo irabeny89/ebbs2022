@@ -29,7 +29,7 @@ const typeDefs = gql`
   # -- mutation --
   type Mutation {
     "register new user"
-    userRegister(userRegisterInput: UserRegisterInput!): String!
+    register(registerInput: RegisterInput!): String!
     "request passcode to change password"
     requestPassCode(email: String!): String!
     "resetPassword with passcode"
@@ -83,7 +83,7 @@ const typeDefs = gql`
     price: Float!
   }
 
-  input UserRegisterInput {
+  input RegisterInput {
     username: String!
     email: String!
     password: String!

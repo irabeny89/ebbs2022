@@ -130,7 +130,7 @@ const resolvers = {
     },
   },
   Mutation: {
-    userRegister: async (
+    register: async (
       _: any,
       {
         userRegisterInput: { email, password, username, ...serviceData },
