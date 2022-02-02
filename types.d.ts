@@ -30,9 +30,9 @@ type ProductCategoryType =
   | "FOOD_DRUGS";
 
 type TimestampAndId = {
-  _id?: string | mongoose.Types.ObjectId;
-  createdAt?: Date;
-  updatedAt?: Date;
+  _id: string | mongoose.Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type StyleType = {
@@ -113,7 +113,7 @@ type ProductVertexType = Partial<
 
 type ServiceVertexType = Partial<
   Omit<ServiceType, "owner"> & {
-    happyClients: string[];
+    happyClients: (string | mongoose.Types.ObjectId)[];
     products: CursorConnectionType<ProductVertexType>;
     comments: CursorConnectionType<CommentVertexType>;
     orders: CursorConnectionType<OrderVertexType>;
@@ -158,13 +158,13 @@ type CursorConnectionType<NodeType> = {
 };
 
 type EdgeType<NodeType> = {
-  cursor: string;
+  cursor: Date;
   node: NodeType;
 };
 
 type PageInfoType = {
-  startCursor: string;
-  endCursor: string;
+  startCursor: Date;
+  endCursor: Date;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 };
@@ -172,11 +172,13 @@ type PageInfoType = {
 type PagingInputType = Partial<{
   id: string;
   first: number;
-  after: string;
+  after: Date;
   last: number;
-  before: string;
+  before: Date;
   search: string;
-}>;
+}>
+
+type CursorConnectionArgsType<T> = Record<"list", T[]> & PagingInputType;
 
 type UserRegisterVariableType = Record<
   "userRegisterInput",
@@ -197,6 +199,11 @@ type ServiceVariableType = Record<
 >;
 
 type ChangePasswordVariableType = Record<"passCode" | "newPassword", string>;
+
+type ServiceUpdateVariableType = Record<
+  "serviceUpdate",
+  Pick<ServiceType, "title" | "description" | "logo" | "state">
+>;
 
 type GraphContextType = {
   UserModel: Model<UserType>;

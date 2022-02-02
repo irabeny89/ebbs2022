@@ -3,7 +3,16 @@ import config from "../config";
 import { verify, JwtPayload } from "jsonwebtoken";
 import type {
   ChangePasswordVariableType,
+  CommentType,
+  CursorConnectionType,
   GraphContextType,
+  OrderType,
+  PagingInputType,
+  ProductCategoryType,
+  ProductType,
+  ServiceType,
+  ServiceUpdateVariableType,
+  ServiceVertexType,
   UserLoginVariableType,
   UserPayloadType,
   UserRegisterVariableType,
@@ -11,6 +20,8 @@ import type {
 import {
   authUser,
   comparePassword,
+  getAuthPayload,
+  getCursorConnection,
   getHashedPassword,
   handleError,
   setCookie,
@@ -21,20 +32,16 @@ import {
   ValidationError,
   ApolloError,
 } from "apollo-server-micro";
-import {
-  createTransport,
-  createTestAccount,
-  getTestMessageUrl,
-} from "nodemailer";
 
 const {
-  environmentVariable: {
-    jwtRefreshSecret,
-    ebbsEmailHost,
-    ebbsUsername,
-    ebbsPassword,
+  environmentVariable: { jwtRefreshSecret },
+  appData: {
+    generalErrorMessage,
+    title: ebbsTitle,
+    passCodeDuration,
+    abbr,
+    maxProductAllowed,
   },
-  appData: { generalErrorMessage, title: ebbsTitle, passCodeDuration, abbr },
 } = config;
 
 const resolvers = {
@@ -99,7 +106,7 @@ const resolvers = {
     ) => {
       try {
         // verify refresh token
-        const { aud, sub, username } = verify(
+        const { aud, sub, username, serviceId } = verify(
           token,
           jwtRefreshSecret
         ) as JwtPayload & UserPayloadType;
@@ -109,6 +116,7 @@ const resolvers = {
             id: sub!,
             audience: aud as "ADMIN" | "USER",
             username,
+            serviceId,
           },
           res
         ).accessToken;
@@ -125,6 +133,7 @@ const resolvers = {
       try {
         return await ServiceModel.findById(serviceId).lean().exec();
       } catch (error) {
+        // NOTE: log to debug
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -253,6 +262,113 @@ const resolvers = {
       } catch (error) {
         // NOTE: log error to debug
         handleError(error, UserInputError, generalErrorMessage);
+      }
+    },
+    myServiceUpdate: async (
+      _: any,
+      { args: serviceUpdate }: Record<"args", ServiceUpdateVariableType>,
+      {
+        ServiceModel,
+        LikeModel,
+        ProductModel,
+        OrderModel,
+        CommentModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ) => {
+      try {
+        // get service id or throw error
+        const { serviceId } = getAuthPayload(authorization!);
+        // list of service happy clients
+        const happyClients =
+            (
+              await LikeModel.findOne({ selection: serviceId })
+                .select("happyClients")
+                .lean()
+                .exec()
+            )?.happyClients ?? [],
+          products = await ProductModel.find().select("category").lean().exec(),
+          // reduce list to deduplicated category list
+          categories = products.reduce(
+            (prev: ProductCategoryType[], { category }) =>
+              prev.includes(category) ? prev : prev.concat(category),
+            []
+          );
+        // update service if no error
+        return {
+          ...(await ServiceModel.findByIdAndUpdate(serviceId, {
+            $set: serviceUpdate,
+          })
+            .lean()
+            .exec()),
+          likeCount: happyClients.length,
+          happyClients,
+          categories,
+          maxProduct: maxProductAllowed,
+          orderCount: (await OrderModel.find().select("_id").lean().exec())
+            .length,
+          productCount: products.length,
+          commentCount: (await CommentModel.find().select("_id").lean().exec())
+            .length,
+        };
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+  },
+  UserService: {
+    products: async (
+      parent: ServiceType,
+      { args }: Record<"args", PagingInputType>,
+      { ProductModel }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection<ProductType>({
+          list:
+            (await ProductModel.find({ provider: parent._id }).lean().exec()) ??
+            [],
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    comments: async (
+      parent: ServiceType,
+      { args }: Record<"args", PagingInputType>,
+      { CommentModel }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection<CommentType>({
+          list:
+            (await CommentModel.find({ topic: parent._id }).lean().exec()) ??
+            [],
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    orders: async (
+      parent: ServiceType,
+      { args }: Record<"args", PagingInputType>,
+      { OrderModel }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection<OrderType>({
+          list:
+            (await OrderModel.find({ provider: parent._id }).lean().exec()) ??
+            [],
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
       }
     },
   },

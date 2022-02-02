@@ -1,9 +1,15 @@
 import { randomBytes, scrypt, BinaryLike, timingSafeEqual } from "crypto";
-import { AuthenticationError } from "apollo-server-micro";
+import { AuthenticationError, UserInputError } from "apollo-server-micro";
 import { promisify } from "util";
 import { serialize, CookieSerializeOptions } from "cookie";
 import { NextApiResponse } from "next";
-import { TokenPairType, UserPayloadType } from "types";
+import {
+  CursorConnectionArgsType,
+  CursorConnectionType,
+  PageInfoType,
+  TokenPairType,
+  UserPayloadType,
+} from "types";
 import { JwtPayload, Secret, sign, SignOptions, verify } from "jsonwebtoken";
 import config from "../config";
 import {
@@ -12,6 +18,7 @@ import {
   getTestMessageUrl,
 } from "nodemailer";
 import Mail from "nodemailer/lib/mailer";
+import { slice } from "lodash";
 
 const {
   environmentVariable: {
@@ -169,4 +176,58 @@ export const sendEmail = async (emailOptions: Mail.Options) => {
     info = await createTransport(transportOptions).sendMail(emailOptions);
   // return the result & message url of test account after sending mail
   return { ...info, testAccountMessageUrl: getTestMessageUrl(info) };
+};
+
+export const getCursorConnection = <T extends Record<"createdAt", Date>>({
+  list,
+  first,
+  after,
+  last,
+  before,
+}: CursorConnectionArgsType<T>): CursorConnectionType<T> => {
+  let edges: {
+      cursor: Date;
+      node: T;
+    }[] = [],
+    startCursor: Date = new Date(),
+    endCursor: Date = new Date(),
+    hasNextPage: boolean = false,
+    hasPreviousPage: boolean = false;
+
+  if (first) {
+    const afterIndex = list.findIndex((item) => item.createdAt === after);
+    // create edges with cursor
+    edges = list.slice(afterIndex + 1, first + afterIndex + 1).map((item) => ({
+      cursor: item.createdAt,
+      node: item,
+    }));
+    // paging info
+    startCursor = edges[0].node.createdAt;
+    endCursor = edges.reverse()[0].node.createdAt;
+    hasNextPage = list.some((item) => item.createdAt > endCursor);
+    hasPreviousPage = list.some((item) => item.createdAt < startCursor);
+  }
+  if (last) {
+    const beforeIndex = list.findIndex((item) => item.createdAt === before);
+    // create edges with cursor
+    edges = list
+      .slice(
+        (beforeIndex === -1 ? 0 : beforeIndex) - last,
+        beforeIndex === -1 ? undefined : beforeIndex
+      )
+      .map((item) => ({
+        cursor: item.createdAt,
+        node: item,
+      }));
+    // paging info
+    startCursor = edges[0].node.createdAt;
+    endCursor = edges.reverse()[0].node.createdAt;
+    hasNextPage = list.some((item) => item.createdAt > endCursor);
+    hasPreviousPage = list.some((item) => item.createdAt < startCursor);
+  }
+
+  return {
+    edges: edges.reverse(),
+    pageInfo: { startCursor, endCursor, hasPreviousPage, hasNextPage },
+  };
 };

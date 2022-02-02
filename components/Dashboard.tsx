@@ -19,6 +19,7 @@ import {
   ProductType,
   ProductVertexType,
   ServiceType,
+  ServiceUpdateVariableType,
   ServiceVertexType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
@@ -161,10 +162,7 @@ const Dashboard = ({
       { error: serviceUpdateError, loading: serviceUpdateLoading },
     ] = useMutation<
       Record<"myServiceUpdate", ServiceVertexType>,
-      Record<
-        "serviceUpdate",
-        Pick<ServiceType, "title" | "description" | "logo" | "state">
-      >
+      ServiceUpdateVariableType
     >(MY_SERVICE_UPDATE, {
       refetchQueries: [MY_PROFILE],
     });
@@ -618,7 +616,7 @@ const Dashboard = ({
         >
           <Container>
             {commentList.map((comment) => (
-              <Row key={comment._id} className="justify-content-center">
+              <Row key={comment._id?.toString()} className="justify-content-center">
                 <Col lg="7">
                   <Card className="my-3">
                     <Card.Header
@@ -651,7 +649,7 @@ const Dashboard = ({
                         sendPost({
                           variables: {
                             post,
-                            serviceId: _id!,
+                            serviceId: _id?.toString()!,
                           },
                         }))
                       : (e.preventDefault(), e.stopPropagation());
@@ -727,7 +725,7 @@ const Dashboard = ({
                 <Row>
                   {categories &&
                     categories.map((category, i) => (
-                      <Col xs="auto" key={category+i}>
+                      <Col xs="auto" key={category + i}>
                         <Badge className="bg-secondary">{category}</Badge>
                       </Col>
                     ))}
@@ -793,7 +791,11 @@ const Dashboard = ({
                   </Form.Group>
                   <Form.Group className="my-3">
                     <Form.Label>Select state</Form.Label>
-                    <Form.Select size="lg" defaultValue={state ?? "Lagos"} name="state">
+                    <Form.Select
+                      size="lg"
+                      defaultValue={state ?? "Lagos"}
+                      name="state"
+                    >
                       {[
                         "Abia",
                         "Adamawa",
@@ -832,10 +834,7 @@ const Dashboard = ({
                         "Yobe",
                         "Zamfara",
                       ].map((state) => (
-                        <option
-                          key={state}
-                          value={state}
-                        >
+                        <option key={state} value={state}>
                           {state}
                         </option>
                       ))}
