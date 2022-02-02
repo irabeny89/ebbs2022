@@ -6,10 +6,12 @@ import type {
   CommentType,
   CursorConnectionType,
   GraphContextType,
+  NewProductVariableType,
   OrderType,
   PagingInputType,
   ProductCategoryType,
   ProductType,
+  ProductVertexType,
   ServiceType,
   ServiceUpdateVariableType,
   ServiceVertexType,
@@ -316,6 +318,56 @@ const resolvers = {
       } catch (error) {
         // NOTE: log error to debug
         handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    newProduct: async (
+      _: any,
+      { newProduct }: NewProductVariableType,
+      { ProductModel, OrderModel }: GraphContextType
+    ): Promise<ProductVertexType | undefined> => {
+      try {
+        const {
+          _id,
+          category,
+          createdAt,
+          description,
+          images,
+          name,
+          price,
+          tags,
+          updatedAt,
+          video,
+        } = (await ProductModel.create([newProduct]))[0] as ProductType;
+
+        return {
+          saleCount: (
+            await OrderModel.find({
+              $and: [
+                {
+                  provider: _id,
+                },
+                {
+                  status: "DELIVERED",
+                },
+              ],
+            })
+              .lean()
+              .exec()
+          ).length,
+          _id,
+          category,
+          createdAt,
+          description,
+          images,
+          name,
+          price,
+          tags,
+          updatedAt,
+          video,
+        };
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, UserInputError, generalErrorMessage);
       }
     },
   },

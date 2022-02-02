@@ -14,6 +14,7 @@ import {
   CommentVertexType,
   CursorConnectionType,
   DashboardPropType,
+  NewProductVariableType,
   OrderVertexType,
   PagingInputType,
   ProductType,
@@ -148,7 +149,7 @@ const Dashboard = ({
       },
     ] = useMutation<
       Record<"newProduct", ProductVertexType>,
-      Record<"newProduct", Omit<ProductType, "provider">>
+      NewProductVariableType
     >(ADD_NEW_PRODUCT, { refetchQueries: [MY_PRODUCTS] }),
     // reply comment mutation
     [sendPost, { error: postError }] = useMutation<

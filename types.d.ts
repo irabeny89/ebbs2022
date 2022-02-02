@@ -176,7 +176,7 @@ type PagingInputType = Partial<{
   last: number;
   before: Date;
   search: string;
-}>
+}>;
 
 type CursorConnectionArgsType<T> = Record<"list", T[]> & PagingInputType;
 
@@ -204,6 +204,8 @@ type ServiceUpdateVariableType = Record<
   "serviceUpdate",
   Pick<ServiceType, "title" | "description" | "logo" | "state">
 >;
+
+type NewProductVariableType = Record<"newProduct", Omit<ProductType, "provider">>;
 
 type GraphContextType = {
   UserModel: Model<UserType>;
