@@ -12,8 +12,6 @@
   },
   "dependencies": {
     "@apollo/client": "^3.5.7",
-    "@tiptap/react": "^2.0.0-beta.106",
-    "@tiptap/starter-kit": "^2.0.0-beta.174",
     "apollo-server-core": "^3.6.2",
     "apollo-server-micro": "^3.6.2",
     "axios": "^0.25.0",
@@ -28,6 +26,7 @@
     "mongoose": "^6.1.7",
     "next": "^12.0.8",
     "next-auth": "^4.1.2",
+    "next-themes": "^0.0.15",
     "nodemailer": "^6.7.2",
     "react": "17.0.2",
     "react-bootstrap": "^2.1.1",
