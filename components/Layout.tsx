@@ -27,14 +27,12 @@ import type {
   OrderVertexType,
   PagingInputType,
   ProductVertexType,
-  ServiceVertexType,
 } from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import { FEW_PRODUCTS, SERVICE_ORDER } from "@/graphql/documentNodes";
 import SortedListWithTabs from "./SortedListWithTabs";
 import ProductList from "./ProductList";
-import MoreButton from "./MoreButton";
 
 // get cart items total count
 const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>

@@ -15,6 +15,7 @@ import type {
   ServiceType,
   ServiceUpdateVariableType,
   ServiceVertexType,
+  StatusType,
   UserLoginVariableType,
   UserPayloadType,
   UserRegisterVariableType,
@@ -384,6 +385,67 @@ const resolvers = {
           .lean()
           .exec();
         return args.isFav;
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    serviceOrder: async (
+      _: any,
+      {
+        args,
+      }: Record<
+        "args",
+        Pick<
+          OrderType,
+          "items" | "phone" | "state" | "address" | "nearestBusStop"
+        >
+      >,
+      {
+        OrderModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ): Promise<string | undefined> => {
+      try {
+        // check user permission
+        getAuthPayload(authorization!);
+        await OrderModel.create(args);
+        return "Order created successfully";
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    orderStatus: async (
+      _: any,
+      {
+        args: { orderId, status, deliveryDate },
+      }: {
+        args: {
+          orderId: string;
+          status: "CANCELED" | "SHIPPED";
+          deliveryDate: string;
+        };
+      },
+      {
+        OrderModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ): Promise<string | undefined> => {
+      try {
+        // check user permission
+        getAuthPayload(authorization!);
+        await OrderModel.findByIdAndUpdate(orderId, {
+          $set: { status, deliveryDate },
+        })
+          .select("_id")
+          .lean()
+          .exec();
+        return status;
       } catch (error) {
         // NOTE: log to debug
         handleError(error, AuthenticationError, generalErrorMessage);

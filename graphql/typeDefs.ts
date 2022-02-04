@@ -37,9 +37,9 @@ const typeDefs = gql`
     "like a service using the service ID and select action"
     myFavService(serviceId: ID!, isFav: Boolean!): Boolean!
     "send purchase request; creates new order"
-    serviceOrder(args: ServiceOrderInput!): ServiceOrder
+    serviceOrder(args: ServiceOrderInput!): String!
     "set order status; updates order status"
-    orderStatus(orderId: ID!, status: StatusOptions!): ServiceOrder
+    orderStatus(args: OrderStatusInput!): String!
     "new product creation"
     newProduct(args: NewProductInput!): String!
     "delete product by an authorized user"
@@ -51,6 +51,12 @@ const typeDefs = gql`
   }
 
   # -- inputs --
+  input OrderStatusInput {
+    orderId: ID!
+    status: OrderStatusOption!
+    deliveryDate: String
+  }
+
   input ServiceOrderInput {
     items: [OrderItemInput!]!
     phone: String!
@@ -61,13 +67,13 @@ const typeDefs = gql`
 
   input OrderItemInput {
     _id: ID!
-  providerId: ID!
-  name: String!
-  price: Float!
-  quantity: Int!
-  cost: Float!
+    providerId: ID!
+    name: String!
+    price: Float!
+    quantity: Int!
+    cost: Float!
   }
-  
+
   input UserPasswordChangeInput {
     newPassword: String!
     oldPassword: String!
@@ -199,7 +205,7 @@ const typeDefs = gql`
     cursor: String!
     node: ServiceProduct!
   }
-  
+
   type UserConnection {
     edges: [UserEdge!]!
     pageInfo: PageInfo!
@@ -246,37 +252,65 @@ const typeDefs = gql`
   # service object type
   type UserService {
     _id: ID!
-    """the service name"""
+    """
+    the service name
+    """
     title: String!
-    """the service logo"""
+    """
+    the service logo
+    """
     logo: String!
-    """service description"""
+    """
+    service description
+    """
     description: String!
-    """service home state"""
+    """
+    service home state
+    """
     state: String!
     "number of likes for the service"
     likeCount: Int!
     "list of users who likes the service"
     happyClients: [ID!]!
-    """list of service products"""
+    """
+    list of service products
+    """
     products(args: PagingInput!): ProductConnection!
-    """comments from clients"""
+    """
+    comments from clients
+    """
     comments(args: PagingInput!): CommentConnection!
-    """service orders from clients"""
+    """
+    service orders from clients
+    """
     orders(args: PagingInput!): OrderConnection!
-    """all product categories"""
+    """
+    all product categories
+    """
     categories: [CategoryOption]!
-    """max product allowed per service"""
+    """
+    max product allowed per service
+    """
     maxProduct: Int!
-    """the total number of orders per service"""
+    """
+    the total number of orders per service
+    """
     orderCount: Int!
-    """the total number of products per service"""
+    """
+    the total number of products per service
+    """
     productCount: Int!
-    """the total number of comments per service"""
+    """
+    the total number of comments per service
+    """
     commentCount: Int!
-    """product creation date"""
+    """
+    product creation date
+    """
     createdAt: String!
-    """product modification date"""
+    """
+    product modification date
+    """
     updatedAt: String!
   }
   # comment object type
