@@ -58,6 +58,7 @@ type ServiceType = {
   description: string;
   state: string;
   maxProduct: number;
+  happyClients?: (mongoose.Types.ObjectId | string)[];
 } & TimestampAndId;
 
 type ProductType = {
@@ -205,7 +206,10 @@ type ServiceUpdateVariableType = Record<
   Pick<ServiceType, "title" | "description" | "logo" | "state">
 >;
 
-type NewProductVariableType = Record<"newProduct", Omit<ProductType, "provider">>;
+type NewProductVariableType = Record<
+  "newProduct",
+  Omit<ProductType, "provider">
+>;
 
 type GraphContextType = {
   UserModel: Model<UserType>;

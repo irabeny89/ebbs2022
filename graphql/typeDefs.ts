@@ -34,8 +34,8 @@ const typeDefs = gql`
     requestPassCode(email: String!): String!
     "resetPassword with passcode"
     changePassword(passCode: String!, newPassword: String!): String!
-    "toggles liking; like if not liked before vice versa"
-    serviceLiking(serviceId: ID!): UserService
+    "like a service using the service ID and select action"
+    myFavService(serviceId: ID!, isFav: Boolean!): Boolean!
     "send purchase request; creates new order"
     serviceOrder(args: ServiceOrderInput!): ServiceOrder
     "set order status; updates order status"
@@ -134,11 +134,6 @@ const typeDefs = gql`
     VEHICLES
     ELECTRONICS
     FOOD_DRUGS
-  }
-
-  enum ActionOption {
-    RATE
-    UNRATE
   }
 
   enum StatusOptions {

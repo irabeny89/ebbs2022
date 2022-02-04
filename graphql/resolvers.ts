@@ -360,6 +360,35 @@ const resolvers = {
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
+    myFavService: async (
+      _: any,
+      args: { serviceId: string; isFav: boolean },
+      {
+        ServiceModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ): Promise<boolean | undefined> => {
+      try {
+        const { sub } = getAuthPayload(authorization!);
+        await ServiceModel.findByIdAndUpdate(
+          args.serviceId,
+          args.isFav
+            ? {
+                $addToSet: { happyClients: sub },
+              }
+            : { $pull: { happyClients: sub } }
+        )
+          .select("_id")
+          .lean()
+          .exec();
+        return args.isFav;
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
   },
   UserService: {
     products: async (

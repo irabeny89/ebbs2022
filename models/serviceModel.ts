@@ -17,6 +17,7 @@ const schema = new Schema<ServiceType>(
       min: 0,
     },
     owner: { type: Schema.Types.ObjectId, ref: "User" },
+    happyClients: { type: [Schema.Types.ObjectId], ref: "User" },
   },
   { timestamps: true }
 );
