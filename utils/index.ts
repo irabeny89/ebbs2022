@@ -1,12 +1,11 @@
 import { randomBytes, scrypt, BinaryLike, timingSafeEqual } from "crypto";
-import { AuthenticationError, UserInputError } from "apollo-server-micro";
+import { AuthenticationError } from "apollo-server-micro";
 import { promisify } from "util";
 import { serialize, CookieSerializeOptions } from "cookie";
 import { NextApiResponse } from "next";
 import {
   CursorConnectionArgsType,
   CursorConnectionType,
-  PageInfoType,
   TokenPairType,
   UserPayloadType,
 } from "types";
@@ -18,7 +17,6 @@ import {
   getTestMessageUrl,
 } from "nodemailer";
 import Mail from "nodemailer/lib/mailer";
-import { slice } from "lodash";
 
 const {
   environmentVariable: {
@@ -73,7 +71,7 @@ export const handleError = (
 // verifies jwt and throw errors
 export const getAuthPayload = (authorization: string) =>
   verify(authorization!.replace("Bearer ", ""), jwtAccessSecret) as JwtPayload &
-    UserPayloadType;
+    Omit<UserPayloadType, "id">;
 
 const hashPassword = async (password: string, salt: string) =>
   (await asyncScrypt(password, salt, 64)).toString("hex");
@@ -99,7 +97,7 @@ export const comparePassword = async (
 export const isAdminUser = (accessToken: string) => {
   try {
     const payload = verify(accessToken, jwtAccessSecret) as JwtPayload &
-      UserPayloadType;
+      Omit<UserPayloadType, "id">;
 
     return payload.aud === "ADMIN";
   } catch (error) {
@@ -144,8 +142,7 @@ const createTokenPair = ({
   }),
 });
 
-// generate access & refresh token while safely
-// storing refresh token in cookie for later use
+// generate access & refresh token while safely storing refresh token in cookie for later use
 export const authUser = (payload: UserPayloadType, res: NextApiResponse) => {
   const tokenPair = createTokenPair(payload);
   // 30 days refresh token in the cookie

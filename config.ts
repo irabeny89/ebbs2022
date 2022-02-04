@@ -46,7 +46,7 @@ const config = {
       from: "<no-reply>@gmail.com",
       body: "Hello, enter the access code to change your password on EBBS website - ",
     },
-    generalErrorMessage: "Something went wrong, try again",
+    generalErrorMessage: "Something went wrong. Login or check your inputs and try again",
     constants: {
       CART_ITEMS_KEY: "ebbsCartItems",
     },

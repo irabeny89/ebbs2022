@@ -243,7 +243,7 @@ const resolvers = {
       _: any,
       { newPassword, passCode }: ChangePasswordVariableType,
       { UserModel }: GraphContextType
-    ) => {
+    ): Promise<string | undefined> => {
       try {
         // find by passcode
         const user = await UserModel.findOne({ passCode })
@@ -271,50 +271,22 @@ const resolvers = {
       { args: serviceUpdate }: Record<"args", ServiceUpdateVariableType>,
       {
         ServiceModel,
-        LikeModel,
-        ProductModel,
-        OrderModel,
-        CommentModel,
         req: {
           headers: { authorization },
         },
       }: GraphContextType
-    ) => {
+    ): Promise<string | undefined> => {
       try {
-        // get service id or throw error
-        const { serviceId } = getAuthPayload(authorization!);
-        // list of service happy clients
-        const happyClients =
-            (
-              await LikeModel.findOne({ selection: serviceId })
-                .select("happyClients")
-                .lean()
-                .exec()
-            )?.happyClients ?? [],
-          products = await ProductModel.find().select("category").lean().exec(),
-          // reduce list to deduplicated category list
-          categories = products.reduce(
-            (prev: ProductCategoryType[], { category }) =>
-              prev.includes(category) ? prev : prev.concat(category),
-            []
-          );
-        // update service if no error
-        return {
-          ...(await ServiceModel.findByIdAndUpdate(serviceId, {
+        await ServiceModel.findByIdAndUpdate(
+          getAuthPayload(authorization!).serviceId,
+          {
             $set: serviceUpdate,
-          })
-            .lean()
-            .exec()),
-          likeCount: happyClients.length,
-          happyClients,
-          categories,
-          maxProduct: maxProductAllowed,
-          orderCount: (await OrderModel.find().select("_id").lean().exec())
-            .length,
-          productCount: products.length,
-          commentCount: (await CommentModel.find().select("_id").lean().exec())
-            .length,
-        };
+          }
+        )
+          .select("_id")
+          .lean()
+          .exec();
+        return "Service updated successfully";
       } catch (error) {
         // NOTE: log error to debug
         handleError(error, AuthenticationError, generalErrorMessage);
@@ -322,52 +294,70 @@ const resolvers = {
     },
     newProduct: async (
       _: any,
-      { newProduct }: NewProductVariableType,
-      { ProductModel, OrderModel }: GraphContextType
-    ): Promise<ProductVertexType | undefined> => {
+      { args }: Record<"args", Omit<ProductType, "provider">>,
+      {
+        ProductModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ): Promise<string | undefined> => {
       try {
-        const {
-          _id,
-          category,
-          createdAt,
-          description,
-          images,
-          name,
-          price,
-          tags,
-          updatedAt,
-          video,
-        } = (await ProductModel.create([newProduct]))[0] as ProductType;
-
-        return {
-          saleCount: (
-            await OrderModel.find({
-              $and: [
-                {
-                  provider: _id,
-                },
-                {
-                  status: "DELIVERED",
-                },
-              ],
-            })
-              .lean()
-              .exec()
-          ).length,
-          _id,
-          category,
-          createdAt,
-          description,
-          images,
-          name,
-          price,
-          tags,
-          updatedAt,
-          video,
-        };
+        // validate request auth
+        getAuthPayload(authorization!);
+        // create product & return id
+        return (await ProductModel.create([args]))[0].id;
       } catch (error) {
         // NOTE: log to debug
         handleError(error, UserInputError, generalErrorMessage);
+      }
+    },
+    deleteMyProduct: async (
+      _: any,
+      { productId }: Record<"productId", string>,
+      {
+        ProductModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ): Promise<string | undefined> => {
+      try {
+        // check permission before delete
+        getAuthPayload(authorization!);
+        await ProductModel.findByIdAndDelete(productId)
+          .select("_id")
+          .lean()
+          .exec();
+        return "Product deleted successfully";
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    myCommentPost: async (
+      _: any,
+      args: Record<"serviceId" | "post", string>,
+      {
+        CommentModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ): Promise<string | undefined> => {
+      try {
+        // check permission or throw error
+        await CommentModel.create([
+          {
+            topic: args.serviceId,
+            post: args.post,
+            poster: getAuthPayload(authorization!).sub,
+          },
+        ]);
+        return "Comment posted successfully";
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
   },

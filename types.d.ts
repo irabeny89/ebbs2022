@@ -66,7 +66,7 @@ type ProductType = {
   category: ProductCategoryType;
   images: string[];
   video?: string;
-  tags: string[];
+  tags?: string[];
   price: number;
   provider: mongoose.Types.ObjectId;
 } & TimestampAndId;

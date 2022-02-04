@@ -41,13 +41,13 @@ const typeDefs = gql`
     "set order status; updates order status"
     orderStatus(orderId: ID!, status: StatusOptions!): ServiceOrder
     "new product creation"
-    newProduct(args: NewProductInput!): ServiceProduct
+    newProduct(args: NewProductInput!): String!
     "delete product by an authorized user"
-    deleteMyProduct(productId: ID!): ServiceProduct
-    "comment on a service by an authorized user"
-    myComment(serviceId: ID!, post: String!): ServiceComment
+    deleteMyProduct(productId: ID!): String!
+    "as an authorized user post comment on a service using it id"
+    myCommentPost(serviceId: ID!, post: String!): String!
     "update service by an authorized user"
-    myServiceUpdate(args: MyServiceUpdateInput!): UserService
+    myServiceUpdate(args: MyServiceUpdateInput!): String!
   }
 
   # -- inputs --
