@@ -10,15 +10,15 @@ const typeDefs = gql`
     "fields of a single service by id"
     service(serviceId: ID): UserService
     "list of all service nodes"
-    services(args: PagingInput!): ServiceConnection
+    services(args: PagingInput!): ServiceConnection!
     "list of all product nodes"
-    products(args: PagingInput!): ProductConnection
+    products(args: PagingInput!): ProductConnection!
     "list of products belonging to an authorized & authenticated user"
-    myProducts(args: PagingInput!): ProductConnection
-    "list of my orders belonging to an authorized & authenticated user"
-    myOrders(args: PagingInput!): OrderConnection
+    myProducts(args: PagingInput!): ProductConnection!
+    "list of orders belonging to an authorized & authenticated user"
+    myOrders(args: PagingInput!): OrderConnection!
     "list of my requests belonging to an authorized & authenticated user"
-    myRequests(args: PagingInput!): OrderConnection
+    myRequests(args: PagingInput!): OrderConnection!
     "user login"
     login(email: String!, password: String!): String!
     "log user out"

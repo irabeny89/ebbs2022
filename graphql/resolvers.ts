@@ -146,10 +146,53 @@ const resolvers = {
       { args }: Record<"args", PagingInputType>,
       { ServiceModel }: GraphContextType
     ) => {
-      getCursorConnection({
-        list: await ServiceModel.find().lean().exec(),
-        ...args,
-      });
+      try {
+        return getCursorConnection({
+          list: await ServiceModel.find().lean().exec(),
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    products: async (
+      _: any,
+      { args }: Record<"args", PagingInputType>,
+      { ProductModel, OrderModel }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection<
+          Omit<ProductVertexType, "createdAt"> & {
+            createdAt: Date | string;
+            saleCount: number;
+          }
+        >({
+          list:
+            (await Promise.all(
+              (
+                await ProductModel.find().lean().exec()
+              ).map(async (item) => ({
+                ...item,
+                saleCount:
+                  (
+                    await OrderModel.findById(item._id)
+                      .$where("status == SHIPPED")
+                      .select("_id")
+                      .lean()
+                      .exec()
+                  )?.length ?? 0,
+              }))
+            )) ?? [],
+          ...args,
+        });
+      } catch (error) {
+        console.log("====================================");
+        console.log(error);
+        console.log("====================================");
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
     },
   },
   Mutation: {
@@ -484,6 +527,20 @@ const resolvers = {
     },
   },
   UserService: {
+    title: async (
+      parent: ServiceType,
+      _: any,
+      { ServiceModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await ServiceModel.findById(parent._id).select("title").lean().exec()
+        )?.title;
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
     products: async (
       parent: ServiceType,
       { args }: Record<"args", PagingInputType>,
