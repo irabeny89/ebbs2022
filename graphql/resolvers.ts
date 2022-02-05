@@ -194,6 +194,54 @@ const resolvers = {
         handleError(error, Error, generalErrorMessage);
       }
     },
+    myOrders: async (
+      _: any,
+      { args }: Record<"args", PagingInputType>,
+      {
+        OrderModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection({
+          list: await OrderModel.find({
+            provider: getAuthPayload(authorization!).serviceId,
+          })
+            .lean()
+            .exec(),
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    myRequests: async (
+      _: any,
+      { args }: Record<"args", PagingInputType>,
+      {
+        OrderModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection({
+          list: await OrderModel.find({
+            client: getAuthPayload(authorization!).serviceId,
+          })
+            .lean()
+            .exec(),
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
   },
   Mutation: {
     register: async (
