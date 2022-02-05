@@ -7,11 +7,11 @@ const typeDefs = gql`
     hello: String!
     "refresh auth token"
     refreshToken: String!
-    "single service"
+    "fields of a single service by id"
     service(serviceId: ID): UserService
-    "list of all services"
+    "list of all service nodes"
     services(args: PagingInput!): ServiceConnection
-    "list of all products"
+    "list of all product nodes"
     products(args: PagingInput!): ProductConnection
     "list of products belonging to an authorized & authenticated user"
     myProducts(args: PagingInput!): ProductConnection

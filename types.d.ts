@@ -31,8 +31,8 @@ type ProductCategoryType =
 
 type TimestampAndId = {
   _id: string | mongoose.Types.ObjectId;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 };
 
 type StyleType = {
@@ -159,13 +159,13 @@ type CursorConnectionType<NodeType> = {
 };
 
 type EdgeType<NodeType> = {
-  cursor: Date;
+  cursor: Date | string;
   node: NodeType;
 };
 
 type PageInfoType = {
-  startCursor: Date;
-  endCursor: Date;
+  startCursor: Date | string;
+  endCursor: Date | string;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
 };
@@ -173,9 +173,9 @@ type PageInfoType = {
 type PagingInputType = Partial<{
   id: string;
   first: number;
-  after: Date;
+  after: Date | string;
   last: number;
-  before: Date;
+  before: Date | string;
   search: string;
 }>;
 

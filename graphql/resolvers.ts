@@ -19,6 +19,7 @@ import type {
   UserLoginVariableType,
   UserPayloadType,
   UserRegisterVariableType,
+  UserType,
 } from "types";
 import {
   authUser,
@@ -139,6 +140,16 @@ const resolvers = {
         // NOTE: log to debug
         handleError(error, Error, generalErrorMessage);
       }
+    },
+    services: async (
+      _: any,
+      { args }: Record<"args", PagingInputType>,
+      { ServiceModel }: GraphContextType
+    ) => {
+      getCursorConnection({
+        list: await ServiceModel.find().lean().exec(),
+        ...args,
+      });
     },
   },
   Mutation: {
@@ -305,9 +316,13 @@ const resolvers = {
     ): Promise<string | undefined> => {
       try {
         // validate request auth
-        getAuthPayload(authorization!);
         // create product & return id
-        return (await ProductModel.create([args]))[0].id;
+        return (
+          await ProductModel.create({
+            ...args,
+            provider: getAuthPayload(authorization!).serviceId,
+          })
+        ).id;
       } catch (error) {
         // NOTE: log to debug
         handleError(error, UserInputError, generalErrorMessage);
@@ -452,17 +467,51 @@ const resolvers = {
       }
     },
   },
+  User: {
+    username: async (
+      parent: UserType,
+      _: any,
+      { UserModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await UserModel.findById(parent._id).select("username").lean().exec()
+        )?.username;
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+  },
   UserService: {
     products: async (
       parent: ServiceType,
       { args }: Record<"args", PagingInputType>,
-      { ProductModel }: GraphContextType
+      { ProductModel, OrderModel }: GraphContextType
     ) => {
       try {
-        return getCursorConnection<ProductType>({
+        return getCursorConnection<
+          Omit<ProductVertexType, "createdAt"> & {
+            createdAt: Date | string;
+            saleCount: number;
+          }
+        >({
           list:
-            (await ProductModel.find({ provider: parent._id }).lean().exec()) ??
-            [],
+            (await Promise.all(
+              (
+                await ProductModel.find({ provider: parent._id }).lean().exec()
+              ).map(async (item) => ({
+                ...item,
+                saleCount:
+                  (
+                    await OrderModel.findById(item._id)
+                      .$where("status == SHIPPED")
+                      .select("_id")
+                      .lean()
+                      .exec()
+                  )?.length ?? 0,
+              }))
+            )) ?? [],
           ...args,
         });
       } catch (error) {
@@ -499,6 +548,83 @@ const resolvers = {
             [],
           ...args,
         });
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    categories: async (
+      { _id }: ServiceType,
+      _: any,
+      { ProductModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await ProductModel.find({ provider: _id })
+            .select("category")
+            .lean()
+            .exec()
+        ).reduce(
+          (prev: ProductCategoryType[], { category }) =>
+            prev.includes(category) ? prev : [...prev, category],
+          []
+        );
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    commentCount: async (
+      { _id }: ServiceType,
+      _: any,
+      { CommentModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await CommentModel.find({ topic: _id }).select("_id").lean().exec()
+        ).length;
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    productCount: async (
+      { _id }: ServiceType,
+      _: any,
+      { ProductModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await ProductModel.find({ provider: _id }).select("_id").lean().exec()
+        ).length;
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    orderCount: async (
+      { _id }: ServiceType,
+      _: any,
+      { OrderModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await OrderModel.find({ provider: _id }).select("_id").lean().exec()
+        ).length;
+      } catch (error) {
+        // NOTE: log error to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    likeCount: async (
+      { _id }: ServiceType,
+      _: any,
+      { LikeModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await LikeModel.find({ selection: _id }).select("_id").lean().exec()
+        ).length;
       } catch (error) {
         // NOTE: log error to debug
         handleError(error, Error, generalErrorMessage);
