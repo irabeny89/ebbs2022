@@ -242,6 +242,25 @@ const resolvers = {
         handleError(error, Error, generalErrorMessage);
       }
     },
+    me: async (
+      _: any,
+      __: any,
+      {
+        req: {
+          headers: { authorization },
+        },
+        UserModel,
+      }: GraphContextType
+    ) => {
+      try {
+        return await UserModel.findById(getAuthPayload(authorization!).sub)
+          .lean()
+          .exec();
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
   },
   Mutation: {
     register: async (
@@ -571,6 +590,46 @@ const resolvers = {
       } catch (error) {
         // NOTE: log to debug
         handleError(error, Error, generalErrorMessage);
+      }
+    },
+    requests: async (
+      parent: UserType,
+      { args }: Record<"args", PagingInputType>,
+      { OrderModel }: GraphContextType
+    ) => {
+      try {
+        return getCursorConnection({
+          list: await OrderModel.find({
+            client: parent._id,
+          })
+            .lean()
+            .exec(),
+          ...args,
+        });
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, Error, generalErrorMessage);
+      }
+    },
+    service: async (
+      _: any,
+      __: any,
+      {
+        req: {
+          headers: { authorization },
+        },
+        ServiceModel,
+      }: GraphContextType
+    ) => {
+      try {
+        return await ServiceModel.findById(
+          getAuthPayload(authorization!).serviceId
+        )
+          .lean()
+          .exec();
+      } catch (error) {
+        // NOTE: log to debug
+        handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
   },
