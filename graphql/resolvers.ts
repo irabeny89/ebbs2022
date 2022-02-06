@@ -4,9 +4,7 @@ import { verify, JwtPayload } from "jsonwebtoken";
 import type {
   ChangePasswordVariableType,
   CommentType,
-  CursorConnectionType,
   GraphContextType,
-  NewProductVariableType,
   OrderType,
   PagingInputType,
   ProductCategoryType,
@@ -14,8 +12,6 @@ import type {
   ProductVertexType,
   ServiceType,
   ServiceUpdateVariableType,
-  ServiceVertexType,
-  StatusType,
   UserLoginVariableType,
   UserPayloadType,
   UserRegisterVariableType,
@@ -34,7 +30,6 @@ import {
   AuthenticationError,
   UserInputError,
   ValidationError,
-  ApolloError,
 } from "apollo-server-micro";
 
 const {
@@ -44,7 +39,6 @@ const {
     title: ebbsTitle,
     passCodeDuration,
     abbr,
-    maxProductAllowed,
   },
 } = config;
 
