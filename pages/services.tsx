@@ -8,12 +8,10 @@ import { useLazyQuery } from "@apollo/client";
 import { GetStaticProps } from "next";
 import type {
   CursorConnectionType,
-  PagingInputType,
   ProductCategoryType,
   ServiceCardPropType,
   ServiceReturnType,
   ServiceVariableType,
-  ServiceVertexType,
 } from "types";
 import Layout from "@/components/Layout";
 import Head from "next/head";
@@ -80,9 +78,9 @@ export const getStaticProps: GetStaticProps = async () => {
         },
       });
     // omit cursor property from edge node
-    const services = [...(data?.services.edges ?? []), ...edges].map(
-      (edge) => edge.node
-    );
+    const services = [...(data?.services.edges ?? []), ...edges]
+      .map((edge) => edge.node)
+      .filter((item) => item.products?.edges.length! > 0);
 
     return (
       <Layout>

@@ -66,7 +66,9 @@ export const getStaticProps: GetStaticProps = async () => {
       : {
           props: {
             products: products.edges.map((edge) => edge.node),
-            services: services.edges.map((edge) => edge.node),
+            services: services.edges
+              .map((edge) => edge.node)
+              .filter((item) => item.products?.edges.length! > 0),
           },
           revalidate: 5,
         };
