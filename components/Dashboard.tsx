@@ -12,62 +12,39 @@ import Spinner from "react-bootstrap/Spinner";
 import { MdDashboardCustomize, MdAdd, MdSend } from "react-icons/md";
 import {
   CommentVertexType,
-  CursorConnectionType,
-  DashboardPropType,
   NewProductVariableType,
-  OrderVertexType,
   PagingInputType,
   ProductType,
   ProductVertexType,
   ServiceType,
   ServiceUpdateVariableType,
   ServiceVertexType,
+  UserVertexType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import { useLazyQuery, useMutation } from "@apollo/client";
+import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import {
   ADD_NEW_PRODUCT,
   MY_PRODUCTS,
-  MY_ORDERS,
-  MY_REQUESTS,
   MY_PROFILE,
   MY_COMMENT,
   MY_SERVICE_UPDATE,
 } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
-import { toastsVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar, toastsVar } from "@/graphql/reactiveVariables";
 import SortedListWithTabs from "./SortedListWithTabs";
 import OrdersOrRequests from "./OrdersOrRequests";
-import MoreButton from "./MoreButton";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import config from "../config";
 import ProductList from "./ProductList";
 import useAuthPayload from "hooks/useAuthPayload";
 
-// tab title style
-const tabTitleStyle = { fontSize: 16 };
+const { webPages, productCategories } = config.appData,
+  // tab title style
+  tabTitleStyle = { fontSize: 16 };
 // dashboard component
-const Dashboard = ({
-  info,
-  username,
-  service: {
-    orders,
-    products,
-    comments,
-    _id,
-    orderCount,
-    productCount,
-    commentCount,
-    maxProduct,
-    categories,
-    state,
-    title,
-    description,
-  },
-  requests,
-  requestCount,
-  email,
-}: DashboardPropType) => {
+const Dashboard = () => {
+  const accessToken = useReactiveVar(accessTokenVar)
   // use auth payload
   const authPayload = useAuthPayload();
   // state variable for form
@@ -80,64 +57,30 @@ const Dashboard = ({
     [videoFileSize, setVideoFileSize] = useState(0),
     // product creation form modal state
     [show, setShow] = useState(false);
-  // ref mutable object
-  const hasLazyFetchedOrders = useRef(false),
-    hasLazyFetchedRequests = useRef(false),
-    hasLazyFetchedProducts = useRef(false);
-  // query more orders
-  const [
-      getMoreOrders,
-      { data: orderData, error: orderError, loading, fetchMore },
-    ] = useLazyQuery<
-      Record<"myOrders", CursorConnectionType<OrderVertexType>>,
-      Record<"orderArgs", PagingInputType>
-    >(MY_ORDERS, {
+  // query user data
+  const {
+      data: userData,
+      error: userError,
+      loading: userLoading,
+      fetchMore: fetchMoreUserData,
+    } = useQuery<
+      Record<"me", UserVertexType>,
+      Record<
+        "productArgs" | "commentArgs" | "orderArgs" | "requestArgs",
+        PagingInputType
+      >
+    >(MY_PROFILE, {
       variables: {
-        orderArgs: {
-          last: 20,
-          before: orders?.pageInfo.endCursor,
-        },
+        commentArgs: { last: 20 },
+        orderArgs: { last: 20 },
+        productArgs: { last: 20 },
+        requestArgs: { last: 20 },
       },
-    }),
-    // query more requests
-    [
-      getMoreRequests,
-      {
-        data: requestData,
-        error: requestError,
-        loading: requestLoading,
-        fetchMore: fetchMoreRequests,
-      },
-    ] = useLazyQuery<
-      Record<"myRequests", CursorConnectionType<OrderVertexType>>,
-      Record<"requestArgs", PagingInputType>
-    >(MY_REQUESTS, {
-      variables: {
-        requestArgs: {
-          last: 20,
-          before: requests.pageInfo.endCursor,
-        },
-      },
-    }),
-    // query more products
-    [
-      getMoreProducts,
-      {
-        data: productData,
-        error: productError,
-        loading: productLoading,
-        fetchMore: fetchMoreProducts,
-      },
-    ] = useLazyQuery<
-      Record<"myProducts", CursorConnectionType<ProductVertexType>>,
-      Record<"productArgs", PagingInputType>
-    >(MY_PRODUCTS, {
-      variables: {
-        productArgs: {
-          last: 20,
-          before: products?.pageInfo.endCursor,
-        },
-      },
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`
+        }
+      }
     }),
     // add new product mutation
     [
@@ -167,44 +110,6 @@ const Dashboard = ({
     >(MY_SERVICE_UPDATE, {
       refetchQueries: [MY_PROFILE],
     });
-  // extract orders from edge
-  const orderList = (
-      orders?.edges?.map((orderEdge) => orderEdge.node) ?? []
-    ).concat(
-      orderData?.myOrders?.edges?.map((orderEdge) => orderEdge.node) ?? []
-    ),
-    // extract requests from edge
-    requestList = (
-      requests?.edges?.map((requestEdge) => requestEdge.node) ?? []
-    ).concat(
-      requestData?.myRequests?.edges.map((requestEdge) => requestEdge.node) ??
-        []
-    ),
-    // extract products from edge
-    productList = (
-      products?.edges?.map((productEdge) => productEdge.node) ?? []
-    ).concat(
-      productData?.myProducts?.edges?.map((productEdge) => productEdge.node) ??
-        []
-    ),
-    // extract comments from edge and reverse
-    commentList =
-      comments?.edges?.map((commentEdge) => commentEdge.node).reverse() ?? [];
-  // indicate orders has lazy fetched once
-  orderData && (hasLazyFetchedOrders.current = true);
-  // toast on error
-  orderError &&
-    toastsVar([{ header: orderError.name, message: "Something failed!" }]);
-  // indicate requests has lazy fetched once
-  requestData && (hasLazyFetchedRequests.current = true);
-  // toast on error
-  requestError &&
-    toastsVar([{ header: requestError.name, message: "Something failed!" }]);
-  // indicate products has lazy fetched once
-  productData && (hasLazyFetchedProducts.current = true);
-  // toast on error
-  productError &&
-    toastsVar([{ header: productError.name, message: "Something failed!" }]);
   // toast when new product is added
   newProductData &&
     (setShow(false),
@@ -241,6 +146,31 @@ const Dashboard = ({
       setValidated(false);
     };
   }, [show]);
+  
+  if (userLoading) return <AjaxFeedback loading />;
+
+  if (userError) return null
+
+  const {
+    username,
+    service: {
+      orders,
+      products,
+      comments,
+      _id,
+      orderCount,
+      productCount,
+      commentCount,
+      maxProduct,
+      categories,
+      state,
+      title,
+      description,
+    },
+    requests,
+    requestCount,
+    email,
+  } = userData?.me! as Required<UserVertexType>;
 
   return (
     <Container>
@@ -312,7 +242,7 @@ const Dashboard = ({
                 name="category"
                 aria-label="product category"
               >
-                {config.appData.productCategories.map((category) => (
+                {productCategories.map((category) => (
                   <option key={category}>{category}</option>
                 ))}
               </Form.Select>
@@ -464,7 +394,11 @@ const Dashboard = ({
       {/* first paragraph */}
       <Row>
         <Col as="p" className="display-5 text-center my-5">
-          {info}
+          {
+            webPages.find(
+              ({ pageTitle }) => pageTitle.toLowerCase() === "dashboard"
+            )?.parargraphs[0]
+          }
         </Col>
       </Row>
       {/* dashboard tabs */}
@@ -487,27 +421,26 @@ const Dashboard = ({
             className=""
             ListRenderer={OrdersOrRequests}
             field="status"
-            list={orderList}
+            list={orders?.edges.map((edge) => edge.node)!}
             rendererProps={{ className: "pt-4 rounded" }}
             tabsVariantStyle="pills"
           />
           {orders?.pageInfo.hasNextPage && (
-            <MoreButton
-              customFetch={getMoreOrders}
-              fetchMore={() =>
-                fetchMore({
+            <Button
+              onClick={() =>
+                fetchMoreUserData({
                   variables: {
                     orderArgs: {
                       last: 20,
-                      before: orderData?.myOrders.pageInfo.endCursor,
+                      before: orders.pageInfo.endCursor,
                     },
                   },
                 })
               }
-              label="Load more"
-              loading={loading}
-              hasLazyFetched={hasLazyFetchedOrders}
-            />
+              size="lg"
+            >
+              See more
+            </Button>
           )}
         </Tab>
         {/* requests tab */}
@@ -529,29 +462,28 @@ const Dashboard = ({
             className=""
             ListRenderer={OrdersOrRequests}
             field="status"
-            list={requestList}
+            list={requests.edges.map((edge) => edge.node)}
             rendererProps={{
               className: "pt-4 rounded",
               statuses: ["CANCELED", "DELIVERED"],
             }}
           />
           {requests?.pageInfo.hasNextPage && (
-            <MoreButton
-              customFetch={getMoreRequests}
-              fetchMore={() =>
-                fetchMoreRequests({
+            <Button
+              size="lg"
+              onClick={() =>
+                fetchMoreUserData({
                   variables: {
                     requestArgs: {
                       last: 20,
-                      before: requestData?.myRequests.pageInfo.endCursor,
+                      before: requests.pageInfo.endCursor,
                     },
                   },
                 })
               }
-              label="Load more"
-              loading={requestLoading}
-              hasLazyFetched={hasLazyFetchedRequests}
-            />
+            >
+              See more
+            </Button>
           )}
         </Tab>
         {/* products tab */}
@@ -580,26 +512,25 @@ const Dashboard = ({
             className=""
             ListRenderer={ProductList}
             field="category"
-            list={productList}
+            list={products?.edges.map((edge) => edge.node)!}
             rendererProps={{ className: "d-flex flex-wrap pt-4" }}
           />
           {products?.pageInfo.hasNextPage && (
-            <MoreButton
-              customFetch={getMoreProducts}
-              fetchMore={() =>
-                fetchMoreProducts({
+            <Button
+              size="lg"
+              onClick={() =>
+                fetchMoreUserData({
                   variables: {
                     productArgs: {
                       last: 20,
-                      before: productData?.myProducts.pageInfo.endCursor,
+                      before: products.pageInfo.endCursor,
                     },
                   },
                 })
               }
-              label="Load more"
-              loading={productLoading}
-              hasLazyFetched={hasLazyFetchedProducts}
-            />
+            >
+              See more
+            </Button>
           )}
         </Tab>
         {/* comments tab */}
@@ -616,8 +547,11 @@ const Dashboard = ({
           className="my-5"
         >
           <Container>
-            {commentList.map((comment) => (
-              <Row key={comment._id?.toString()} className="justify-content-center">
+            {comments?.edges.map(({ node: comment }) => (
+              <Row
+                key={comment._id?.toString()}
+                className="justify-content-center"
+              >
                 <Col lg="7">
                   <Card className="my-3">
                     <Card.Header

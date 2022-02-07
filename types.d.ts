@@ -181,8 +181,8 @@ type PagingInputType = Partial<{
 
 type CursorConnectionArgsType<T> = Record<"list", T[]> & PagingInputType;
 
-type UserRegisterVariableType = Record<
-  "userRegisterInput",
+type RegisterVariableType = Record<
+  "registerInput",
   Pick<UserType, "username" | "email" | "password"> &
     Partial<Pick<ServiceType, "title" | "logo" | "description" | "state">>
 >;
@@ -283,8 +283,6 @@ type MoreButtonPropType = {
   loading: boolean;
   label: ReactNode | string;
 };
-
-type DashboardPropType = Required<UserVertexType> & Record<"info", string>;
 
 type SortedListWithTabsPropType = {
   tabsVariantStyle?: "pills" | "tabs";

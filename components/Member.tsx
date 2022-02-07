@@ -19,12 +19,10 @@ import Spinner from "react-bootstrap/Spinner";
 import config from "../config";
 import { useEffect, useState } from "react";
 import { useLazyQuery, useMutation } from "@apollo/client";
-import {
+import type {
   ChangePasswordVariableType,
-  ServiceType,
   UserLoginVariableType,
-  UserRegisterVariableType,
-  UserType,
+  RegisterVariableType,
 } from "types";
 import { accessTokenVar, toastsVar } from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
@@ -69,7 +67,7 @@ const Member = () => {
     [
       registerUser,
       { data: registerData, error: registerError, loading: registerLoading },
-    ] = useMutation<Record<"userRegister", string>, UserRegisterVariableType>(
+    ] = useMutation<Record<"register", string>, RegisterVariableType>(
       USER_REGISTER
     ),
     // passcode request mutation
@@ -127,14 +125,13 @@ const Member = () => {
         message: passCodeData.requestPassCode,
       },
     ]);
+  // update access token on login success
+  data && (accessTokenVar(data.login ?? ""), router.push("/member/dashboard"));
 
   useEffect(() => {
-    // update access token on login success
-    data &&
-      (accessTokenVar(data.login ?? ""), router.push("/member/dashboard"));
     // update access token on register success
     registerData &&
-      (accessTokenVar(registerData.userRegister ?? ""),
+      (accessTokenVar(registerData.register ?? ""),
       router.push("/member/dashboard"));
     // update access token on password change success
     passwordData &&
@@ -279,7 +276,7 @@ const Member = () => {
                     setFileSize(0),
                     registerUser({
                       variables: {
-                        userRegisterInput: {
+                        registerInput: {
                           email,
                           password,
                           username,

@@ -5,10 +5,7 @@ import Member from "@/components/Member";
 import config from "../../config";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { GetStaticPaths, GetStaticProps } from "next";
-import client from "@/graphql/apollo-client";
-import { MY_PROFILE } from "@/graphql/documentNodes";
-import { PagingInputType, UserVertexType } from "types";
+import useAuthPayload from "hooks/useAuthPayload";
 
 // fetch page data
 const { webPages, abbr } = config.appData,
@@ -20,64 +17,46 @@ const { webPages, abbr } = config.appData,
   memberPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "member"
   );
-
-// ssg path
-export const getStaticPaths: GetStaticPaths = async () => {
-  return { paths: [{ params: { slug: ["dashboard"] } }], fallback: true };
-};
-// ssg
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const { data, error } = await client.query<
-      Record<"me", UserVertexType>,
-      Record<
-        "productArgs" | "commentArgs" | "orderArgs" | "requestArgs",
-        PagingInputType
-      >
-    >({
-      query: MY_PROFILE,
-      variables: {
-        commentArgs: { last: 20 },
-        orderArgs: { last: 20 },
-        productArgs: { last: 20 },
-        requestArgs: { last: 20 },
-      },
-      fetchPolicy: "no-cache",
-    });
-
-    return error
-      ? { notFound: true }
-      : { props: params?.slug ? data.me : {}, revalidate: 5 };
-  },
-  // member page component
-  MemberPage = (props: Required<UserVertexType>) => {
-    const { slug } = useRouter().query as {
+// member page component
+const MemberPage = () => {
+  const { slug } = useRouter().query as {
       slug?: string[];
-    };
-
-    return slug ? (
-      slug[0] === "dashboard" ? (
+    },
+    authPayload = useAuthPayload();
+  // if route- /member/xxx/xx ==> slug == [xxx,xx]
+  return slug ? (
+    // when route == member/dashboard
+    slug[0] === "dashboard" ? (
+      // if auth'ed
+      authPayload ? (
         <Layout>
           <Head>
             <title>
               {abbr} &trade; | {dashboardPage?.pageTitle}
             </title>
           </Head>
-          <Dashboard {...props} info={dashboardPage?.parargraphs[0] ?? ""} />
+          <Dashboard />
         </Layout>
       ) : (
+        // if not auth'ed
         <ErrorPage title="404" message="Page Not Found!" />
       )
     ) : (
-      <Layout>
-        {/* tab title */}
-        <Head>
-          <title>
-            {abbr} &trade; | {memberPage?.pageTitle}
-          </title>
-        </Head>
-        <Member />
-      </Layout>
-    );
-  };
+      // if route /member/x is not defined above
+      <ErrorPage title="404" message="Page Not Found!" />
+    )
+  ) : (
+    // if slug (/member/x) not provided
+    <Layout>
+      {/* tab title */}
+      <Head>
+        <title>
+          {abbr} &trade; | {memberPage?.pageTitle}
+        </title>
+      </Head>
+      <Member />
+    </Layout>
+  );
+};
 
 export default MemberPage;

@@ -12,17 +12,18 @@ const {
 
 const httpLink = new HttpLink({
     uri: host + graphqlUri,
-    headers: {
-      authorization: accessTokenVar() ? `Bearer ${accessTokenVar()}` : "",
-    },
   }),
+
   errorLink = onError(({ graphQLErrors, networkError, operation, forward }) => {
     if (graphQLErrors) {
       graphQLErrors.forEach(
         async ({ message, locations, path, extensions: { code } }) => {
           console.log(
-            `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+            `[GraphQL error]: Message: ${message}, Location: ${JSON.stringify(locations)}, Path: ${JSON.stringify(path)}`
           );
+  console.log('===apollo-client:error link========================');
+  console.log(code);
+  console.log('====================================');
           switch (code) {
             case "UNAUTHENTICATED":
               try {
@@ -31,8 +32,10 @@ const httpLink = new HttpLink({
                 } = await axios.post(host + graphqlUri, {
                   query: "query{refreshToken}",
                 });
-                
-                accessTokenVar(refreshToken);
+                console.log('=================apollo-client.ts==============');
+                console.log(refreshToken);
+                console.log('====================================');
+                refreshToken && accessTokenVar(refreshToken);
 
                 operation.setContext({
                   headers: {
@@ -43,7 +46,7 @@ const httpLink = new HttpLink({
 
                 return forward(operation);
               } catch (err) {
-                console.error(err);
+                console.error(err, "axios refreshToken error");
               } finally {
                 return forward(operation);
               }

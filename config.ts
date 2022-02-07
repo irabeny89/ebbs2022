@@ -86,7 +86,7 @@ const config = {
       },
       {
         route: "/member",
-        links: [],
+        links: [{ route: "/member/dashboard", pageTitle: "Dashboard" }],
         privacy: "ALL",
         pageTitle: "Member",
         description: "Authentication and authorization page.",
