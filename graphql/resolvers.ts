@@ -14,12 +14,13 @@ import type {
   ServiceUpdateVariableType,
   UserLoginVariableType,
   UserPayloadType,
-  UserRegisterVariableType,
+  RegisterVariableType,
   UserType,
 } from "types";
 import {
   authUser,
   comparePassword,
+  devErrorLogger,
   getAuthPayload,
   getCursorConnection,
   getHashedPassword,
@@ -34,12 +35,7 @@ import {
 
 const {
   environmentVariable: { jwtRefreshSecret },
-  appData: {
-    generalErrorMessage,
-    title: ebbsTitle,
-    passCodeDuration,
-    abbr,
-  },
+  appData: { generalErrorMessage, title: ebbsTitle, passCodeDuration, abbr },
 } = config;
 
 const resolvers = {
@@ -89,6 +85,7 @@ const resolvers = {
         );
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -120,6 +117,7 @@ const resolvers = {
         ).accessToken;
       } catch (error) {
         // log error for more
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -132,6 +130,7 @@ const resolvers = {
         return await ServiceModel.findById(serviceId).lean().exec();
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -147,6 +146,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -181,10 +181,8 @@ const resolvers = {
           ...args,
         });
       } catch (error) {
-        console.log("====================================");
-        console.log(error);
-        console.log("====================================");
         // NOTE: log error to debug
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -209,6 +207,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -233,6 +232,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -252,6 +252,7 @@ const resolvers = {
           .exec();
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -260,8 +261,8 @@ const resolvers = {
     register: async (
       _: any,
       {
-        userRegisterInput: { email, password, username, ...serviceData },
-      }: UserRegisterVariableType,
+        registerInput: { email, password, username, ...serviceData },
+      }: RegisterVariableType,
       { UserModel, ServiceModel, res }: GraphContextType
     ) => {
       try {
@@ -303,6 +304,7 @@ const resolvers = {
             ValidationError,
             "Validate your inputs. " + generalErrorMessage
           );
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -352,6 +354,7 @@ const resolvers = {
         return "Passcode sent to your email successfully";
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error);
         handleError(error, UserInputError, generalErrorMessage);
       }
     },
@@ -379,6 +382,7 @@ const resolvers = {
         return "Password changed successfully.";
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, UserInputError, generalErrorMessage);
       }
     },
@@ -405,6 +409,7 @@ const resolvers = {
         return "Service updated successfully";
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -429,6 +434,7 @@ const resolvers = {
         ).id;
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, UserInputError, generalErrorMessage);
       }
     },
@@ -452,6 +458,7 @@ const resolvers = {
         return "Product deleted successfully";
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -477,6 +484,7 @@ const resolvers = {
         return "Comment posted successfully";
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -506,6 +514,7 @@ const resolvers = {
         return args.isFav;
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -534,6 +543,7 @@ const resolvers = {
         return "Order created successfully";
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -567,6 +577,7 @@ const resolvers = {
         return status;
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -583,6 +594,7 @@ const resolvers = {
         )?.username;
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -602,6 +614,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -623,6 +636,25 @@ const resolvers = {
           .exec();
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    requestCount: async (
+      parent: UserType,
+      _: any,
+      { OrderModel }: GraphContextType
+    ) => {
+      try {
+        return (
+          await OrderModel.find({ client: parent._id })
+            .select("_id")
+            .lean()
+            .exec()
+        ).length;
+      } catch (error) {
+        // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -639,6 +671,7 @@ const resolvers = {
         )?.title;
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -674,6 +707,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -691,6 +725,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -708,6 +743,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -729,6 +765,7 @@ const resolvers = {
         );
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -743,6 +780,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -757,6 +795,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -771,6 +810,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -785,6 +825,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
+        devErrorLogger(error)
         handleError(error, Error, generalErrorMessage);
       }
     },

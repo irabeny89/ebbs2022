@@ -18,6 +18,8 @@ import {
 } from "nodemailer";
 import Mail from "nodemailer/lib/mailer";
 
+const isDev = process.env.NODE_ENV === "development";
+
 const {
   environmentVariable: {
     jwtAccessSecret,
@@ -175,7 +177,9 @@ export const sendEmail = async (emailOptions: Mail.Options) => {
   return { ...info, testAccountMessageUrl: getTestMessageUrl(info) };
 };
 
-export const getCursorConnection = <T extends Record<"createdAt", Date | string>>({
+export const getCursorConnection = <
+  T extends Record<"createdAt", Date | string>
+>({
   list,
   first,
   after,
@@ -183,13 +187,13 @@ export const getCursorConnection = <T extends Record<"createdAt", Date | string>
   before,
 }: CursorConnectionArgsType<T>): CursorConnectionType<T> => {
   let edges: {
-    cursor: Date | string;
-    node: T;
-  }[] = [],
-  startCursor: Date | string = new Date(),
-  endCursor: Date | string = new Date(),
-  hasNextPage: boolean = false,
-  hasPreviousPage: boolean = false;
+      cursor: Date | string;
+      node: T;
+    }[] = [],
+    startCursor: Date | string = new Date(),
+    endCursor: Date | string = new Date(),
+    hasNextPage: boolean = false,
+    hasPreviousPage: boolean = false;
   if (first) {
     const afterIndex = list.findIndex((item) => item.createdAt === after);
     // create edges with cursor
@@ -207,22 +211,28 @@ export const getCursorConnection = <T extends Record<"createdAt", Date | string>
     const beforeIndex = list.findIndex((item) => item.createdAt === before);
     // create edges with cursor
     edges = list
-    .slice(
-      (beforeIndex === -1 ? 0 : beforeIndex) - last,
-      beforeIndex === -1 ? undefined : beforeIndex
+      .slice(
+        (beforeIndex === -1 ? 0 : beforeIndex) - last,
+        beforeIndex === -1 ? undefined : beforeIndex
       )
       .map((item) => ({
         cursor: item.createdAt,
         node: item,
       }));
-      // paging info
-      startCursor = edges[0]?.node?.createdAt ?? "";
-      endCursor = edges.reverse()[0]?.node?.createdAt ?? "";
-      hasNextPage = list.some((item) => item.createdAt > endCursor);
-      hasPreviousPage = list.some((item) => item.createdAt < startCursor);
-    }
+    // paging info
+    startCursor = edges[0]?.node?.createdAt ?? "";
+    endCursor = edges.reverse()[0]?.node?.createdAt ?? "";
+    hasNextPage = list.some((item) => item.createdAt > endCursor);
+    hasPreviousPage = list.some((item) => item.createdAt < startCursor);
+  }
   return {
     edges: edges.reverse(),
     pageInfo: { startCursor, endCursor, hasPreviousPage, hasNextPage },
   };
 };
+
+export const devErrorLogger = (error: any) =>
+  isDev &&
+  (console.log("===================================="),
+  console.log(error),
+  console.log("===================================="));
