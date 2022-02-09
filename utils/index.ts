@@ -18,7 +18,7 @@ import {
 } from "nodemailer";
 import Mail from "nodemailer/lib/mailer";
 
-const isDev = process.env.NODE_ENV === "development";
+export const isDevEnv = process.env.NODE_ENV === "development";
 
 const {
   environmentVariable: {
@@ -130,7 +130,7 @@ const createTokenPair = ({
 }: UserPayloadType): TokenPairType => ({
   accessToken: generateToken({ username, serviceId }, jwtAccessSecret, {
     subject: id,
-    expiresIn: "20m",
+    expiresIn: "1m",
     audience,
     issuer: host,
     algorithm: "HS256",
@@ -232,7 +232,7 @@ export const getCursorConnection = <
 };
 
 export const devErrorLogger = (error: any) =>
-  isDev &&
+  isDevEnv &&
   (console.log("===================================="),
   console.log(error),
   console.log("===================================="));
