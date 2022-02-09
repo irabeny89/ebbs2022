@@ -382,7 +382,7 @@ const resolvers = {
         return "Password changed successfully.";
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, UserInputError, generalErrorMessage);
       }
     },
@@ -409,7 +409,7 @@ const resolvers = {
         return "Service updated successfully";
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -434,7 +434,7 @@ const resolvers = {
         ).id;
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, UserInputError, generalErrorMessage);
       }
     },
@@ -458,7 +458,7 @@ const resolvers = {
         return "Product deleted successfully";
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -484,7 +484,7 @@ const resolvers = {
         return "Comment posted successfully";
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -514,7 +514,7 @@ const resolvers = {
         return args.isFav;
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -543,7 +543,7 @@ const resolvers = {
         return "Order created successfully";
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -577,7 +577,7 @@ const resolvers = {
         return status;
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -594,7 +594,7 @@ const resolvers = {
         )?.username;
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -614,7 +614,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -636,7 +636,7 @@ const resolvers = {
           .exec();
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -654,7 +654,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -671,7 +671,7 @@ const resolvers = {
         )?.title;
       } catch (error) {
         // NOTE: log to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -707,7 +707,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -725,7 +725,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -743,7 +743,7 @@ const resolvers = {
         });
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -765,7 +765,7 @@ const resolvers = {
         );
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -780,7 +780,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -795,7 +795,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -810,7 +810,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
@@ -825,7 +825,7 @@ const resolvers = {
         ).length;
       } catch (error) {
         // NOTE: log error to debug
-        devErrorLogger(error)
+        devErrorLogger(error);
         handleError(error, Error, generalErrorMessage);
       }
     },
