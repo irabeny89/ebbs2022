@@ -5,7 +5,6 @@ import Member from "@/components/Member";
 import config from "../../config";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import useAuthPayload from "hooks/useAuthPayload";
 
 // fetch page data
 const { webPages, abbr } = config.appData,
@@ -21,14 +20,11 @@ const { webPages, abbr } = config.appData,
 const MemberPage = () => {
   const { slug } = useRouter().query as {
       slug?: string[];
-    },
-    authPayload = useAuthPayload();
+    }
   // if route- /member/xxx/xx ==> slug == [xxx,xx]
   return slug ? (
     // when route == member/dashboard
     slug[0] === "dashboard" ? (
-      // if auth'ed
-      authPayload ? (
         <Layout>
           <Head>
             <title>
@@ -37,10 +33,6 @@ const MemberPage = () => {
           </Head>
           <Dashboard />
         </Layout>
-      ) : (
-        // if not auth'ed
-        <ErrorPage title="404" message="Page Not Found!" />
-      )
     ) : (
       // if route /member/x is not defined above
       <ErrorPage title="404" message="Page Not Found!" />

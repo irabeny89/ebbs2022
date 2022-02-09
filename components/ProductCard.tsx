@@ -16,14 +16,14 @@ import { cartItemsVar, toastsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import {
   DELETE_MY_PRODUCT,
   MY_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
 } from "@/graphql/documentNodes";
-import useAuthPayload from "hooks/useAuthPayload";
+import useAuthPayload from "../hooks/useAuthPayload";
 
 const { CART_ITEMS_KEY } = config.appData.constants,
   // custom style
@@ -111,7 +111,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                 onClick={() =>
                   deleteProduct({
                     variables: {
-                      productId: _id,
+                      productId: _id.toString(),
                     },
                     refetchQueries: [FEW_PRODUCTS_AND_SERVICES, MY_PRODUCTS],
                   })
@@ -199,47 +199,49 @@ const { CART_ITEMS_KEY } = config.appData.constants,
               )}
             </Carousel>
           </Card.Body>
-          <Card.Footer className="pb-4">
-            <Row>
-              <Button
-                className="d-flex justify-content-center align-items-center"
-                onClick={() => {
-                  const oldItems = getLastCartItemsFromStorage(localStorage),
-                    // if cart has this product update it; if it doesn't add it.
-                    newItems = oldItems.find((item) => item._id === _id)
-                      ? oldItems.map((item) =>
-                          item._id === _id
-                            ? {
-                                ...item,
-                                quantity: ++item.quantity,
-                                cost: item.price * ++item.quantity,
-                              }
-                            : item
-                        )
-                      : [
-                          ...oldItems,
-                          {
-                            _id: _id!,
-                            providerId: provider?._id!,
-                            name: name!,
-                            price: price!,
-                            quantity: 1,
-                            cost: price! * 1,
-                          },
-                        ];
-                  // store in storage and update state
-                  localStorage.setItem(
-                    CART_ITEMS_KEY,
-                    JSON.stringify(newItems)
-                  );
-                  cartItemsVar(newItems);
-                }}
-              >
-                <MdShoppingCart />
-                <div className="mx-1">Add to cart</div>
-              </Button>
-            </Row>
-          </Card.Footer>
+          {authPayload?.serviceId !== provider._id && (
+            <Card.Footer className="pb-4">
+              <Row>
+                <Button
+                  className="d-flex justify-content-center align-items-center"
+                  onClick={() => {
+                    const oldItems = getLastCartItemsFromStorage(localStorage),
+                      // if cart has this product update it; if it doesn't add it.
+                      newItems = oldItems.find((item) => item._id === _id)
+                        ? oldItems.map((item) =>
+                            item._id === _id
+                              ? {
+                                  ...item,
+                                  quantity: ++item.quantity,
+                                  cost: item.price * ++item.quantity,
+                                }
+                              : item
+                          )
+                        : [
+                            ...oldItems,
+                            {
+                              _id: _id!,
+                              providerId: provider?._id!,
+                              name: name!,
+                              price: price!,
+                              quantity: 1,
+                              cost: price! * 1,
+                            },
+                          ];
+                    // store in storage and update state
+                    localStorage.setItem(
+                      CART_ITEMS_KEY,
+                      JSON.stringify(newItems)
+                    );
+                    cartItemsVar(newItems);
+                  }}
+                >
+                  <MdShoppingCart />
+                  <div className="mx-1">Add to cart</div>
+                </Button>
+              </Row>
+            </Card.Footer>
+          )}
         </Card>
       </Container>
     );

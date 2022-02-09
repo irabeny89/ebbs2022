@@ -6,14 +6,14 @@ import Link from "next/link";
 
 const UnAuth = () => (
   <Container>
-    <Row>
-      <Col>
+    <Row className="justify-content-center">
+      <Col sm="auto">
         <Card>
-          <Card.Header>
-            <Card.Title>Forbidden!</Card.Title>
+          <Card.Header className="bg-danger text-white">
+            <Card.Title className="display-1">Forbidden!</Card.Title>
           </Card.Header>
           <Card.Body>
-            <Card.Text>
+            <Card.Text className="h5">
               <Link href="/member">Login/register to continue.</Link>
             </Card.Text>
           </Card.Body>

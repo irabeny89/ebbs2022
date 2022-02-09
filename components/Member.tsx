@@ -125,10 +125,10 @@ const Member = () => {
         message: passCodeData.requestPassCode,
       },
     ]);
-  // update access token on login success
-  data && (accessTokenVar(data.login ?? ""), router.push("/member/dashboard"));
-
-  useEffect(() => {
+    
+    useEffect(() => {
+    // update access token on login success
+    data && (accessTokenVar(data.login), router.push("/member/dashboard"));
     // update access token on register success
     registerData &&
       (accessTokenVar(registerData.register ?? ""),

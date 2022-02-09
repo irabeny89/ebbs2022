@@ -201,6 +201,7 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
     $productArgs: PagingInput!
     $serviceArgs: PagingInput!
     $commentArgs: PagingInput!
+    $serviceProductArgs: PagingInput!
   ) {
     products(args: $productArgs) {
       edges {
@@ -212,12 +213,16 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
           }
         }
       }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
     services(args: $serviceArgs) {
       edges {
         node {
           ...ServiceFields
-          products(args: $productArgs) {
+          products(args: $serviceProductArgs) {
             edges {
               node {
                 ...ProductFields
@@ -241,6 +246,10 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
             }
           }
         }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
       }
     }
   }

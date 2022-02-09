@@ -27,12 +27,19 @@ import type {
   OrderVertexType,
   PagingInputType,
   ProductVertexType,
+  ServiceVertexType,
 } from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
-import { FEW_PRODUCTS, SERVICE_ORDER } from "@/graphql/documentNodes";
+import {
+  FEW_PRODUCTS,
+  FEW_PRODUCTS_AND_SERVICES,
+  SERVICE_ORDER,
+} from "@/graphql/documentNodes";
 import SortedListWithTabs from "./SortedListWithTabs";
 import ProductList from "./ProductList";
+import ServiceSection from "./ServiceSection";
+import ServiceList from "./ServiceList";
 
 // get cart items total count
 const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
@@ -84,9 +91,13 @@ const Layout = ({ children }: LayoutPropsType) => {
         fetchMore,
       },
     ] = useLazyQuery<
-      Record<"products", CursorConnectionType<ProductVertexType>>,
-      Record<"args", PagingInputType>
-    >(FEW_PRODUCTS);
+      Record<"products", CursorConnectionType<ProductVertexType>> &
+        Record<"services", CursorConnectionType<ServiceVertexType>>,
+      Record<
+        "productArgs" | "serviceArgs" | "commentArgs" | "serviceProductArgs",
+        PagingInputType
+      >
+    >(FEW_PRODUCTS_AND_SERVICES);
   // on mount update cart items reactive variable from local storage
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
@@ -117,7 +128,11 @@ const Layout = ({ children }: LayoutPropsType) => {
   }, [error, searchError, data, searchData]);
   // extract products from connection
   const foundProducts =
-    searchData?.products.edges.map((edge) => edge.node) ?? [];
+      searchData?.products.edges.map((edge) => edge.node) ?? [],
+    // extract services from cursor connection
+    foundServices = searchData?.services.edges.map((edge) => edge.node) ?? [];
+  // get total cart items count
+  const cartItemsCount = getCartItemsTotalCount(cartItems);
 
   return (
     <Container fluid as="main">
@@ -146,7 +161,7 @@ const Layout = ({ children }: LayoutPropsType) => {
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>
-            Cart Items | {getCartItemsTotalCount(cartItems)}{" "}
+            Cart Items | {cartItemsCount}{" "}
             {!authPayload && (
               <>
                 {" "}
@@ -241,13 +256,13 @@ const Layout = ({ children }: LayoutPropsType) => {
             )}
           </Row>
           {data && (
-            <Alert>
+            <Alert variant="success">
               Request ID {data.serviceOrder._id}. Check your{" "}
               <Link href="/member/dashboard">dashboard</Link> for more details
             </Alert>
           )}
           {/* show delivery details when cart has something */}
-          {!!cartItems.length && (
+          {authPayload && !!cartItems.length && (
             // delivery details
             <Row>
               <Col>
@@ -376,31 +391,30 @@ const Layout = ({ children }: LayoutPropsType) => {
             </Row>
           )}
         </Modal.Body>
-        <Modal.Footer>
-          <Link href="/member">Login to order</Link>
-          <Button
-            variant="danger"
-            // on click, clear cart data from storage & memory
-            onClick={() => (
-              localStorage.removeItem(CART_ITEMS_KEY), cartItemsVar([])
+        {!!cartItemsCount && (
+          <Modal.Footer>
+            <Button
+              size="lg"
+              variant="danger"
+              // on click, clear cart data from storage & memory
+              onClick={() => (
+                localStorage.removeItem(CART_ITEMS_KEY), cartItemsVar([])
+              )}
+            >
+              <FaTrash size={20} className="mb-1" /> Clear cart
+            </Button>
+            {authPayload && (
+              <Button variant="success" size="lg">
+                <FaFirstOrder size={20} className="mb-1" />
+                {loading && <Spinner animation="grow" size="sm" />} Send request
+              </Button>
             )}
-          >
-            <FaTrash size={20} className="mb-1" /> Clear cart
-          </Button>
-          {loading ? (
-            <Button>
-              <Spinner animation="grow" />
-            </Button>
-          ) : (
-            <Button variant="success" disabled={!authPayload || loading}>
-              <FaFirstOrder size={20} className="mb-1" /> Send request
-            </Button>
-          )}
-        </Modal.Footer>
+          </Modal.Footer>
+        )}
       </Modal>
       {/* search result modal */}
       <Modal show={showSearch} onHide={() => setShowSearch(false)} fullscreen>
-        <Modal.Header closeButton>
+        <Modal.Header closeButton className="bg-warning">
           <Modal.Title>Search results</Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -415,9 +429,21 @@ const Layout = ({ children }: LayoutPropsType) => {
             list={foundProducts}
             rendererProps={{ className: "d-flex flex-wrap" }}
           />
+          <Modal.Title className="mt-3">
+            Services Found: {foundServices.length}
+            {searchData?.services.pageInfo.hasNextPage && "+"}
+          </Modal.Title>
+          <br />
+          <SortedListWithTabs
+            ListRenderer={ServiceList}
+            field="state"
+            list={foundServices}
+            rendererProps={{ className: "d-flex flex-wrap" }}
+          />
         </Modal.Body>
         <Modal.Footer>
-          {searchData?.products.pageInfo.hasNextPage && (
+          {(searchData?.products.pageInfo.hasNextPage ||
+            searchData?.services.pageInfo.hasNextPage) && (
             <Button
               size="lg"
               variant="outline-info"
@@ -465,9 +491,7 @@ const Layout = ({ children }: LayoutPropsType) => {
                         page.pageTitle.toLowerCase() === "member" ? (
                           <NavDropdown
                             key={page.pageTitle}
-                            title={`${
-                              authPayload ? authPayload.username : "Member"
-                            }`}
+                            title={`${authPayload?.username ?? "Member"}`}
                             id="collapsible-nav-dropdown"
                           >
                             {!authPayload ? (
@@ -522,14 +546,25 @@ const Layout = ({ children }: LayoutPropsType) => {
                 | undefined;
 
               search
-                ? searchProduct({
+                ? (e.currentTarget.reset(),
+                  searchProduct({
                     variables: {
-                      args: {
+                      productArgs: {
                         search,
                         first: 20,
                       },
+                      serviceArgs: {
+                        search,
+                        first: 20,
+                      },
+                      commentArgs: {
+                        last: 20,
+                      },
+                      serviceProductArgs: {
+                        first: 10,
+                      },
                     },
-                  })
+                  }))
                 : (e.preventDefault(), e.stopPropagation());
             }}
           >
@@ -560,7 +595,7 @@ const Layout = ({ children }: LayoutPropsType) => {
             variant="outline-dark"
             onClick={() => setShow(true)}
           >
-            {getCartItemsTotalCount(cartItems)} <FaShoppingCart size="25" />
+            {cartItemsCount} <FaShoppingCart size="25" />
           </Button>
         </Col>
       </Row>

@@ -39,6 +39,7 @@ const client = new ApolloClient({
                   accessTokenVar(refreshToken);
                   operation.setContext({
                     headers: {
+                      ...operation.getContext().headers,
                       authorization: `Bearer ${accessTokenVar()}`,
                     },
                   });
@@ -51,7 +52,6 @@ const client = new ApolloClient({
           );
         }
         if (networkError) console.log(`[Network error]: ${networkError}`);
-        return forward(operation);
       }),
       new RetryLink(),
       new HttpLink({

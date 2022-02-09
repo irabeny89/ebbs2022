@@ -44,7 +44,7 @@ export const getStaticProps: GetStaticProps = async () => {
         products: CursorConnectionType<ProductVertexType>;
         services: CursorConnectionType<ServiceVertexType>;
       },
-      Record<"productArgs" | "commentArgs" | "serviceArgs", PagingInputType>
+      Record<"productArgs" | "commentArgs" | "serviceArgs" | "serviceProductArgs", PagingInputType>
     >({
       query: FEW_PRODUCTS_AND_SERVICES,
       variables: {
@@ -57,8 +57,10 @@ export const getStaticProps: GetStaticProps = async () => {
         serviceArgs: {
           last: 20,
         },
+        serviceProductArgs: {
+          first: 10,
+        },
       },
-      fetchPolicy: "no-cache",
     });
 
     return error
