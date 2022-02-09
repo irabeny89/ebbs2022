@@ -171,7 +171,6 @@ type PageInfoType = {
 };
 
 type PagingInputType = Partial<{
-  id: string;
   first: number;
   after: Date | string;
   last: number;

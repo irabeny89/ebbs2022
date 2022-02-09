@@ -25,3 +25,9 @@ export const productProps: ProductCardPropType = {
   saleCount: 1e2,
   provider: { title: "Ekemode" },
 };
+
+export const testList = Array.from({ length: 5 }).map((_, i) => ({
+  name: "A" + i,
+  tags: ["tag1" + i, "tag2" + i],
+  createdAt: new Date(Date.now() + 1e3 * i),
+}));
