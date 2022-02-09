@@ -73,8 +73,8 @@ type ProductType = {
 } & TimestampAndId;
 
 type OrderItemType = {
-  _id: string;
-  providerId: string;
+  _id: string | mongoose.Types.ObjectId;
+  providerId: string | mongoose.Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
