@@ -27,6 +27,7 @@ import {
   MY_COMMENT,
   MY_SERVICE_UPDATE,
   LOGOUT,
+  FEW_PRODUCTS_AND_SERVICES,
 } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import SortedListWithTabs from "./SortedListWithTabs";
@@ -37,12 +38,14 @@ import ProductList from "./ProductList";
 import useAuthPayload from "hooks/useAuthPayload";
 import UnAuth from "./UnAuth";
 import { useRouter } from "next/router";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
 
 const { webPages, productCategories } = config.appData,
   // tab title style
   tabTitleStyle = { fontSize: 16 };
 // dashboard component
 const Dashboard = () => {
+  const { push } = useRouter();
   // use auth payload & access token
   const { authPayload, accessToken } = useAuthPayload();
   // state variable for form
@@ -87,7 +90,7 @@ const Dashboard = () => {
       useMutation<Record<"newProduct", string>, NewProductVariableType>(
         ADD_NEW_PRODUCT,
         {
-          refetchQueries: [MY_PRODUCTS],
+          refetchQueries: [MY_PROFILE, FEW_PRODUCTS_AND_SERVICES],
           context: {
             headers: {
               authorization: `Bearer ${accessToken}`,
@@ -118,11 +121,10 @@ const Dashboard = () => {
         },
       },
     });
-  // when logged out clear store & redirect to home page
-  logoutData && client.clearStore() && useRouter().push("/");
-  // toast when new product is added
   // cleanup state when modal closed
   useEffect(() => {
+    // when logged out clear store, accessTokenVar & redirect to home page
+    logoutData && client.clearStore() && accessTokenVar("") && push("/");
     newProductData && setShow(false);
     return () => {
       setFileSizes([]);

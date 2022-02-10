@@ -5,8 +5,6 @@ import Member from "@/components/Member";
 import config from "../../config";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import useAuthPayload from "hooks/useAuthPayload";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
 
 // fetch page data
 const { webPages, abbr } = config.appData,
@@ -21,20 +19,20 @@ const { webPages, abbr } = config.appData,
 // member page component
 const MemberPage = () => {
   const { slug } = useRouter().query as {
-      slug?: string[];
-    }
+    slug?: string[];
+  };
   // if route- /member/xxx/xx ==> slug == [xxx,xx]
   return slug ? (
     // when route == member/dashboard
     slug[0] === "dashboard" ? (
-        <Layout>
-          <Head>
-            <title>
-              {abbr} &trade; | {dashboardPage?.pageTitle}
-            </title>
-          </Head>
-          <Dashboard />
-        </Layout>
+      <Layout>
+        <Head>
+          <title>
+            {abbr} &trade; | {dashboardPage?.pageTitle}
+          </title>
+        </Head>
+        <Dashboard />
+      </Layout>
     ) : (
       // if route /member/x is not defined above
       <ErrorPage title="404" message="Page Not Found!" />

@@ -9,7 +9,7 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
 import { BiMessageAltDots, BiLike, BiInfoCircle, BiSend } from "react-icons/bi";
-import type { ServiceLabelPropType, ServiceVertexType } from "types";
+import type { ServiceLabelPropType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { CSSProperties, useEffect, useState } from "react";
 import { useMutation } from "@apollo/client";
@@ -19,7 +19,7 @@ import useAuthPayload from "hooks/useAuthPayload";
 import {
   FEW_PRODUCTS_AND_SERVICES,
   FEW_SERVICES,
-  SERVICE_LIKE_TOGGLE,
+  MY_FAV_SERVICE,
 } from "@/graphql/documentNodes";
 import { toastsVar } from "@/graphql/reactiveVariables";
 
@@ -47,14 +47,22 @@ const styling: { [key: string]: CSSProperties } = {
       // comment modal state
       [showComment, setShowComment] = useState(false),
       // the auth payload
-      authPayload = useAuthPayload(),
+      { authPayload, accessToken } = useAuthPayload(),
       // service liking mutation
       [likeOrUnlike, { loading, data, error }] = useMutation<
-        Record<"serviceLiking", ServiceVertexType>,
-        Record<"serviceId", string>
-      >(SERVICE_LIKE_TOGGLE, {
-        variables: { serviceId: _id!.toString() },
+        Record<"myFavService", boolean>,
+        Record<"serviceId", string> & Record<"isFav", boolean>
+      >(MY_FAV_SERVICE, {
+        variables: {
+          serviceId: _id!.toString(),
+          isFav: !happyClients?.includes(authPayload?.sub!) ?? false,
+        },
         refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
+        context: {
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+          },
+        },
       });
 
     useEffect(() => {
@@ -168,10 +176,7 @@ const styling: { [key: string]: CSSProperties } = {
               onClick={() => likeOrUnlike()}
             >
               {loading && <Spinner animation="grow" size="sm" />}
-              <BiLike size={18} />{" "}
-              {getCompactNumberFormat(
-                data?.serviceLiking?.likeCount ?? likeCount!
-              )}
+              <BiLike size={18} /> {getCompactNumberFormat(likeCount!)}
             </Button>
           </Col>
           <Col>

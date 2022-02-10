@@ -22,6 +22,8 @@ import {
   DELETE_MY_PRODUCT,
   MY_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
+  FEW_SERVICES,
+  MY_PROFILE,
 } from "@/graphql/documentNodes";
 import useAuthPayload from "../hooks/useAuthPayload";
 
@@ -52,33 +54,26 @@ const { CART_ITEMS_KEY } = config.appData.constants,
     style,
   }: ProductCardPropType) => {
     // get auth payload
-    const authPayload = useAuthPayload();
+    const { authPayload, accessToken } = useAuthPayload();
     // product info modal state
     const [show, setShow] = useState(false),
       // product delete modal dialog state
       [showDialog, setShowDialog] = useState(false);
     // deletion mutation
-    const [deleteProduct, { data, error, loading }] = useMutation<
-      Record<"deleteMyProduct", ProductVertexType>,
+    const [deleteProduct, { loading }] = useMutation<
+      Record<"deleteMyProduct", string>,
       Record<"productId", string>
-    >(DELETE_MY_PRODUCT);
-
-    // toast on product delete
-    data &&
-      (setShowDialog(false),
-      toastsVar([
-        {
-          message: `${data.deleteMyProduct.name} is deleted.`,
+    >(DELETE_MY_PRODUCT, {
+      refetchQueries: [FEW_PRODUCTS_AND_SERVICES, MY_PROFILE],
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
         },
-      ]));
-    error &&
-      (setShowDialog(false),
-      toastsVar([
-        {
-          header: error.name,
-          message: "Delete failed.",
-        },
-      ]));
+      },
+      variables: {
+        productId: _id.toString(),
+      },
+    });
 
     return (
       <Container fluid {...{ className, style }}>
@@ -106,17 +101,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
             </Modal.Header>
             <Modal.Body>Are you sure? This cannot be undone.</Modal.Body>
             <Modal.Footer>
-              <Button
-                variant="danger"
-                onClick={() =>
-                  deleteProduct({
-                    variables: {
-                      productId: _id.toString(),
-                    },
-                    refetchQueries: [FEW_PRODUCTS_AND_SERVICES, MY_PRODUCTS],
-                  })
-                }
-              >
+              <Button variant="danger" onClick={() => deleteProduct()}>
                 {loading && <Spinner animation="grow" size="sm" />}Delete
               </Button>
               <Button variant="secondary" onClick={() => setShowDialog(false)}>

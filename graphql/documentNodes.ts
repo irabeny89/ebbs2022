@@ -457,11 +457,9 @@ export const DELETE_MY_PRODUCT = gql`
   }
 `;
 
-export const SERVICE_LIKE_TOGGLE = gql`
-  mutation ServiceLikeToggle($serviceId: ID!) {
-    serviceLiking(serviceId: $serviceId) {
-      likeCount
-    }
+export const MY_FAV_SERVICE = gql`
+  mutation ServiceLikeToggle($serviceId: ID!, $isFav: Boolean!) {
+    myFavService(serviceId: $serviceId, isFav: $isFav) 
   }
 `;
 
