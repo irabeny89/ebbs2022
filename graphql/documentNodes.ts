@@ -412,6 +412,12 @@ export const MY_PRODUCTS = gql`
   }
 `;
 
+export const LOGOUT = gql`
+  query UserLogOut {
+    logout
+  }
+`;
+
 // mutation operations
 export const USER_REGISTER = gql`
   mutation register($registerInput: RegisterInput!) {
@@ -441,17 +447,13 @@ export const SET_ORDER_STATUS = gql`
 
 export const ADD_NEW_PRODUCT = gql`
   mutation AddNewProduct($newProduct: NewProductInput!) {
-    newProduct(args: $newProduct) {
-      name
-    }
+    newProduct(args: $newProduct)
   }
 `;
 
 export const DELETE_MY_PRODUCT = gql`
   mutation DeleteMyProduct($productId: ID!) {
-    deleteMyProduct(productId: $productId) {
-      name
-    }
+    deleteMyProduct(productId: $productId)
   }
 `;
 
@@ -465,24 +467,18 @@ export const SERVICE_LIKE_TOGGLE = gql`
 
 export const SERVICE_ORDER = gql`
   mutation ServiceOrder($serviceOrderInput: ServiceOrderInput!) {
-    serviceOrder(args: $serviceOrderInput) {
-      _id
-    }
+    serviceOrder(args: $serviceOrderInput)
   }
 `;
 
 export const MY_COMMENT = gql`
   mutation MyComment($serviceId: ID!, $post: String!) {
-    myComment(serviceId: $serviceId, post: $post) {
-      _id
-    }
+    myCommentPost(serviceId: $serviceId, post: $post)
   }
 `;
 
 export const MY_SERVICE_UPDATE = gql`
   mutation MyServiceUpdate($serviceUpdate: MyServiceUpdateInput!) {
-    myServiceUpdate(args: $serviceUpdate) {
-      _id
-    }
+    myServiceUpdate(args: $serviceUpdate)
   }
 `;

@@ -130,7 +130,7 @@ const createTokenPair = ({
 }: UserPayloadType): TokenPairType => ({
   accessToken: generateToken({ username, serviceId }, jwtAccessSecret, {
     subject: id,
-    expiresIn: "1m",
+    expiresIn: "20m",
     audience,
     issuer: host,
     algorithm: "HS256",

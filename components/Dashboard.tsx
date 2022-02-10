@@ -11,27 +11,24 @@ import Badge from "react-bootstrap/Badge";
 import Spinner from "react-bootstrap/Spinner";
 import { MdDashboardCustomize, MdAdd, MdSend } from "react-icons/md";
 import {
-  CommentVertexType,
   NewProductVariableType,
   PagingInputType,
   ProductType,
-  ProductVertexType,
   ServiceType,
   ServiceUpdateVariableType,
-  ServiceVertexType,
   UserVertexType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import { useMutation, useQuery } from "@apollo/client";
+import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
 import {
   ADD_NEW_PRODUCT,
   MY_PRODUCTS,
   MY_PROFILE,
   MY_COMMENT,
   MY_SERVICE_UPDATE,
+  LOGOUT,
 } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
-import { accessTokenVar, toastsVar } from "@/graphql/reactiveVariables";
 import SortedListWithTabs from "./SortedListWithTabs";
 import OrdersOrRequests from "./OrdersOrRequests";
 import { useEffect, useState } from "react";
@@ -39,14 +36,15 @@ import config from "../config";
 import ProductList from "./ProductList";
 import useAuthPayload from "hooks/useAuthPayload";
 import UnAuth from "./UnAuth";
+import { useRouter } from "next/router";
 
 const { webPages, productCategories } = config.appData,
   // tab title style
   tabTitleStyle = { fontSize: 16 };
 // dashboard component
 const Dashboard = () => {
-  // use auth payload
-  const authPayload = useAuthPayload();
+  // use auth payload & access token
+  const { authPayload, accessToken } = useAuthPayload();
   // state variable for form
   const [validated, setValidated] = useState(false),
     // file size state
@@ -60,7 +58,6 @@ const Dashboard = () => {
   // query user data
   const {
       data: userData,
-      error: userError,
       loading: userLoading,
       fetchMore: fetchMoreUserData,
     } = useQuery<
@@ -78,75 +75,62 @@ const Dashboard = () => {
       },
       context: {
         headers: {
-          authorization: `Bearer ${accessTokenVar()}`
-        }
-      }
-    }),
-    // add new product mutation
-    [
-      addProduct,
-      {
-        data: newProductData,
-        loading: newProductLoading,
-        error: newProductError,
+          authorization: `Bearer ${accessToken}`,
+        },
       },
-    ] = useMutation<
-      Record<"newProduct", ProductVertexType>,
-      NewProductVariableType
-    >(ADD_NEW_PRODUCT, { refetchQueries: [MY_PRODUCTS] }),
-    // reply comment mutation
-    [sendPost, { error: postError }] = useMutation<
-      Record<"myComment", CommentVertexType>,
+    }),
+    // logout
+    [logout, { data: logoutData, loading: loggingOut, client }] =
+      useLazyQuery<Record<"logout", string>>(LOGOUT),
+    // add new product mutation
+    [addProduct, { data: newProductData, loading: newProductLoading }] =
+      useMutation<Record<"newProduct", string>, NewProductVariableType>(
+        ADD_NEW_PRODUCT,
+        {
+          refetchQueries: [MY_PRODUCTS],
+          context: {
+            headers: {
+              authorization: `Bearer ${accessToken}`,
+            },
+          },
+        }
+      ),
+    // comment mutation
+    [sendPost] = useMutation<
+      Record<"myComment", string>,
       Record<"serviceId" | "post", string>
     >(MY_COMMENT, {
       refetchQueries: [MY_PROFILE],
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      },
     }),
-    [
-      updateService,
-      { error: serviceUpdateError, loading: serviceUpdateLoading },
-    ] = useMutation<
-      Record<"myServiceUpdate", ServiceVertexType>,
+    [updateService, { loading: serviceUpdateLoading }] = useMutation<
+      Record<"myServiceUpdate", string>,
       ServiceUpdateVariableType
     >(MY_SERVICE_UPDATE, {
       refetchQueries: [MY_PROFILE],
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      },
     });
+  // when logged out clear store & redirect to home page
+  logoutData && client.clearStore() && useRouter().push("/");
   // toast when new product is added
-  newProductData &&
-    (setShow(false),
-    toastsVar([
-      { message: `New product added: ${newProductData.newProduct.name}` },
-    ]));
-  // toast on error
-  newProductError &&
-    (setShow(false),
-    toastsVar([
-      { header: newProductError.name, message: "Something failed!" },
-    ]));
-  // toast on post error
-  postError &&
-    toastsVar([
-      {
-        header: postError.name,
-        message: "Something failed!",
-      },
-    ]);
-  // toast on service update error
-  serviceUpdateError &&
-    toastsVar([
-      {
-        header: serviceUpdateError.name,
-        message: "Something failed!",
-      },
-    ]);
   // cleanup state when modal closed
   useEffect(() => {
+    newProductData && setShow(false);
     return () => {
       setFileSizes([]);
       setVideoFileSize(0);
       setValidated(false);
     };
-  }, [show]);
-
+  }, [show, newProductData]);
+  if (userLoading) return <AjaxFeedback loading />;
   if (userData) {
     const {
       username,
@@ -185,26 +169,13 @@ const Dashboard = () => {
                 const formData = new FormData(e.currentTarget);
 
                 // TODO: get cid from web3 storage module after storing the files then store the cid strings
-                const newProduct = Array.from(
-                  formData.entries() as unknown as any[]
-                ).reduce(
-                  (prev, entry) =>
-                    entry[0] === "tags"
-                      ? {
-                          ...prev,
-                          [entry[0]]: entry[1]
-                            .split(" ")
-                            .filter((tag: string) => tag !== ""),
-                        }
-                      : entry[0] === "images"
-                      ? { ...prev, [entry[0]]: ["cid"] }
-                      : entry[0] === "video"
-                      ? { ...prev, [entry[0]]: "cid" }
-                      : entry[0] === "price"
-                      ? { ...prev, [entry[0]]: +entry[1] }
-                      : { ...prev, [entry[0]]: entry[1] },
-                  {}
-                ) as Omit<ProductType, "provider">;
+                const newProduct = {
+                  ...Object.fromEntries(formData.entries()),
+                  video: "cid",
+                  images: ["cid"],
+                  price: +formData.get("price")!,
+                  tags: formData.get("tags")!.toString().split(" ") as string[],
+                } as unknown as Omit<ProductType, "provider">;
 
                 e.currentTarget.checkValidity() &&
                 fileSizes.length < 4 &&
@@ -386,9 +357,14 @@ const Dashboard = () => {
           </Modal.Body>
         </Modal>
         {/* title */}
-        <Row>
-          <Col className="h1 my-5" as="h2">
+        <Row className="justify-content-between align-items-center">
+          <Col className="h1 my-5" as="h2" xs="8">
             <MdDashboardCustomize size={40} /> Dashboard
+          </Col>
+          <Col xs="auto">
+            <Button size="lg" variant="outline-danger" onClick={() => logout()}>
+              {loggingOut && <Spinner size="sm" animation="grow" />} Logout
+            </Button>
           </Col>
         </Row>
         {/* first paragraph */}
@@ -501,8 +477,8 @@ const Dashboard = () => {
           >
             <Row className="mb-5">
               <Col>
-                <Button onClick={() => setShow(true)}>
-                  <AjaxFeedback loading={newProductLoading} />{" "}
+                <Button onClick={() => setShow(true)} size="lg">
+                  {newProductLoading && <Spinner animation="grow" size="sm" />}
                   <MdAdd size={25} /> Add Product
                 </Button>
               </Col>
@@ -679,15 +655,12 @@ const Dashboard = () => {
                     onSubmit={(e) => {
                       e.preventDefault();
 
-                      const serviceUpdate = Array.from(
-                        new FormData(e.currentTarget).entries()
-                      ).reduce(
-                        (prev, input) => ({
-                          ...prev,
-                          [input[0]]: input[0] === "logo" ? "cid" : input[1],
-                        }),
-                        {}
-                      ) as Pick<
+                      const serviceUpdate = {
+                        ...Object.fromEntries(
+                          new FormData(e.currentTarget).entries()
+                        ),
+                        logo: "cid",
+                      } as Pick<
                         ServiceType,
                         "title" | "description" | "logo" | "state"
                       >;
@@ -771,9 +744,7 @@ const Dashboard = () => {
                           "Yobe",
                           "Zamfara",
                         ].map((state) => (
-                          <option key={state} value={state}>
-                            {state}
-                          </option>
+                          <option key={state}>{state}</option>
                         ))}
                       </Form.Select>
                     </Form.Group>
@@ -813,7 +784,7 @@ const Dashboard = () => {
       </Container>
     );
   }
-  return <AjaxFeedback loading />
+  return <UnAuth />;
 };
 
 export default Dashboard;

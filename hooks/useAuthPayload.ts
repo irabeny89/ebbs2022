@@ -5,7 +5,10 @@ import { accessTokenVar } from "@/graphql/reactiveVariables";
 
 const useAuthPayload = () => {
   const accessToken = useReactiveVar(accessTokenVar);
-  return decode(accessToken) as (UserPayloadType & JwtPayload) | null;
+  return {
+    accessToken,
+    authPayload: decode(accessToken) as (UserPayloadType & JwtPayload) | null,
+  };
 };
 
 export default useAuthPayload;

@@ -1,30 +1,31 @@
-import { CSSProperties, ReactNode, useEffect } from "react";
+import { CSSProperties, useEffect } from "react";
 import config from "../config";
 import { FaShoppingCart, FaTrash, FaFirstOrder } from "react-icons/fa";
 import Link from "next/link";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
-import ToastContainer from "react-bootstrap/ToastContainer";
 import Toast from "react-bootstrap/Toast";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useLazyQuery, useMutation, useReactiveVar } from "@apollo/client";
-import { cartItemsVar, toastsVar } from "@/graphql/reactiveVariables";
+import {
+  accessTokenVar,
+  cartItemsVar,
+  toastsVar,
+} from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import NavDropdown from "react-bootstrap/NavDropdown";
 import useAuthPayload from "../hooks/useAuthPayload";
 import type {
   CursorConnectionType,
   LayoutPropsType,
   OrderItemType,
   OrderType,
-  OrderVertexType,
   PagingInputType,
   ProductVertexType,
   ServiceVertexType,
@@ -32,13 +33,12 @@ import type {
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import {
-  FEW_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
+  MY_PROFILE,
   SERVICE_ORDER,
 } from "@/graphql/documentNodes";
 import SortedListWithTabs from "./SortedListWithTabs";
 import ProductList from "./ProductList";
-import ServiceSection from "./ServiceSection";
 import ServiceList from "./ServiceList";
 
 // get cart items total count
@@ -66,13 +66,13 @@ const Layout = ({ children }: LayoutPropsType) => {
     [validated, setValidated] = useState(false),
     // get reactive cart items variable
     cartItems = useReactiveVar(cartItemsVar),
-    // get toasts
-    toasts = useReactiveVar(toastsVar),
     // get token payload
     authPayload = useAuthPayload(),
+    // access token
+    accessToken = useReactiveVar(accessTokenVar),
     // send order mutation
-    [sendRequest, { data, error, loading }] = useMutation<
-      Record<"serviceOrder", OrderVertexType>,
+    [sendRequest, { data, loading }] = useMutation<
+      Record<"serviceOrder", string>,
       Record<
         "serviceOrderInput",
         Pick<
@@ -80,7 +80,14 @@ const Layout = ({ children }: LayoutPropsType) => {
           "items" | "phone" | "state" | "address" | "nearestBusStop"
         >
       >
-    >(SERVICE_ORDER),
+    >(SERVICE_ORDER, {
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      },
+      refetchQueries: [MY_PROFILE],
+    }),
     // search for products
     [
       searchProduct,
@@ -104,28 +111,9 @@ const Layout = ({ children }: LayoutPropsType) => {
   }, []);
   // toast effects
   useEffect(() => {
-    // show toast when order is sent ok
-    data &&
-      setShow(false) &&
-      toastsVar([
-        {
-          message: "Order sent successfully.",
-        },
-      ]);
     // show search result when ready
     searchData && setShowSearch(true);
-    // show toast when search errored
-    searchError &&
-      toastsVar([{ header: searchError.name, message: generalErrorMessage }]);
-    // show toast when order errored
-    error &&
-      toastsVar([
-        {
-          header: error.name,
-          message: generalErrorMessage,
-        },
-      ]);
-  }, [error, searchError, data, searchData]);
+  }, [searchData]);
   // extract products from connection
   const foundProducts =
       searchData?.products.edges.map((edge) => edge.node) ?? [],
@@ -137,26 +125,7 @@ const Layout = ({ children }: LayoutPropsType) => {
   return (
     <Container fluid as="main">
       {/* toast */}
-      <ToastContainer position="bottom-end">
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.message}
-            show={!!toast.message}
-            onClose={() => {
-              toastsVar(
-                toasts.filter(({ message }) => toast.message !== message)
-              );
-            }}
-            autohide
-            bg={toast.message === generalErrorMessage ? "danger" : "info"}
-          >
-            <Toast.Header className="justify-content-between h5">
-              {toast.header ?? "Feedback"}
-            </Toast.Header>
-            <Toast.Body className="text-white">{toast.message}</Toast.Body>
-          </Toast>
-        ))}
-      </ToastContainer>
+
       {/* cart modal */}
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
@@ -171,6 +140,16 @@ const Layout = ({ children }: LayoutPropsType) => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
+          {data && (
+            <Alert>
+              <Alert.Heading>{data.serviceOrder}</Alert.Heading>
+              Go to{" "}
+              <Link href="/member/dashboard" passHref>
+                <Alert.Link>dashboard</Alert.Link>
+              </Link>{" "}
+              to see your requests.
+            </Alert>
+          )}
           {cartItems.map((item) => (
             <Container key={item._id?.toString()!}>
               {/* product name, delete button & input element */}
@@ -255,12 +234,6 @@ const Layout = ({ children }: LayoutPropsType) => {
               )
             )}
           </Row>
-          {data && (
-            <Alert variant="success">
-              Request ID {data.serviceOrder._id}. Check your{" "}
-              <Link href="/member/dashboard">dashboard</Link> for more details
-            </Alert>
-          )}
           {/* show delivery details when cart has something */}
           {authPayload && !!cartItems.length && (
             // delivery details
@@ -353,6 +326,7 @@ const Layout = ({ children }: LayoutPropsType) => {
                     <Form.Control
                       placeholder="Address"
                       aria-label="address"
+                      name="address"
                       required
                       className="my-3"
                       disabled={!authPayload}
@@ -365,6 +339,7 @@ const Layout = ({ children }: LayoutPropsType) => {
                     <Form.Control
                       placeholder="Nearest Bus Stop"
                       aria-label="nearest bus stop"
+                      name="nearestBusStop"
                       required
                       className="my-3"
                       disabled={!authPayload}
@@ -377,6 +352,7 @@ const Layout = ({ children }: LayoutPropsType) => {
                     <Form.Control
                       placeholder="Phone"
                       aria-label="phone"
+                      name="phone"
                       type="phone"
                       required
                       className="mb-4"
@@ -386,31 +362,35 @@ const Layout = ({ children }: LayoutPropsType) => {
                       This field is required!
                     </Form.Control.Feedback>
                   </Form.FloatingLabel>
+                  {!!cartItemsCount && (
+                    <Modal.Footer>
+                      <Button
+                        size="lg"
+                        variant="danger"
+                        // on click, clear cart data from storage & memory
+                        onClick={() => (
+                          localStorage.removeItem(CART_ITEMS_KEY),
+                          cartItemsVar([])
+                        )}
+                      >
+                        <FaTrash size={20} className="mb-1" /> Clear cart
+                      </Button>
+                      {authPayload && (
+                        <Button variant="success" size="lg" type="submit">
+                          <FaFirstOrder size={20} className="mb-1" />
+                          {loading && (
+                            <Spinner animation="grow" size="sm" />
+                          )}{" "}
+                          Send request
+                        </Button>
+                      )}
+                    </Modal.Footer>
+                  )}
                 </Form>
               </Col>
             </Row>
           )}
         </Modal.Body>
-        {!!cartItemsCount && (
-          <Modal.Footer>
-            <Button
-              size="lg"
-              variant="danger"
-              // on click, clear cart data from storage & memory
-              onClick={() => (
-                localStorage.removeItem(CART_ITEMS_KEY), cartItemsVar([])
-              )}
-            >
-              <FaTrash size={20} className="mb-1" /> Clear cart
-            </Button>
-            {authPayload && (
-              <Button variant="success" size="lg">
-                <FaFirstOrder size={20} className="mb-1" />
-                {loading && <Spinner animation="grow" size="sm" />} Send request
-              </Button>
-            )}
-          </Modal.Footer>
-        )}
       </Modal>
       {/* search result modal */}
       <Modal show={showSearch} onHide={() => setShowSearch(false)} fullscreen>
@@ -480,57 +460,11 @@ const Layout = ({ children }: LayoutPropsType) => {
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="me-auto">
               {/* nav links */}
-              {webPages.reduce(
-                (prev: ReactNode[], page) =>
-                  page.privacy === "ALL" ||
-                  (page.privacy === "USER" && authPayload) ||
-                  (page.privacy === "ADMIN" && authPayload?.aud === "ADMIN")
-                    ? [
-                        ...prev,
-                        // for member page nav link
-                        page.pageTitle.toLowerCase() === "member" ? (
-                          <NavDropdown
-                            key={page.pageTitle}
-                            title={`${authPayload?.username ?? "Member"}`}
-                            id="collapsible-nav-dropdown"
-                          >
-                            {!authPayload ? (
-                              <Link passHref href={page.route}>
-                                <NavDropdown.Item>
-                                  <NavDropdown.ItemText>
-                                    Login/Register
-                                  </NavDropdown.ItemText>
-                                </NavDropdown.Item>
-                              </Link>
-                            ) : (
-                              <>
-                                <Link
-                                  passHref
-                                  href={
-                                    page.links.find(
-                                      (link) => link.pageTitle === "Dashboard"
-                                    )!.route ?? ""
-                                  }
-                                >
-                                  <NavDropdown.Item>
-                                    <NavDropdown.ItemText>
-                                      Dashboard
-                                    </NavDropdown.ItemText>
-                                  </NavDropdown.Item>
-                                </Link>
-                                <NavDropdown.Item>Logout</NavDropdown.Item>
-                              </>
-                            )}
-                          </NavDropdown>
-                        ) : (
-                          <Link passHref href={page.route} key={page.pageTitle}>
-                            <Nav.Link>{page.pageTitle}</Nav.Link>
-                          </Link>
-                        ),
-                      ]
-                    : prev,
-                []
-              )}
+              {webPages.map((page) => (
+                <Link passHref href={page.route} key={page.pageTitle}>
+                  <Nav.Link>{page.pageTitle}</Nav.Link>
+                </Link>
+              ))}
             </Nav>
           </Navbar.Collapse>
         </Navbar>

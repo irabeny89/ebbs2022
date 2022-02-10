@@ -2,6 +2,7 @@ import { ServiceSectionPropType } from "types";
 import ServiceList from "./ServiceList";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
+import EmptyList from "./EmptyList";
 
 const ServiceSection = ({
   items,
@@ -11,7 +12,11 @@ const ServiceSection = ({
   <Container fluid {...rest}>
     <Row className="h2">{title}</Row>
     <Row className="py-5 bg-info">
-      <ServiceList className="d-flex flex-wrap" items={items} />
+      {items.length ? (
+        <ServiceList className="d-flex flex-wrap" items={items} />
+      ) : (
+        <EmptyList message="No service yet" />
+      )}
     </Row>
   </Container>
 );

@@ -10,7 +10,6 @@ import Card from "react-bootstrap/Card";
 import { OrdersOrRequestsPropType, OrderVertexType, StatusType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import getLocalePrice from "@/utils/getLocalePrice";
-import AjaxFeedback from "./AjaxFeedback";
 import { useMutation } from "@apollo/client";
 import { SET_ORDER_STATUS } from "@/graphql/documentNodes";
 import { toastsVar } from "@/graphql/reactiveVariables";
@@ -58,9 +57,9 @@ const OrdersOrRequests = ({
     <Container {...rest}>
       <Row>
         {items.map((order) => (
-          <Col md="6" lg="4" className="my-3" key={order._id!}>
+          <Col md="6" lg="4" className="my-3" key={order._id!.toString()}>
             <Accordion>
-              <Accordion.Item eventKey={order._id!}>
+              <Accordion.Item eventKey={order._id!.toString()}>
                 <Accordion.Header>
                   <Row>
                     <Row>
@@ -175,7 +174,7 @@ const OrdersOrRequests = ({
                           e.preventDefault(),
                           setOrderStatus({
                             variables: {
-                              orderId: order._id!,
+                              orderId: order._id!.toString(),
                               status: new FormData(e.currentTarget).get(
                                 "status"
                               ) as StatusType,

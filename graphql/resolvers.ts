@@ -435,7 +435,7 @@ const resolvers = {
       } catch (error) {
         // NOTE: log to debug
         devErrorLogger(error);
-        handleError(error, UserInputError, generalErrorMessage);
+        handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
     deleteMyProduct: async (
@@ -538,8 +538,8 @@ const resolvers = {
     ): Promise<string | undefined> => {
       try {
         // check user permission
-        getAuthPayload(authorization!);
-        await OrderModel.create(args);
+        const { sub } = getAuthPayload(authorization!);
+        await OrderModel.create({...args, client: sub});
         return "Order created successfully";
       } catch (error) {
         // NOTE: log error to debug
@@ -737,7 +737,7 @@ const resolvers = {
       try {
         return getCursorConnection<OrderType>({
           list:
-            (await OrderModel.find({ provider: parent._id }).lean().exec()) ??
+            (await OrderModel.find({ provider: parent._id }).populate("client").lean().exec()) ??
             [],
           ...args,
         });

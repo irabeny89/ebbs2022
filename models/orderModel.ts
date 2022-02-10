@@ -11,6 +11,11 @@ const schema = new Schema<OrderType>(
     },
     items: [
       {
+        _id: { type: String, required: [true, "Product id is required"] },
+        providerId: {
+          type: String,
+          required: [true, "Provider id is required"],
+        },
         name: {
           type: String,
           required: [true, "Name is required"],
@@ -42,7 +47,6 @@ const schema = new Schema<OrderType>(
     deliveryDate: Date,
     totalCost: { type: Number, min: 0, default: 0 },
     client: { type: Schema.Types.ObjectId, ref: "User" },
-    provider: { type: Schema.Types.ObjectId, ref: "Service" },
   },
   { timestamps: true }
 );

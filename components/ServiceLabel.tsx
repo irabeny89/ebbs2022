@@ -53,7 +53,7 @@ const styling: { [key: string]: CSSProperties } = {
         Record<"serviceLiking", ServiceVertexType>,
         Record<"serviceId", string>
       >(SERVICE_LIKE_TOGGLE, {
-        variables: { serviceId: _id! },
+        variables: { serviceId: _id!.toString() },
         refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
       });
 
@@ -93,7 +93,7 @@ const styling: { [key: string]: CSSProperties } = {
                 {comments?.edges
                   .map((edge) => edge.node)
                   .map((comment) => (
-                    <Col key={comment._id}>
+                    <Col key={comment._id.toString()}>
                       <Card className="mb-3">
                         <Card.Header>
                           <Card.Title>{comment.poster!.username}</Card.Title>

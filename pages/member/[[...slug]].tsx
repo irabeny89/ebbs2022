@@ -5,6 +5,8 @@ import Member from "@/components/Member";
 import config from "../../config";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import useAuthPayload from "hooks/useAuthPayload";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
 
 // fetch page data
 const { webPages, abbr } = config.appData,

@@ -83,7 +83,6 @@ type OrderItemType = {
 
 type OrderType = {
   client: mongoose.Types.ObjectId;
-  provider: mongoose.Types.ObjectId;
   status: StatusType;
   items: OrderItemType[];
   phone: string;

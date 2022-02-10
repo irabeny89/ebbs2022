@@ -49,7 +49,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   return {
     paths: data.services.edges.map((edge) => ({
-      params: { id: edge.node._id },
+      params: { id: edge.node._id?.toString() },
     })),
     fallback: true,
   };
@@ -94,7 +94,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
             last: 20,
             before: productConnection?.pageInfo.endCursor,
           },
-          serviceId: rest._id!,
+          serviceId: rest._id!.toString(),
         },
       });
 
