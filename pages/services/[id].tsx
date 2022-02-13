@@ -26,9 +26,8 @@ import AjaxFeedback from "@/components/AjaxFeedback";
 import MoreButton from "@/components/MoreButton";
 import { useRef } from "react";
 import SortedListWithTabs from "@/components/SortedListWithTabs";
-import { toastsVar } from "@/graphql/reactiveVariables";
 // app data from config
-const { abbr, generalErrorMessage } = config.appData;
+const { abbr } = config.appData;
 // statically fetch paths for each service
 export const getStaticPaths: GetStaticPaths = async () => {
   // fetch list
@@ -39,7 +38,7 @@ export const getStaticPaths: GetStaticPaths = async () => {
         last: 20,
       },
       productArgs: {
-        first: 20,
+        last: 20,
       },
       serviceArgs: {
         first: 50,
@@ -68,7 +67,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       query: SERVICE,
       variables: {
         serviceId: params?.id! as string,
-        productArgs: { first: 20 },
+        productArgs: { last: 20 },
         commentArgs: { last: 20 },
       },
     });
@@ -83,7 +82,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     // ref for lazy fetch flag
     const hasLazyFetched = useRef(false),
       // query mutation
-      [fetchMoreProducts, { data, error, loading, fetchMore }] = useLazyQuery<
+      [fetchMoreProducts, { data, loading, fetchMore }] = useLazyQuery<
         {
           service: ServiceVertexType;
         },
@@ -97,14 +96,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
           serviceId: rest._id!.toString(),
         },
       });
-
-    error &&
-      toastsVar([
-        {
-          header: error.name,
-          message: generalErrorMessage,
-        },
-      ]);
 
     return (
       <Layout>
