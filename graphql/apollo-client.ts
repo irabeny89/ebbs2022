@@ -25,29 +25,29 @@ const client = new ApolloClient({
                   locations
                 )}, Path: ${JSON.stringify(path)}, Code: ${code}`
               );
-              if (code === "UNAUTHENTICATED") {
-                try {
-                  const {
-                    data: {
-                      data: { refreshToken },
-                    },
-                  } = await axios.post<
-                    Record<"data", { refreshToken: string }>
-                  >(host + graphqlUri, {
-                    query: "query{refreshToken}",
-                  });
-                  accessTokenVar(refreshToken);
-                  operation.setContext({
-                    headers: {
-                      ...operation.getContext().headers,
-                      authorization: `Bearer ${accessTokenVar()}`,
-                    },
-                  });
-                  return forward(operation);
-                } catch (error) {
-                  console.error(error);
-                }
-              }
+              // if (code === "UNAUTHENTICATED") {
+              //   try {
+              //     const {
+              //       data: {
+              //         data: { refreshToken },
+              //       },
+              //     } = await axios.post<
+              //       Record<"data", { refreshToken: string }>
+              //     >(host + graphqlUri, {
+              //       query: "query{refreshToken}",
+              //     });
+              //     accessTokenVar(refreshToken);
+              //     operation.setContext({
+              //       headers: {
+              //         ...operation.getContext().headers,
+              //         authorization: `Bearer ${accessTokenVar()}`,
+              //       },
+              //     });
+              //     return forward(operation);
+              //   } catch (error) {
+              //     console.error(error);
+              //   }
+              // }
             }
           );
         }

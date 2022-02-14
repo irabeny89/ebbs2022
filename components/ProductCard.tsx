@@ -1,4 +1,4 @@
-import type { ProductCardPropType, ProductVertexType } from "types";
+import type { ProductCardPropType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -12,7 +12,7 @@ import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
 import { mockMedia } from "@/models/mockData";
-import { cartItemsVar, toastsVar } from "@/graphql/reactiveVariables";
+import { cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
@@ -20,9 +20,7 @@ import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import {
   DELETE_MY_PRODUCT,
-  MY_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
-  FEW_SERVICES,
   MY_PROFILE,
 } from "@/graphql/documentNodes";
 import useAuthPayload from "../hooks/useAuthPayload";
@@ -192,20 +190,20 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                   onClick={() => {
                     const oldItems = getLastCartItemsFromStorage(localStorage),
                       // if cart has this product update it; if it doesn't add it.
-                      newItems = oldItems.find((item) => item._id === _id)
+                      newItems = oldItems.find((item) => item.productId === _id)
                         ? oldItems.map((item) =>
-                            item._id === _id
+                            item.productId === _id
                               ? {
                                   ...item,
                                   quantity: ++item.quantity,
-                                  cost: item.price * ++item.quantity,
+                                  cost: item.price * item.quantity++,
                                 }
                               : item
                           )
                         : [
                             ...oldItems,
                             {
-                              _id: _id!,
+                              productId: _id!,
                               providerId: provider?._id!.toString(),
                               name: name!,
                               price: price!,

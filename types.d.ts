@@ -58,7 +58,6 @@ type ServiceType = {
   description: string;
   state: string;
   maxProduct: number;
-  happyClients?: (mongoose.Types.ObjectId | string)[];
 } & TimestampAndId;
 
 type ProductType = {
@@ -73,17 +72,19 @@ type ProductType = {
 } & TimestampAndId;
 
 type OrderItemType = {
-  _id: string | mongoose.Types.ObjectId;
+  productId: string | mongoose.Types.ObjectId;
   providerId: string | mongoose.Types.ObjectId;
   name: string;
   price: number;
   quantity: number;
   cost: number;
+  status?: StatusType;
 };
+
+type OrderStatsType = Record<"PENDING" | "SHIPPED" | "DELIVERED" | "CANCELED", number>
 
 type OrderType = {
   client: mongoose.Types.ObjectId;
-  status: StatusType;
   items: OrderItemType[];
   phone: string;
   state: string;
@@ -140,8 +141,10 @@ type UserVertexType = Partial<
 > &
   TimestampAndId;
 
-type OrderVertexType = Partial<Omit<OrderType, "client">> &
-  Record<"client", UserVertexType>;
+type OrderVertexType = Partial<Omit<OrderType, "client">> & {
+  client: UserVertexType;
+  orderStats: OrderStatsType;
+};
 
 type PaginationInfoType = {
   totalPages: number;
@@ -291,6 +294,7 @@ type SortedListWithTabsPropType = {
 } & StyleType;
 
 type OrdersOrRequestsPropType = {
+  asRequestList?: boolean;
   items: OrderVertexType[];
-  statuses: StatusType[];
+  statusSelection: StatusType[];
 } & StyleType;

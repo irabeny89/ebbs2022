@@ -89,31 +89,29 @@ const Layout = ({ children }: LayoutPropsType) => {
       refetchQueries: [MY_PROFILE],
     }),
     // search for products
-    [
-      searchProduct,
-      {
-        data: searchData,
-        error: searchError,
-        loading: searchLoading,
-        fetchMore,
-      },
-    ] = useLazyQuery<
-      Record<"products", CursorConnectionType<ProductVertexType>> &
-        Record<"services", CursorConnectionType<ServiceVertexType>>,
-      Record<
-        "productArgs" | "serviceArgs" | "commentArgs" | "serviceProductArgs",
-        PagingInputType
-      >
-    >(FEW_PRODUCTS_AND_SERVICES);
+    [searchProduct, { data: searchData, loading: searchLoading, fetchMore }] =
+      useLazyQuery<
+        Record<"products", CursorConnectionType<ProductVertexType>> &
+          Record<"services", CursorConnectionType<ServiceVertexType>>,
+        Record<
+          "productArgs" | "serviceArgs" | "commentArgs" | "serviceProductArgs",
+          PagingInputType
+        >
+      >(FEW_PRODUCTS_AND_SERVICES);
   // on mount update cart items reactive variable from local storage
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
   }, []);
-  // toast effects
   useEffect(() => {
     // show search result when ready
     searchData && setShowSearch(true);
   }, [searchData]);
+  // clear order alert after some time
+  useEffect(() => {
+    setTimeout(() => {
+      if (data) data.serviceOrder = "";
+    }, 3000);
+  }, [data]);
   // extract products from connection
   const foundProducts =
       searchData?.products.edges.map((edge) => edge.node) ?? [],
@@ -140,7 +138,7 @@ const Layout = ({ children }: LayoutPropsType) => {
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {data && (
+          {data?.serviceOrder && (
             <Alert>
               <Alert.Heading>{data.serviceOrder}</Alert.Heading>
               Go to{" "}
@@ -151,7 +149,7 @@ const Layout = ({ children }: LayoutPropsType) => {
             </Alert>
           )}
           {cartItems.map((item) => (
-            <Container key={item._id?.toString()!}>
+            <Container key={item.productId.toString()}>
               {/* product name, delete button & input element */}
               <Row className="text-capitalize">
                 {/* cart item name */}
@@ -167,7 +165,9 @@ const Layout = ({ children }: LayoutPropsType) => {
                       const filteredList = getLastCartItemsFromStorage(
                         localStorage
                       ).filter(
-                        (elem) => item._id?.toString() !== elem._id?.toString()
+                        (elem) =>
+                          item.productId?.toString() !==
+                          elem.productId?.toString()
                       );
                       // update storage and state
                       localStorage.setItem(
@@ -192,7 +192,8 @@ const Layout = ({ children }: LayoutPropsType) => {
                       // update cart item list
                       const updatedCartItems = cartItems.map((countedItem) =>
                         // if cart item is current item...
-                        item._id?.toString() === countedItem._id?.toString()
+                        item.productId?.toString() ===
+                        countedItem.productId?.toString()
                           ? // ...return updated object
                             item
                           : // ...else return unchanged object

@@ -8,7 +8,7 @@ const typeDefs = gql`
     "refresh auth token"
     refreshToken: String!
     "fields of a single service by id"
-    service(serviceId: ID): UserService
+    service(serviceId: ID!): UserService
     "list of all service nodes"
     services(args: PagingInput!): ServiceConnection!
     "list of all product nodes"
@@ -66,7 +66,7 @@ const typeDefs = gql`
   }
 
   input OrderItemInput {
-    _id: ID!
+    productId: ID!
     providerId: ID!
     name: String!
     price: Float!
@@ -251,80 +251,52 @@ const typeDefs = gql`
   }
   # service object type
   type UserService {
-    _id: ID!
-    """
-    the service name
-    """
-    title: String!
-    """
-    the service logo
-    """
-    logo: String!
-    """
-    service description
-    """
-    description: String!
-    """
-    service home state
-    """
-    state: String!
+    _id: ID
+    "the service name"
+    title: String
+    "the service logo"
+    logo: String
+    "service description"
+    description: String
+    "service home state"
+    state: String
     "number of likes for the service"
-    likeCount: Int!
-    "list of users who likes the service"
-    happyClients: [ID!]!
-    """
-    list of service products
-    """
+    likeCount: Int
+    "number of users who likes the service"
+    happyClients: [ID!]
+    "list of service products"
     products(args: PagingInput!): ProductConnection!
-    """
-    comments from clients
-    """
+    "comments from clients"
     comments(args: PagingInput!): CommentConnection!
-    """
-    service orders from clients
-    """
+    "service orders from clients"
     orders(args: PagingInput!): OrderConnection!
-    """
-    all product categories
-    """
-    categories: [CategoryOption]!
-    """
-    max product allowed per service
-    """
-    maxProduct: Int!
-    """
-    the total number of orders per service
-    """
-    orderCount: Int!
-    """
-    the total number of products per service
-    """
-    productCount: Int!
-    """
-    the total number of comments per service
-    """
-    commentCount: Int!
-    """
-    product creation date
-    """
-    createdAt: String!
-    """
-    product modification date
-    """
-    updatedAt: String!
+    "all product categories"
+    categories: [CategoryOption]
+    "max product allowed per service"
+    maxProduct: Int
+    "the total number of orders per service"
+    orderCount: Int
+    "the total number of products per service"
+    productCount: Int
+    "the total number of comments per service"
+    commentCount: Int
+    "product creation date"
+    createdAt: String
+    "product modification date"
+    updatedAt: String
   }
   # comment object type
   type ServiceComment {
     _id: ID!
-    # the service commented on
+    "the service commented on"
     topic: UserService!
-    # the client who posted the comment
+    "the client who posted the comment"
     poster: User!
-    # the comment post
+    "the comment post"
     post: String!
-    # product creation date
+    "product creation date"
     createdAt: String!
-    # product modification date
+    "product modification date"
     updatedAt: String!
   }
   # product object type
@@ -355,36 +327,51 @@ const typeDefs = gql`
   }
   # order item object type
   type OrderItem {
-    # the ordered product name
+    "The product ID"
+    productId: String!
+    "The service provider ID; the product owner"
+    providerId: String!
+    "the ordered product name"
     name: String!
-    # the ordered product price at the time
+    "the ordered product price at the time"
     price: Float!
-    # the quantity ordered per item
+    "the quantity ordered per item"
     quantity: Int!
-    # the cost of the item(s) - price * quantity
+    "the cost of the item(s) - price * quantity"
     cost: Float!
+    "the item delivery status - delivered, pending, canceled or shipped"
+    status: StatusOptions!
+  }
+  # order stats object type
+  type OrderStats {
+    "Total number of pending item statuses within an order"
+    PENDING: Int!
+    "Total number of canceled item statuses within an order"
+    CANCELED: Int!
+    "Total number of shipped item statuses within an order"
+    SHIPPED: Int!
+    "Total number of delivered item statuses within an order"
+    DELIVERED: Int!
   }
   # order object type
   type ServiceOrder {
     _id: ID!
     "the user who placed the order"
     client: User!
-    "the service provider in charge of delivery"
-    provider: UserService!
-    "delivery status"
-    status: StatusOptions!
-    "the products in the order"
+    "aggregated count of order statuses"
+    orderStats: OrderStats!
+    "The items ordered by the client"
     items: [OrderItem!]!
-    "the client phone to call "
+    "The client phone number to call"
     phone: String!
-    "the client home state"
+    "The client home state"
     state: String!
-    "the client address"
+    "The client address"
     address: String!
-    "the client nearest bus stop"
+    "The client nearest bus stop"
     nearestBusStop: String!
-    "the delivery date specified by the service provider"
-    deliveryDate: String!
+    "The delivery date specified by the service provider"
+    deliveryDate: String
     "the items total cost"
     totalCost: Float!
     "product creation date"

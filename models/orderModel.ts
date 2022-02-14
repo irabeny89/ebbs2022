@@ -4,14 +4,14 @@ import config from "config";
 
 const schema = new Schema<OrderType>(
   {
-    status: {
-      type: String,
-      default: "PENDING",
-      enum: config.appData.orderStatuses,
-    },
     items: [
       {
-        _id: { type: String, required: [true, "Product id is required"] },
+        status: {
+          type: String,
+          default: "PENDING",
+          enum: config.appData.orderStatuses,
+        },
+        productId: { type: String, required: [true, "Product id is required"] },
         providerId: {
           type: String,
           required: [true, "Provider id is required"],

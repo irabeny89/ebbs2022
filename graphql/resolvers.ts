@@ -16,6 +16,7 @@ import type {
   UserPayloadType,
   RegisterVariableType,
   UserType,
+  OrderStatsType,
 } from "types";
 import {
   authUser,
@@ -37,6 +38,17 @@ const {
   environmentVariable: { jwtRefreshSecret },
   appData: { generalErrorMessage, title: ebbsTitle, passCodeDuration, abbr },
 } = config;
+
+export const getOrderItemStats = (orderItems: any[]): OrderStatsType =>
+  orderItems.reduce(
+    (prev, { status }) => ({ ...prev, [status]: ++prev[status] }),
+    {
+      PENDING: 0,
+      CANCELED: 0,
+      SHIPPED: 0,
+      DELIVERED: 0,
+    }
+  );
 
 const resolvers = {
   Query: {
@@ -539,7 +551,11 @@ const resolvers = {
       try {
         // check user permission
         const { sub } = getAuthPayload(authorization!);
-        await OrderModel.create({...args, client: sub});
+        await OrderModel.create({
+          ...args,
+          client: sub,
+          totalCost: args.items.reduce((prev, item) => prev + item.cost, 0),
+        });
         return "Order created successfully";
       } catch (error) {
         // NOTE: log error to debug
@@ -660,19 +676,22 @@ const resolvers = {
     },
   },
   UserService: {
-    title: async (
+    happyClients: async (
       parent: ServiceType,
-      _: any,
-      { ServiceModel }: GraphContextType
+      __: any,
+      { LikeModel }: GraphContextType
     ) => {
       try {
-        return (
-          await ServiceModel.findById(parent._id).select("title").lean().exec()
-        )?.title;
+        return await LikeModel.find({
+          selection: parent._id,
+        })
+          .select("happyClients")
+          .lean()
+          .exec();
       } catch (error) {
-        // NOTE: log to debug
+        // NOTE: log error to debug
         devErrorLogger(error);
-        handleError(error, Error, generalErrorMessage);
+        handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
     products: async (
@@ -730,15 +749,17 @@ const resolvers = {
       }
     },
     orders: async (
-      parent: ServiceType,
+      { _id }: ServiceType,
       { args }: Record<"args", PagingInputType>,
       { OrderModel }: GraphContextType
     ) => {
       try {
         return getCursorConnection<OrderType>({
           list:
-            (await OrderModel.find({ provider: parent._id }).populate("client").lean().exec()) ??
-            [],
+            (await OrderModel.find({ "items.providerId": _id })
+              .populate("client")
+              .lean()
+              .exec()) ?? [],
           ...args,
         });
       } catch (error) {
@@ -806,7 +827,10 @@ const resolvers = {
     ) => {
       try {
         return (
-          await OrderModel.find({ provider: _id }).select("_id").lean().exec()
+          await OrderModel.find({ "items.providerId": _id })
+            .select("_id")
+            .lean()
+            .exec()
         ).length;
       } catch (error) {
         // NOTE: log error to debug
@@ -829,6 +853,9 @@ const resolvers = {
         handleError(error, Error, generalErrorMessage);
       }
     },
+  },
+  ServiceOrder: {
+    orderStats: ({ items }: OrderType) => getOrderItemStats(items),
   },
 };
 
