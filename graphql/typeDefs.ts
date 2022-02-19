@@ -39,7 +39,7 @@ const typeDefs = gql`
     "send purchase request; creates new order"
     serviceOrder(args: ServiceOrderInput!): String!
     "set order status; updates order status"
-    orderStatus(args: OrderStatusInput!): String!
+    updateOrderItemStatus(args: OrderItemStatusInput!): String!
     "new product creation"
     newProduct(args: NewProductInput!): String!
     "delete product by an authorized user"
@@ -48,13 +48,14 @@ const typeDefs = gql`
     myCommentPost(serviceId: ID!, post: String!): String!
     "update service by an authorized user"
     myServiceUpdate(args: MyServiceUpdateInput!): String!
+    "set the order delivery date"
+    setOrderDeliveryDate(orderId: ID!, deliveryDate: String!): String!
   }
 
   # -- inputs --
-  input OrderStatusInput {
-    orderId: ID!
-    status: OrderStatusOption!
-    deliveryDate: String
+  input OrderItemStatusInput {
+    status: StatusOptions!
+    itemId: ID!
   }
 
   input ServiceOrderInput {
@@ -68,6 +69,7 @@ const typeDefs = gql`
   input OrderItemInput {
     productId: ID!
     providerId: ID!
+    providerTitle: String!
     name: String!
     price: Float!
     quantity: Int!
@@ -327,19 +329,23 @@ const typeDefs = gql`
   }
   # order item object type
   type OrderItem {
+    "order item object id"
+    _id: ID!
     "The product ID"
-    productId: String!
+    productId: ID!
     "The service provider ID; the product owner"
-    providerId: String!
-    "the ordered product name"
+    providerId: ID!
+    "The provider/service name/title"
+    providerTitle: String!
+    "The ordered product name"
     name: String!
-    "the ordered product price at the time"
+    "The ordered product price at the time"
     price: Float!
-    "the quantity ordered per item"
+    "The quantity ordered per item"
     quantity: Int!
-    "the cost of the item(s) - price * quantity"
+    "The cost of the item(s) - price * quantity"
     cost: Float!
-    "the item delivery status - delivered, pending, canceled or shipped"
+    "The item delivery status - delivered, pending, canceled or shipped"
     status: StatusOptions!
   }
   # order stats object type

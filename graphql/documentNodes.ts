@@ -55,12 +55,22 @@ export const PRODUCT_FRAGMENT = gql`
       client {
         username
       }
-      status
       items {
+        _id
         name
         price
         quantity
         cost
+        status
+        productId
+        providerId
+        providerTitle
+      }
+      orderStats {
+        PENDING
+        CANCELED
+        SHIPPED
+        DELIVERED
       }
       phone
       state
@@ -351,8 +361,9 @@ export const MY_PROFILE = gql`
             hasNextPage
           }
         }
-        createdAt
+        updatedAt
       }
+      createdAt
     }
   }
 `;
@@ -437,11 +448,9 @@ export const USER_REQUEST_PASSCODE = gql`
   }
 `;
 
-export const SET_ORDER_STATUS = gql`
-  mutation SetOrderStatus($orderId: ID!, $status: StatusOptions!) {
-    orderStatus(orderId: $orderId, status: $status) {
-      status
-    }
+export const UPDATE_ORDER_ITEM_STATUS = gql`
+  mutation UpdateOrderItemStatus($orderItemStatusArgs: OrderItemStatusInput!) {
+    updateOrderItemStatus(args: $orderItemStatusArgs)
   }
 `;
 
@@ -459,7 +468,7 @@ export const DELETE_MY_PRODUCT = gql`
 
 export const MY_FAV_SERVICE = gql`
   mutation ServiceLikeToggle($serviceId: ID!, $isFav: Boolean!) {
-    myFavService(serviceId: $serviceId, isFav: $isFav) 
+    myFavService(serviceId: $serviceId, isFav: $isFav)
   }
 `;
 
@@ -480,3 +489,9 @@ export const MY_SERVICE_UPDATE = gql`
     myServiceUpdate(args: $serviceUpdate)
   }
 `;
+
+export const SET_ORDER_DELIVERY_DATE = gql`
+  mutation SetOrderDeliveryDate($orderId: ID!, $deliveryDate: String!) {
+    setOrderDeliveryDate(orderId: $orderId, deliveryDate: $deliveryDate)
+  }
+`

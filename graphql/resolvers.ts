@@ -17,6 +17,7 @@ import type {
   RegisterVariableType,
   UserType,
   OrderStatsType,
+  StatusType,
 } from "types";
 import {
   authUser,
@@ -32,6 +33,7 @@ import {
   AuthenticationError,
   UserInputError,
   ValidationError,
+  ForbiddenError
 } from "apollo-server-micro";
 
 const {
@@ -437,16 +439,20 @@ const resolvers = {
     ): Promise<string | undefined> => {
       try {
         // validate request auth
+        const { serviceId } = getAuthPayload(authorization!)
+        // throw error if user has no service
+        if (!serviceId) throw new ForbiddenError("Create service before adding product!")
         // create product & return id
         return (
           await ProductModel.create({
             ...args,
-            provider: getAuthPayload(authorization!).serviceId,
+            provider: serviceId,
           })
         ).id;
-      } catch (error) {
+      } catch (error: any) {
         // NOTE: log to debug
         devErrorLogger(error);
+        error.name === "ForbiddenError" && console.error(error.message)
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -563,15 +569,14 @@ const resolvers = {
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
-    orderStatus: async (
+    updateOrderItemStatus: async (
       _: any,
       {
-        args: { orderId, status, deliveryDate },
+        args: { status, itemId },
       }: {
         args: {
-          orderId: string;
-          status: "CANCELED" | "SHIPPED";
-          deliveryDate: string;
+          itemId: string;
+          status: StatusType;
         };
       },
       {
@@ -584,15 +589,58 @@ const resolvers = {
       try {
         // check user permission
         getAuthPayload(authorization!);
-        await OrderModel.findByIdAndUpdate(orderId, {
-          $set: { status, deliveryDate },
-        })
+        await OrderModel.findOneAndUpdate(
+          { "items._id": itemId },
+          {
+            $set: {
+              items: (
+                await OrderModel.findOne({ "items._id": itemId })
+                  .select("items")
+                  .lean()
+                  .exec()
+              )?.items.map((item) =>
+                item._id?.toString() === itemId
+                  ? {
+                      ...item,
+                      status,
+                    }
+                  : item
+              ),
+            },
+          }
+        )
           .select("_id")
           .lean()
           .exec();
-        return status;
+
+        return `status is now ${status}`;
       } catch (error) {
         // NOTE: log to debug
+        devErrorLogger(error);
+        handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    setOrderDeliveryDate: async (
+      _: any,
+      { orderId, deliveryDate }: Record<"deliveryDate" | "orderId", string>,
+      {
+        OrderModel,
+        req: {
+          headers: { authorization },
+        },
+      }: GraphContextType
+    ) => {
+      try {
+        // check permission
+        getAuthPayload(authorization!);
+        // update order delivery date
+        await OrderModel.findByIdAndUpdate(orderId, {
+          $set: { deliveryDate },
+        });
+        // return confirmation string
+        return "Delivery date has been set successfully"
+      } catch (error) {
+        // NOTE: log to debug error
         devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
       }

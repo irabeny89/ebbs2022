@@ -7,51 +7,116 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Badge from "react-bootstrap/Badge";
 import Card from "react-bootstrap/Card";
-import { OrdersOrRequestsPropType, OrderVertexType, StatusType } from "types";
+import Tooltip from "react-bootstrap/Tooltip";
+import Spinner from "react-bootstrap/Spinner";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Popover from "react-bootstrap/Popover";
+import { MdInfo } from "react-icons/md";
+import { OrdersOrRequestsPropType, StatusType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import getLocalePrice from "@/utils/getLocalePrice";
 import { useMutation } from "@apollo/client";
-import { SET_ORDER_STATUS } from "@/graphql/documentNodes";
-import { toastsVar } from "@/graphql/reactiveVariables";
-import { useEffect } from "react";
+import {
+  MY_PROFILE,
+  SET_ORDER_DELIVERY_DATE,
+  UPDATE_ORDER_ITEM_STATUS,
+} from "@/graphql/documentNodes";
+import useAuthPayload from "hooks/useAuthPayload";
+import { forwardRef } from "react";
+import Link from "next/link";
+
+const getStatusColor = (status: string) =>
+  status[0] === "P"
+    ? "bg-danger"
+    : status[0] === "S"
+    ? "bg-primary"
+    : status[0] === "C"
+    ? "bg-warning"
+    : status[0] === "D"
+    ? "bg-success"
+    : "";
+
+const StatusPopover = forwardRef(
+  (
+    {
+      statusOptions,
+      handleClick,
+      itemId,
+      ...rest
+    }: {
+      statusOptions: StatusType[];
+      handleClick: any;
+      itemId: string;
+      rest?: any;
+    },
+    ref
+  ) => (
+    // @ts-ignore
+    <Popover {...rest} ref={ref}>
+      <Popover.Header className="text-center bg-dark text-white" as="h5">
+        Change Status
+      </Popover.Header>
+      <Popover.Body>
+        {statusOptions.map((status) => (
+          <Badge
+            pill
+            style={{ cursor: "pointer" }}
+            className={getStatusColor(status) + " mx-1"}
+            onClick={() =>
+              handleClick({
+                variables: {
+                  orderItemStatusArgs: {
+                    itemId,
+                    status,
+                  },
+                },
+              })
+            }
+          >
+            {status}
+          </Badge>
+        ))}
+      </Popover.Body>
+    </Popover>
+  )
+);
 
 const OrdersOrRequests = ({
+  asRequestList,
   items,
-  statuses = ["CANCELED", "SHIPPED"],
+  title,
   ...rest
 }: OrdersOrRequestsPropType) => {
+  // auth payload
+  const { accessToken } = useAuthPayload();
   // order status update mutation
-  const [setOrderStatus, { data: orderStatusData, error, loading }] =
-    useMutation<
+  const [setOrderStatus] = useMutation<
       {
-        orderStatus: OrderVertexType;
+        orderStatus: string;
       },
       {
-        orderId: string;
+        itemId: string;
         status: StatusType;
       }
-    >(SET_ORDER_STATUS);
-  // monitor status
-  useEffect(() => {
-    // show toast when status changed
-    orderStatusData &&
-      toastsVar(
-        new Array({
-          message: `order status updated to ${orderStatusData.orderStatus.status}`,
-        })
-      );
-  }, [orderStatusData]);
-  // monitor error
-  useEffect(() => {
-    // show toast when error is thrown
-    error &&
-      toastsVar(
-        new Array({
-          message: error?.message,
-          header: error.name,
-        })
-      );
-  }, [error]);
+    >(UPDATE_ORDER_ITEM_STATUS, {
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      },
+      refetchQueries: [MY_PROFILE],
+    }),
+    [setOrderDeliveryDate, { loading: deliveryDateLoading }] = useMutation<
+      Record<"setOrderDeliveryDate", string>,
+      Record<"orderId" | "deliveryDate", string>
+    >(SET_ORDER_DELIVERY_DATE, {
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      },
+      refetchQueries: [MY_PROFILE],
+    });
 
   return (
     <Container {...rest}>
@@ -64,22 +129,22 @@ const OrdersOrRequests = ({
                   <Row>
                     <Row>
                       <Col>
-                        <Card.Title>{order.client.username}</Card.Title>
-                      </Col>
-                      <Col xs="auto">
-                        <Badge
-                          className={
-                            order.status === "CANCELED"
-                              ? "bg-danger pills"
-                              : order.status === "DELIVERED"
-                              ? "bg-success pills"
-                              : order.status === "PENDING"
-                              ? "bg-warning pills"
-                              : "primary pills"
-                          }
-                        >
-                          {order.status}
-                        </Badge>
+                        <Card.Title>
+                          {order.client.username}{" "}
+                          {Object.entries(order.orderStats).map(
+                            ([key, value]) =>
+                              typeof value === "number" &&
+                              !!value && (
+                                <Badge
+                                  key={key}
+                                  className={getStatusColor(key)}
+                                  pill
+                                >
+                                  {value + key[0]}
+                                </Badge>
+                              )
+                          )}
+                        </Card.Title>
                       </Col>
                     </Row>
                     <Card.Subtitle>
@@ -90,9 +155,9 @@ const OrdersOrRequests = ({
                       <Badge className="bg-dark">
                         {getLocalePrice(order.totalCost!)}
                       </Badge>{" "}
-                      | {/* TODO: use order creation date */}
+                      |
                       <Badge className="bg-dark">
-                        {new Date().toDateString()}
+                        {new Date(+order?.createdAt! || 0).toDateString()}
                       </Badge>
                     </Card.Subtitle>
                   </Row>
@@ -101,28 +166,85 @@ const OrdersOrRequests = ({
                   <Table striped bordered hover size="sm" responsive>
                     <thead>
                       <tr>
+                        <OverlayTrigger
+                          overlay={
+                            <Tooltip>
+                              Tap the status type below to change to another
+                              status type
+                            </Tooltip>
+                          }
+                        >
+                          <th>
+                            Status <MdInfo />
+                          </th>
+                        </OverlayTrigger>
                         <th>#</th>
                         <th>Product</th>
-                        <th>Price</th>
+                        <th>Provider</th>
+                        <th>Price {"\u20a6"}</th>
                         <th>Qty</th>
-                        <th>Subtotal</th>
+                        <th>Subtotal {"\u20a6"}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {order?.items?.map((item, i) => (
                         <tr key={i}>
+                          <OverlayTrigger
+                            trigger="click"
+                            placement="auto"
+                            overlay={
+                              asRequestList ? (
+                                <StatusPopover
+                                  itemId={item._id?.toString()!}
+                                  handleClick={setOrderStatus}
+                                  statusOptions={["CANCELED", "DELIVERED"]}
+                                />
+                              ) : (
+                                <StatusPopover
+                                  itemId={item._id?.toString()!}
+                                  handleClick={setOrderStatus}
+                                  statusOptions={["CANCELED", "SHIPPED"]}
+                                />
+                              )
+                            }
+                          >
+                            <td style={{ cursor: "pointer" }}>
+                              <Badge
+                                pill
+                                className={getStatusColor(item?.status ?? "")}
+                              >
+                                {item.status}
+                              </Badge>
+                            </td>
+                          </OverlayTrigger>
+
                           <td>{++i}</td>
                           <td>{item.name}</td>
-                          <td>{getLocalePrice(item.price)}</td>
+                          <td>
+                            <Link href={`/services/${item.providerId}`}>
+                              {item.providerTitle}
+                            </Link>
+                          </td>
+                          <td>
+                            {item.price.toLocaleString("en-US", {
+                              maximumFractionDigits: 2,
+                            })}
+                          </td>
                           <td>{item.quantity}</td>
-                          <td>{getLocalePrice(item.quantity * item.price)}</td>
+                          <td>
+                            {(item.quantity * item.price).toLocaleString(
+                              "en-US",
+                              { maximumFractionDigits: 2 }
+                            )}
+                          </td>
                         </tr>
                       ))}
                       <tr>
                         <td />
                         <td />
+                        <td />
                         <td className="h4 text-center py-2">Total: </td>
-                        <td colSpan={2} className="h4 text-center py-2">
+                        <td colSpan={3} className="h4 text-center py-2">
                           {getLocalePrice(
                             order?.items!.reduce(
                               (acc, item) => acc + item.cost,
@@ -133,6 +255,55 @@ const OrdersOrRequests = ({
                       </tr>
                     </tbody>
                   </Table>
+                  {!asRequestList && (
+                    <Row className="my-4">
+                      <Form
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          const deliveryDate = new FormData(
+                            e.currentTarget
+                          ).get("deliveryDate") as string | null;
+                          deliveryDate
+                            ? setOrderDeliveryDate({
+                                variables: {
+                                  deliveryDate,
+                                  orderId: order._id?.toString()!,
+                                },
+                              })
+                            : (e.preventDefault(), e.stopPropagation());
+                        }}
+                      >
+                        <Col>
+                          <Form.FloatingLabel label="Delivery Date">
+                            <Form.Control
+                              placeholder="Delivery Date"
+                              aria-placeholder="Delivery Date"
+                              min={new Date().toLocaleDateString("en-ca")}
+                              type="date"
+                              name="deliveryDate"
+                              defaultValue={
+                                new Date(
+                                  +order?.deliveryDate!
+                                ).toLocaleDateString("en-CA") ?? ""
+                              }
+                            />
+                          </Form.FloatingLabel>
+                        </Col>
+                        <Col xs="auto">
+                          <Button
+                            type="submit"
+                            size="lg"
+                            variant="outline-primary"
+                          >
+                            {deliveryDateLoading && (
+                              <Spinner animation="grow" size="sm" />
+                            )}{" "}
+                            Update
+                          </Button>
+                        </Col>
+                      </Form>
+                    </Row>
+                  )}
                   <h5 className="my-4">Delivery Details:</h5>
                   <Form.FloatingLabel label="State">
                     <Form.Control
@@ -164,44 +335,6 @@ const OrdersOrRequests = ({
                       disabled
                     />
                   </Form.FloatingLabel>
-                  {/* update only when status is either shipped, pending or canceled */}
-                  {["SHIPPED", "PENDING", "CANCELED"].includes(
-                    order?.status!
-                  ) && (
-                    <Card.Footer className="bg-info rounded">
-                      <Form
-                        onSubmit={(e) => (
-                          e.preventDefault(),
-                          setOrderStatus({
-                            variables: {
-                              orderId: order._id!.toString(),
-                              status: new FormData(e.currentTarget).get(
-                                "status"
-                              ) as StatusType,
-                            },
-                          })
-                        )}
-                      >
-                        <Row className="align-items-center">
-                          <Col>
-                            <Form.Group>
-                              <Form.Label>Select order status</Form.Label>
-                              <Form.Select size="lg" name="status">
-                                {statuses.map((status) => (
-                                  <option key={status}>{status}</option>
-                                ))}
-                              </Form.Select>
-                            </Form.Group>
-                          </Col>
-                          <Col xs="auto">
-                            <Button type="submit" disabled={loading}>
-                              Update
-                            </Button>
-                          </Col>
-                        </Row>
-                      </Form>
-                    </Card.Footer>
-                  )}
                 </Accordion.Body>
               </Accordion.Item>
             </Accordion>

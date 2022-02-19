@@ -72,8 +72,10 @@ type ProductType = {
 } & TimestampAndId;
 
 type OrderItemType = {
+  _id?: mongoose.Types.ObjectId | string;
   productId: string | mongoose.Types.ObjectId;
   providerId: string | mongoose.Types.ObjectId;
+  providerTitle: string;
   name: string;
   price: number;
   quantity: number;
@@ -81,10 +83,13 @@ type OrderItemType = {
   status?: StatusType;
 };
 
-type OrderStatsType = Record<"PENDING" | "SHIPPED" | "DELIVERED" | "CANCELED", number>
+type OrderStatsType = Record<
+  "PENDING" | "SHIPPED" | "DELIVERED" | "CANCELED",
+  number
+>;
 
 type OrderType = {
-  client: mongoose.Types.ObjectId;
+  client: mongoose.Types.ObjectId | string;
   items: OrderItemType[];
   phone: string;
   state: string;
@@ -295,6 +300,6 @@ type SortedListWithTabsPropType = {
 
 type OrdersOrRequestsPropType = {
   asRequestList?: boolean;
+  title: string;
   items: OrderVertexType[];
-  statusSelection: StatusType[];
 } & StyleType;

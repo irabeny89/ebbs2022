@@ -203,8 +203,9 @@ const { CART_ITEMS_KEY } = config.appData.constants,
                         : [
                             ...oldItems,
                             {
-                              productId: _id!,
+                              productId: _id.toString(),
                               providerId: provider?._id!.toString(),
+                              providerTitle: provider?.title!,
                               name: name!,
                               price: price!,
                               quantity: 1,

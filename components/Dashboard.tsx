@@ -1,4 +1,5 @@
 import Card from "react-bootstrap/Card";
+import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
@@ -22,7 +23,6 @@ import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
 import {
   ADD_NEW_PRODUCT,
-  MY_PRODUCTS,
   MY_PROFILE,
   MY_COMMENT,
   MY_SERVICE_UPDATE,
@@ -32,20 +32,22 @@ import {
 import AjaxFeedback from "./AjaxFeedback";
 import SortedListWithTabs from "./SortedListWithTabs";
 import OrdersOrRequests from "./OrdersOrRequests";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import config from "../config";
 import ProductList from "./ProductList";
 import useAuthPayload from "hooks/useAuthPayload";
 import UnAuth from "./UnAuth";
 import { useRouter } from "next/router";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import Image from "next/image";
 
 const { webPages, productCategories } = config.appData,
   // tab title style
   tabTitleStyle = { fontSize: 16 };
 // dashboard component
 const Dashboard = () => {
-  const { push } = useRouter();
+  const router = useRouter();
+  // profile tab ref
+  const profileTabRef = useRef(null);
   // use auth payload & access token
   const { authPayload, accessToken } = useAuthPayload();
   // state variable for form
@@ -124,14 +126,14 @@ const Dashboard = () => {
   // cleanup state when modal closed
   useEffect(() => {
     // when logged out clear store, accessTokenVar & redirect to home page
-    logoutData && client.clearStore() && accessTokenVar("") && push("/");
+    logoutData && client.clearStore() && router.push("/member");
     newProductData && setShow(false);
     return () => {
       setFileSizes([]);
       setVideoFileSize(0);
       setValidated(false);
     };
-  }, [show, newProductData]);
+  }, [show, newProductData, loggingOut]);
   if (userLoading) return <AjaxFeedback loading />;
   if (userData) {
     const {
@@ -149,10 +151,13 @@ const Dashboard = () => {
         state,
         title,
         description,
+        likeCount,
+        logo,
       },
       requests,
       requestCount,
       email,
+      createdAt,
     } = userData?.me! as Required<UserVertexType>;
 
     return (
@@ -398,9 +403,11 @@ const Dashboard = () => {
             <SortedListWithTabs
               className=""
               ListRenderer={OrdersOrRequests}
-              field="status"
+              field="state"
               list={orders?.edges.map((edge) => edge.node)!}
-              rendererProps={{ className: "pt-4 rounded" }}
+              rendererProps={{
+                className: "pt-4 rounded",
+              }}
               tabsVariantStyle="pills"
             />
             {orders?.pageInfo.hasNextPage && (
@@ -426,7 +433,7 @@ const Dashboard = () => {
             eventKey="requests"
             title={
               <h5 style={tabTitleStyle}>
-                Requests
+                My Requests
                 <Badge pill className="bg-info">
                   {getCompactNumberFormat(requestCount)}
                 </Badge>
@@ -434,16 +441,17 @@ const Dashboard = () => {
             }
             className="my-5"
           >
-            {/* list of sorted orders by status */}
+            {/* list of sorted request orders by status */}
             <SortedListWithTabs
               tabsVariantStyle="pills"
               className=""
               ListRenderer={OrdersOrRequests}
-              field="status"
+              field="state"
               list={requests.edges.map((edge) => edge.node)}
               rendererProps={{
                 className: "pt-4 rounded",
-                statuses: ["CANCELED", "DELIVERED"],
+                asRequestList: true,
+                title,
               }}
             />
             {requests?.pageInfo.hasNextPage && (
@@ -479,7 +487,25 @@ const Dashboard = () => {
           >
             <Row className="mb-5">
               <Col>
-                <Button onClick={() => setShow(true)} size="lg">
+                {!title && (
+                  <Row>
+                    <Col sm="auto">
+                      <Alert variant="info">
+                        Create a service from the{" "}
+                        {console.log(profileTabRef.current)}
+                        <Badge className="bg-light text-primary">
+                          profile
+                        </Badge>{" "}
+                        tab before adding products
+                      </Alert>
+                    </Col>
+                  </Row>
+                )}
+                <Button
+                  onClick={() => setShow(true)}
+                  size="lg"
+                  disabled={!title}
+                >
                   {newProductLoading && <Spinner animation="grow" size="sm" />}
                   <MdAdd size={25} /> Add Product
                 </Button>
@@ -540,7 +566,7 @@ const Dashboard = () => {
                       >
                         <Card.Title>{comment?.poster?.username}</Card.Title>
                         <Card.Subtitle>
-                          {new Date().toUTCString()}
+                          {new Date(+comment.createdAt).toDateString()}
                         </Card.Subtitle>
                       </Card.Header>
                       <Card.Body>
@@ -596,6 +622,16 @@ const Dashboard = () => {
             <Container>
               <Row className="align-items-center justify-content-between">
                 <Col sm="5" className="mb-4">
+                  <Row className="justify-content-center mb-5">
+                    <Col xs="10">
+                      <Image
+                        src="/Ferrari Scuderia Spider.jpg"
+                        width="120"
+                        height="120"
+                        className="rounded-circle"
+                      />
+                    </Col>
+                  </Row>
                   <Row>
                     <Col>
                       <h5>Username:</h5>
@@ -603,6 +639,28 @@ const Dashboard = () => {
                     <Col>
                       <Badge className="bg-secondary h5" pill>
                         {username}
+                      </Badge>
+                    </Col>
+                    <hr />
+                  </Row>
+                  <Row>
+                    <Col>
+                      <h5>Joined since:</h5>
+                    </Col>
+                    <Col>
+                      <Badge className="bg-secondary h5" pill>
+                        {new Date(+createdAt).toDateString()}
+                      </Badge>
+                    </Col>
+                    <hr />
+                  </Row>
+                  <Row>
+                    <Col>
+                      <h5>Service:</h5>
+                    </Col>
+                    <Col>
+                      <Badge className="bg-secondary h5" pill>
+                        {title}
                       </Badge>
                     </Col>
                     <hr />
@@ -633,6 +691,15 @@ const Dashboard = () => {
                     </Col>
                     <Col>
                       <Badge>{productCount}</Badge>
+                    </Col>
+                    <hr />
+                  </Row>
+                  <Row>
+                    <Col>
+                      <h5>Likes: </h5>
+                    </Col>
+                    <Col>
+                      <Badge>{likeCount ?? 0}</Badge>
                     </Col>
                     <hr />
                   </Row>

@@ -16,6 +16,10 @@ const schema = new Schema<OrderType>(
           type: String,
           required: [true, "Provider id is required"],
         },
+        providerTitle: {
+          type: String,
+          required: [true, "Provider title is required"],
+        },
         name: {
           type: String,
           required: [true, "Name is required"],
