@@ -1,6 +1,7 @@
 import {
   LOGOUT,
   REFRESH_TOKEN_QUERY,
+  SET_ORDER_DELIVERY_DATE,
   UPDATE_ORDER_ITEM_STATUS,
 } from "@/graphql/documentNodes";
 import resolvers from "@/graphql/resolvers";
@@ -34,6 +35,7 @@ describe("Apollo Server", () => {
         headers: { authorization: "access token" },
       },
       OrderModel: {
+        findByIdAndUpdate: jest.fn(),
         findOneAndUpdate: jest.fn(() => ({
           select: jest.fn(() => ({
             lean: jest.fn(() => ({
@@ -77,7 +79,7 @@ describe("Apollo Server", () => {
 
     expect(errors).toBeUndefined();
   });
-  // user status update mutation
+  // user item status update mutation
   it("updates user order status, non-nullable & return status", async () => {
     const { errors, data } = await testServer.executeOperation({
       query: UPDATE_ORDER_ITEM_STATUS,
@@ -88,8 +90,22 @@ describe("Apollo Server", () => {
         },
       },
     });
+    
     expect(errors).toBeUndefined();
     expect(data?.updateOrderItemStatus.includes("SHIPPED")).toBeTruthy();
     expect(data?.updateOrderItemStatus).not.toBeNull();
   });
+  // delivery date update mutation
+  it("sets the delivery date without error & return non-nullable value", async () => {
+    const { errors, data } = await testServer.executeOperation({
+      query: SET_ORDER_DELIVERY_DATE,
+      variables: {
+        orderId: "test_orderId_12345",
+        deliveryDate: "test_deliveryDate"
+      }
+    })
+
+    expect(errors).toBeUndefined();
+    expect(data?.setOrderDeliveryDate).toBeTruthy()
+  })
 });
