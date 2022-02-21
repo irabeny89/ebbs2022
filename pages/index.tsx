@@ -11,7 +11,7 @@ import config from "config";
 import Link from "next/link";
 import { FaHome, FaTelegram } from "react-icons/fa";
 import { MdBusinessCenter } from "react-icons/md";
-import { CSSProperties, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import { GetStaticProps } from "next";
 import client from "@/graphql/apollo-client";
 import ProductSection from "@/components/ProductSection";
@@ -61,6 +61,7 @@ export const getStaticProps: GetStaticProps = async () => {
           first: 10,
         },
       },
+      fetchPolicy: "no-cache"
     });
 
     return error
@@ -72,7 +73,7 @@ export const getStaticProps: GetStaticProps = async () => {
               .map((edge) => edge.node)
               .filter((item) => item.products?.edges.length! > 0),
           },
-          revalidate: 5,
+          revalidate: 60,
         };
   },
   // home page component
@@ -147,7 +148,7 @@ export const getStaticProps: GetStaticProps = async () => {
           <Row className="text-center mt-4 mb-5">
             <Link href="/products">Go see all products</Link>
           </Row>
-          {/* Service Section */}
+          {/* Services Section */}
           <Row className="mt-5 rounded" style={highlightStyle}>
             <ServiceSection
               items={services}

@@ -33,12 +33,18 @@ import {
   AuthenticationError,
   UserInputError,
   ValidationError,
-  ForbiddenError
+  ForbiddenError,
 } from "apollo-server-micro";
 
 const {
   environmentVariable: { jwtRefreshSecret },
-  appData: { generalErrorMessage, title: ebbsTitle, passCodeDuration, abbr },
+  appData: {
+    generalErrorMessage,
+    title: ebbsTitle,
+    passCodeDuration,
+    abbr,
+    maxProductAllowed,
+  },
 } = config;
 
 export const getOrderItemStats = (orderItems: any[]): OrderStatsType =>
@@ -439,20 +445,36 @@ const resolvers = {
     ): Promise<string | undefined> => {
       try {
         // validate request auth
-        const { serviceId } = getAuthPayload(authorization!)
-        // throw error if user has no service
-        if (!serviceId) throw new ForbiddenError("Create service before adding product!")
-        // create product & return id
-        return (
-          await ProductModel.create({
-            ...args,
-            provider: serviceId,
-          })
-        ).id;
+        const { serviceId } = getAuthPayload(authorization!);
+        // throw error if user has no service profile
+        if (!serviceId)
+          throw new ForbiddenError("Create service before adding product!");
+        // throw error if user products is over max allowed
+        if (
+          (
+            await ProductModel.find({
+              provider: serviceId,
+            })
+              .select("_id")
+              .lean()
+              .exec()
+          ).length <= maxProductAllowed
+        )
+          // create product & return id
+          return (
+            await ProductModel.create({
+              ...args,
+              provider: serviceId,
+            })
+          ).id;
+        else
+          throw new ForbiddenError(
+            "You have maximum products allowed. Kindly upgrade to add more products."
+          );
       } catch (error: any) {
         // NOTE: log to debug
         devErrorLogger(error);
-        error.name === "ForbiddenError" && console.error(error.message)
+        error.name === "ForbiddenError" && console.error(error.message);
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
@@ -510,7 +532,7 @@ const resolvers = {
       _: any,
       args: { serviceId: string; isFav: boolean },
       {
-        ServiceModel,
+        LikeModel,
         req: {
           headers: { authorization },
         },
@@ -518,8 +540,8 @@ const resolvers = {
     ): Promise<boolean | undefined> => {
       try {
         const { sub } = getAuthPayload(authorization!);
-        await ServiceModel.findByIdAndUpdate(
-          args.serviceId,
+        await LikeModel.findOneAndUpdate(
+          { selection: args.serviceId },
           args.isFav
             ? {
                 $addToSet: { happyClients: sub },
@@ -638,7 +660,7 @@ const resolvers = {
           $set: { deliveryDate },
         });
         // return confirmation string
-        return "Delivery date has been set successfully"
+        return "Delivery date has been set successfully";
       } catch (error) {
         // NOTE: log to debug error
         devErrorLogger(error);
@@ -730,12 +752,14 @@ const resolvers = {
       { LikeModel }: GraphContextType
     ) => {
       try {
-        return await LikeModel.find({
-          selection: parent._id,
-        })
-          .select("happyClients")
-          .lean()
-          .exec();
+        return (
+          await LikeModel.findOne({
+            selection: parent._id,
+          })
+            .select("happyClients")
+            .lean()
+            .exec()
+        )?.happyClients!;
       } catch (error) {
         // NOTE: log error to debug
         devErrorLogger(error);
@@ -887,14 +911,17 @@ const resolvers = {
       }
     },
     likeCount: async (
-      { _id }: ServiceType,
+      parent: ServiceType,
       _: any,
       { LikeModel }: GraphContextType
     ) => {
       try {
         return (
-          await LikeModel.find({ selection: _id }).select("_id").lean().exec()
-        ).length;
+          await LikeModel.findOne({ selection: parent._id })
+            .select("happyClients")
+            .lean()
+            .exec()
+        )?.happyClients.length;
       } catch (error) {
         // NOTE: log error to debug
         devErrorLogger(error);

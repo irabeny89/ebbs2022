@@ -21,6 +21,8 @@ import { FaBoxes } from "react-icons/fa";
 import ServiceSection from "@/components/ServiceSection";
 import { FEW_SERVICES } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
+import SortedListWithTabs from "@/components/SortedListWithTabs";
+import ServiceList from "@/components/ServiceList";
 // fetch web app meta data
 const { webPages, abbr } = config.appData,
   // find products page data
@@ -50,7 +52,9 @@ export const getStaticProps: GetStaticProps = async () => {
       fetchPolicy: "no-cache",
     });
 
-    return error ? { notFound: true } : { props: data.services, revalidate: 5 };
+    return error
+      ? { notFound: true }
+      : { props: data.services, revalidate: 60 };
   },
   // services page component
   ServicesPage = ({
@@ -105,7 +109,9 @@ export const getStaticProps: GetStaticProps = async () => {
           >
             {servicesPage?.parargraphs[0]}
           </Row>
-          {/* category tabs */}
+          {/* category tabs 
+          N.B - no need to use SortedListWithTabs component because it is incompatible with the requirements here.
+          */}
           <Tabs id="category-tabs" defaultActiveKey="ALL">
             {/* render category as tabs */}
             {["ALL"]

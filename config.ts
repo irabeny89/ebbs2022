@@ -40,7 +40,7 @@ const config = {
       },
     ],
     passCodeDuration: 15,
-    maxProductAllowed: 20,
+    maxProductAllowed: 12,
     passwordRecoveryOption: {
       subject: "EBBS - Password Recovery",
       from: "<no-reply>@gmail.com",

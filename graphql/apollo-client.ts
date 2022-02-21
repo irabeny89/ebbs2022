@@ -2,8 +2,8 @@ import { ApolloClient, InMemoryCache, HttpLink, from } from "@apollo/client";
 import { onError } from "@apollo/client/link/error";
 import { RetryLink } from "@apollo/client/link/retry";
 import config from "../config";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
-import axios from "axios";
+// import { accessTokenVar } from "@/graphql/reactiveVariables";
+// import axios from "axios";
 
 const {
   environmentVariable: { graphqlUri, host },
@@ -14,6 +14,11 @@ const client = new ApolloClient({
   name: abbr,
   version: "1.0.0",
   cache: new InMemoryCache(),
+  defaultOptions: {
+    query: {
+      fetchPolicy: "no-cache"
+    }
+  },
   link: from(
     [
       onError(({ graphQLErrors, networkError, operation, forward }) => {

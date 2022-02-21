@@ -19,9 +19,9 @@ import useAuthPayload from "hooks/useAuthPayload";
 import {
   FEW_PRODUCTS_AND_SERVICES,
   FEW_SERVICES,
+  MY_COMMENT,
   MY_FAV_SERVICE,
 } from "@/graphql/documentNodes";
-import { toastsVar } from "@/graphql/reactiveVariables";
 
 const styling: { [key: string]: CSSProperties } = {
     smallTextStyle: {
@@ -44,36 +44,48 @@ const styling: { [key: string]: CSSProperties } = {
   }: ServiceLabelPropType) => {
     // info modal state
     const [show, setShow] = useState(false),
+      // comment post text state
+      [post, setPost] = useState(""),
       // comment modal state
       [showComment, setShowComment] = useState(false),
       // the auth payload
       { authPayload, accessToken } = useAuthPayload(),
-      // service liking mutation
-      [likeOrUnlike, { loading, data, error }] = useMutation<
-        Record<"myFavService", boolean>,
-        Record<"serviceId", string> & Record<"isFav", boolean>
-      >(MY_FAV_SERVICE, {
-        variables: {
-          serviceId: _id!.toString(),
-          isFav: !happyClients?.includes(authPayload?.sub!) ?? false,
-        },
+      // services state
+      
+      // comment posting
+      [postComment, { loading: postLoading, data: postData }] = useMutation<
+        Record<"myCommentPost", string>,
+        Record<"serviceId" | "post", string>
+      >(MY_COMMENT, {
         refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
         context: {
           headers: {
             authorization: `Bearer ${accessToken}`,
           },
         },
-      });
-
-    useEffect(() => {
-      error &&
-        toastsVar([
-          {
-            header: error.name,
-            message: "Something failed!",
+        variables: {
+          post,
+          serviceId: _id?.toString()!,
+        },
+      }),
+      // service liking mutation
+      [likeOrUnlike, { loading, data: likeData }] = useMutation<
+        Record<"myFavService", boolean>,
+        Record<"serviceId", string> & Record<"isFav", boolean>
+      >(MY_FAV_SERVICE, {
+        refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
+        context: {
+          headers: {
+            authorization: `Bearer ${accessToken}`,
           },
-        ]);
-    }, [error]);
+        },
+        fetchPolicy: "network-only"
+      });
+    // useEffect hook to manage rerenders
+    useEffect(() => {
+      fetch("/api/revalidateHome")
+      postData && setPost("");
+    }, [postData, likeData]);
 
     return _id ? (
       <Container {...{ style, className }}>
@@ -101,11 +113,13 @@ const styling: { [key: string]: CSSProperties } = {
                 {comments?.edges
                   .map((edge) => edge.node)
                   .map((comment) => (
-                    <Col key={comment._id.toString()}>
+                    <Col key={comment._id.toString()} sm="6">
                       <Card className="mb-3">
                         <Card.Header>
-                          <Card.Title>{comment.poster!.username}</Card.Title>
-                          <Card.Subtitle>{comment.createdAt}</Card.Subtitle>
+                          <Card.Title>{comment?.poster?.username!}</Card.Title>
+                          <Card.Subtitle>
+                            {new Date(+comment.createdAt).toDateString()}
+                          </Card.Subtitle>
                         </Card.Header>
                         <Card.Body>{comment.post}</Card.Body>
                       </Card>
@@ -116,20 +130,27 @@ const styling: { [key: string]: CSSProperties } = {
           </Modal.Body>
           <Modal.Footer>
             {!!authPayload && (
-              <>
+              <Col>
                 <FloatingLabel label="Enter comment">
                   <FormControl
+                    value={post}
+                    onChange={(e) => setPost(e.currentTarget.value)}
                     placeholder="Enter text"
                     as="textarea"
                     style={{
-                      height: "4rem",
+                      height: "5rem",
                     }}
                   ></FormControl>
                 </FloatingLabel>
-                <Button className="w-100 my-2">
+                <Button
+                  className="w-100 my-2"
+                  onClick={() => postComment()}
+                  disabled={!post}
+                >
+                  {postLoading && <Spinner animation="grow" size="sm" />}
                   <BiSend size={18} /> Send
                 </Button>
-              </>
+              </Col>
             )}
           </Modal.Footer>
         </Modal>
@@ -153,7 +174,6 @@ const styling: { [key: string]: CSSProperties } = {
           </Col>
           <Link href={`/services/${_id}`}>
             <Col
-              title={title}
               className="text-capitalize"
               style={{ cursor: "pointer" }}
             >
@@ -173,7 +193,16 @@ const styling: { [key: string]: CSSProperties } = {
                   ? "primary"
                   : "outline-primary"
               }
-              onClick={() => likeOrUnlike()}
+              onClick={() =>
+                likeOrUnlike({
+                  variables: {
+                    serviceId: _id!.toString(),
+                    isFav: happyClients?.includes(authPayload?.sub!)
+                      ? false
+                      : true,
+                  },
+                })
+              }
             >
               {loading && <Spinner animation="grow" size="sm" />}
               <BiLike size={18} /> {getCompactNumberFormat(likeCount!)}
