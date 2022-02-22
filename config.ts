@@ -1,3 +1,5 @@
+import { CookieSerializeOptions } from "cookie";
+
 const isProductionEnv = process.env.NODE_ENV === "production";
 
 const config = {
@@ -39,6 +41,7 @@ const config = {
         costPerDay: 500,
       },
     ],
+    // time in minutes
     passCodeDuration: 15,
     maxProductAllowed: 12,
     passwordRecoveryOption: {
@@ -49,6 +52,13 @@ const config = {
     generalErrorMessage: "Something went wrong. Login or check your inputs and try again",
     constants: {
       CART_ITEMS_KEY: "ebbsCartItems",
+      COOKIE_PASSCODE: "passCodeData",
+      COOKIE_CLEAR_OPTIONS: {
+        maxAge: 0,
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      } as CookieSerializeOptions
     },
     webPages: [
       {

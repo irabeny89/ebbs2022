@@ -3,7 +3,7 @@ import { NextApiResponse } from "next";
 import apolloServer from "../../graphql";
 import appConfig from "config";
 
-const { graphqlUri, host } = appConfig.environmentVariable;
+const { graphqlUri } = appConfig.environmentVariable;
 
 const server = apolloServer.start();
 const handler = async (req: MicroRequest, res: NextApiResponse) => {

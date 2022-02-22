@@ -1,11 +1,12 @@
-import { randomBytes, scrypt, BinaryLike, timingSafeEqual } from "crypto";
-import { AuthenticationError } from "apollo-server-micro";
+import { randomBytes, scrypt, BinaryLike, timingSafeEqual, createHash } from "crypto";
+import { AuthenticationError, ForbiddenError } from "apollo-server-micro";
 import { promisify } from "util";
 import { serialize, CookieSerializeOptions } from "cookie";
 import { NextApiResponse } from "next";
 import {
   CursorConnectionArgsType,
   CursorConnectionType,
+  PassCodeDataType,
   TokenPairType,
   UserPayloadType,
 } from "types";
@@ -270,3 +271,19 @@ export const devErrorLogger = (error: any) =>
   (console.log("===================================="),
   console.log(error),
   console.log("===================================="));
+
+  export const getHash = (data: string) => createHash("sha256").update(data).digest("hex")
+
+  export const verifyPassCodeData = ({
+    email, hashedPassCode
+  }: PassCodeDataType, passCode: string) => {
+    // throws error when passCodeData or hashedPassCode is undefined.
+    // throw error if passcode is invalid
+    handleError(
+      !timingSafeEqual(Buffer.from(passCode), Buffer.from(hashedPassCode)),
+      ForbiddenError,
+      "Failed! Get a new passcode and try again."
+    );
+
+    return email
+  }

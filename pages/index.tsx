@@ -11,7 +11,7 @@ import config from "config";
 import Link from "next/link";
 import { FaHome, FaTelegram } from "react-icons/fa";
 import { MdBusinessCenter } from "react-icons/md";
-import { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useState } from "react";
 import { GetStaticProps } from "next";
 import client from "@/graphql/apollo-client";
 import ProductSection from "@/components/ProductSection";

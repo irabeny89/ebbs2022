@@ -33,6 +33,7 @@ import {
   USER_REQUEST_PASSCODE,
 } from "@/graphql/documentNodes";
 import { useRouter } from "next/router";
+import EmailValidationForm from "./EmailValidationForm";
 
 // fetch web app meta data
 const { webPages, generalErrorMessage } = config.appData,
@@ -49,8 +50,6 @@ const Member = () => {
   const [validated, setValidated] = useState(false),
     // register form validation state
     [registerValidated, setRegisterValidated] = useState(false),
-    // passcode form validation state
-    [passcodeValidated, setPassCodeValidated] = useState(false),
     // password form validation state
     [passwordValidated, setPasswordValidated] = useState(false),
     // file size state
@@ -70,13 +69,6 @@ const Member = () => {
     ] = useMutation<Record<"register", string>, RegisterVariableType>(
       USER_REGISTER
     ),
-    // passcode request mutation
-    [
-      requestPassCode,
-      { data: passCodeData, error: passCodeError, loading: passCodeLoading },
-    ] = useMutation<Record<"requestPassCode", string>, Record<"email", string>>(
-      USER_REQUEST_PASSCODE
-    ),
     // change password mutation
     [
       changePassword,
@@ -86,47 +78,7 @@ const Member = () => {
       ChangePasswordVariableType
     >(USER_PASSWORD_CHANGE);
 
-  // toast error on login fail
-  error &&
-    toastsVar([
-      {
-        message: generalErrorMessage,
-        header: error.name,
-      },
-    ]);
-  // toast error on register fail
-  registerError &&
-    toastsVar([
-      {
-        message: generalErrorMessage,
-        header: registerError.name,
-      },
-    ]);
-  // toast error on passcode request fail
-  passCodeError &&
-    toastsVar([
-      {
-        message: generalErrorMessage,
-        header: passCodeError.name,
-      },
-    ]);
-  // toast error on pass change fail
-  passwordError &&
-    toastsVar([
-      {
-        message: generalErrorMessage,
-        header: passwordError.name,
-      },
-    ]);
-  // toast when passcode request sent successfully
-  passCodeData &&
-    toastsVar([
-      {
-        message: passCodeData.requestPassCode,
-      },
-    ]);
-    
-    useEffect(() => {
+  useEffect(() => {
     // update access token on login success
     data && (accessTokenVar(data.login), router.push("/member/dashboard"));
     // update access token on register success
@@ -245,6 +197,11 @@ const Member = () => {
           </h5>
           {/* new user register form */}
           <Container>
+            <Row className="mb-5">
+              <Col md="6">
+                <EmailValidationForm />
+              </Col>
+            </Row>
             <Form
               data-testid="registerForm"
               noValidate
@@ -253,7 +210,7 @@ const Member = () => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget),
                   username = formData.get("username")?.toString()!,
-                  email = formData.get("email")?.toString()!,
+                  passCode = formData.get("passCode")?.toString()!,
                   password = formData.get("password")?.toString()!,
                   confirmPassword = formData
                     .get("confirmPassword")
@@ -277,7 +234,7 @@ const Member = () => {
                     registerUser({
                       variables: {
                         registerInput: {
-                          email,
+                          passCode,
                           password,
                           username,
                           title,
@@ -313,13 +270,12 @@ const Member = () => {
                   </Form.FloatingLabel>
                 </Col>
                 <Col md="6">
-                  <Form.FloatingLabel label="Email">
+                  <Form.FloatingLabel label="Pass Code">
                     <Form.Control
-                      data-testid="registerEmail"
-                      type="email"
-                      aria-label="email"
-                      placeholder="Email"
-                      name="email"
+                      data-testid="passCode"
+                      aria-label="pass-code"
+                      placeholder="Pass-code"
+                      name="passCode"
                       size="lg"
                       required
                     />
@@ -518,63 +474,7 @@ const Member = () => {
             {/* pass code request section */}
             <Row className="justify-content-center my-5">
               <Col md="7">
-                {/* request passcode accordion */}
-                <Accordion>
-                  <Accordion.Item eventKey="0">
-                    <Accordion.Header>Request Passcode</Accordion.Header>
-                    <Accordion.Body>
-                      <Form
-                        data-testid="recoveryForm"
-                        noValidate
-                        validated={passcodeValidated}
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const formData = new FormData(e.currentTarget);
-                          // check form validity before sending
-                          e.currentTarget.checkValidity()
-                            ? // ...if valid, off validity, send the query & reset form inputs
-                              (setPassCodeValidated(false),
-                              e.currentTarget.reset(),
-                              requestPassCode({
-                                variables: {
-                                  email: formData.get("email")?.toString()!,
-                                },
-                              }))
-                            : // ...else prevent submitting & on validity
-                              (e.preventDefault(),
-                              e.stopPropagation(),
-                              setPassCodeValidated(true));
-                        }}
-                      >
-                        <Form.FloatingLabel label="Email">
-                          <Form.Control
-                            type="email"
-                            aria-label="email"
-                            placeholder="Email"
-                            name="email"
-                            size="lg"
-                            required
-                            data-testid="recoveryEmail"
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            This field is required!
-                          </Form.Control.Feedback>
-                        </Form.FloatingLabel>
-                        <Button
-                          size="lg"
-                          className="mt-5"
-                          type="submit"
-                          data-testid="recoverySendButton"
-                        >
-                          {passCodeLoading && (
-                            <Spinner animation="grow" size="sm" />
-                          )}{" "}
-                          <MdSend /> Submit
-                        </Button>
-                      </Form>
-                    </Accordion.Body>
-                  </Accordion.Item>
-                </Accordion>
+                <EmailValidationForm />
               </Col>
             </Row>
             {/* password change section */}

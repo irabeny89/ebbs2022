@@ -25,13 +25,13 @@ const typeDefs = gql`
     logout: String!
     "user profile data"
     me: User
+    "request passcode to change password"
+    requestPassCode(email: String!): String!
   }
   # -- mutation --
   type Mutation {
     "register new user"
     register(registerInput: RegisterInput!): String!
-    "request passcode to change password"
-    requestPassCode(email: String!): String!
     "resetPassword with passcode"
     changePassword(passCode: String!, newPassword: String!): String!
     "like a service using the service ID and select action"

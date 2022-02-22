@@ -8,6 +8,8 @@ import { MutableRefObject, ReactNode } from "react";
 import Mail from "nodemailer/lib/mailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 
+type PassCodeDataType = Record<"email" | "hashedPassCode", string>;
+
 type UserPayloadType = {
   serviceId?: string;
   username: string;
@@ -46,9 +48,6 @@ type UserType = {
   email: string;
   password: string;
   salt: string;
-  passCode: string;
-  codeStart: Date;
-  codeEnd: Date;
 } & TimestampAndId;
 
 type ServiceType = {
@@ -189,8 +188,9 @@ type CursorConnectionArgsType<T> = Record<"list", T[]> & PagingInputType;
 
 type RegisterVariableType = Record<
   "registerInput",
-  Pick<UserType, "username" | "email" | "password"> &
-    Partial<Pick<ServiceType, "title" | "logo" | "description" | "state">>
+  Pick<UserType, "username" | "password"> &
+    Partial<Pick<ServiceType, "title" | "logo" | "description" | "state">> &
+    Record<"passCode", string>
 >;
 
 type UserLoginVariableType = Record<"email" | "password", string>;

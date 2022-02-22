@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomBytes, timingSafeEqual } from "crypto";
 import config from "../config";
 import { verify, JwtPayload } from "jsonwebtoken";
 import type {
@@ -18,6 +18,7 @@ import type {
   UserType,
   OrderStatsType,
   StatusType,
+  PassCodeDataType,
 } from "types";
 import {
   authUser,
@@ -25,15 +26,18 @@ import {
   devErrorLogger,
   getAuthPayload,
   getCursorConnection,
+  getHash,
   getHashedPassword,
   handleError,
   setCookie,
+  verifyPassCodeData,
 } from "../utils";
 import {
   AuthenticationError,
   UserInputError,
   ValidationError,
   ForbiddenError,
+  ApolloError,
 } from "apollo-server-micro";
 
 const {
@@ -44,6 +48,7 @@ const {
     passCodeDuration,
     abbr,
     maxProductAllowed,
+    constants: { COOKIE_PASSCODE, COOKIE_CLEAR_OPTIONS },
   },
 } = config;
 
@@ -67,7 +72,6 @@ const resolvers = {
         httpOnly: true,
         sameSite: true,
         secure: process.env.NODE_ENV == "production" ? true : false,
-        path: "/api/graphql",
       }),
       "Logged out successfully."
     ),
@@ -139,6 +143,52 @@ const resolvers = {
         // log error for more
         devErrorLogger(error);
         handleError(error, AuthenticationError, generalErrorMessage);
+      }
+    },
+    requestPassCode: async (
+      _: any,
+      { email }: { email: string },
+      { sendEmail, res }: GraphContextType
+    ) => {
+      try {
+        // generate pass code
+        const passCode = randomBytes(8).toString("hex");
+        // store hash in user cookie
+        setCookie(
+          res,
+          COOKIE_PASSCODE,
+          {
+            email,
+            hashedPassCode: getHash(passCode),
+          },
+          {
+            maxAge: passCodeDuration * 60,
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+          }
+        );
+        // send email and log link for test account
+        console.log(
+          `test email link: ${
+            (
+              await sendEmail({
+                from: `${ebbsTitle}`,
+                to: email,
+                subject: `${abbr} Pass Code`,
+                html: `<h1>${ebbsTitle}</h1>
+        <h2>Pass Code: ${passCode}</h2>
+        <p>It expires in ${passCodeDuration} minutes</p>`,
+              })
+            ).testAccountMessageUrl
+          }`
+        );
+
+        return "Passcode sent to your email successfully";
+      } catch (error) {
+        // NOTE: log error to debug
+        devErrorLogger(error);
+        handleError(error, ApolloError, generalErrorMessage);
       }
     },
     service: async (
@@ -281,11 +331,17 @@ const resolvers = {
     register: async (
       _: any,
       {
-        registerInput: { email, password, username, ...serviceData },
+        registerInput: { passCode, password, username, ...serviceData },
       }: RegisterVariableType,
-      { UserModel, ServiceModel, res }: GraphContextType
+      { UserModel, ServiceModel, res, req: { cookies } }: GraphContextType
     ) => {
       try {
+        // verify & get email from cookies
+        const { passCodeData } = cookies as unknown as Record<
+            "passCodeData",
+            PassCodeDataType
+          >,
+          email = verifyPassCodeData(passCodeData, passCode);
         // if user exist throw error or password length < 8
         handleError(
           await UserModel.findOne({ email }).select("email").lean().exec(),
@@ -303,19 +359,23 @@ const resolvers = {
             { email, username, ...(await getHashedPassword(password)) },
           ])
         )[0];
+        // clear passCodeData from cookies since it is no more needed
         // create service for user
         // return access token
-        return authUser(
-          {
-            audience: "USER",
-            id,
-            username: _username,
-            serviceId: (
-              await ServiceModel.create([{ ...serviceData, owner: id }])
-            )[0].id,
-          },
-          res
-        ).accessToken;
+        return (
+          setCookie(res, COOKIE_PASSCODE, "", COOKIE_CLEAR_OPTIONS),
+          authUser(
+            {
+              audience: "USER",
+              id,
+              username: _username,
+              serviceId: (
+                await ServiceModel.create([{ ...serviceData, owner: id }])
+              )[0].id,
+            },
+            res
+          ).accessToken
+        );
       } catch (error: any) {
         // NOTE: log error to debug
         ["ValidationError", "UserInputError"].includes(error.name) &&
@@ -328,82 +388,38 @@ const resolvers = {
         handleError(error, AuthenticationError, generalErrorMessage);
       }
     },
-    requestPassCode: async (
-      _: any,
-      { email }: { email: string },
-      { UserModel, sendEmail }: GraphContextType
-    ) => {
-      try {
-        // handle error if user is not found
-        handleError(
-          !(await UserModel.findOne({ email }).select("_id").lean().exec()),
-          UserInputError,
-          "User not found."
-        );
-        // generate pass code
-        const passCode = randomBytes(16).toString("hex");
-        // send email and log link for test account
-        console.log(
-          `test email link: ${
-            (
-              await sendEmail({
-                from: `${ebbsTitle}`,
-                to: email,
-                subject: `${abbr} Pass Code`,
-                html: `<h1>${ebbsTitle}</h1>
-        <h2>Pass Code: ${passCode}</h2>
-        <p>It expires in ${passCodeDuration} minutes</p>`,
-              })
-            ).testAccountMessageUrl
-          }`
-        );
-        // update user document with passcode; it expires in 15 minutes
-        await UserModel.findOneAndUpdate(
-          { email },
-          {
-            $set: {
-              passCode,
-              codeStart: new Date(),
-              codeEnd: Date.now() + 9e5,
-            },
-          }
-        )
-          .select("_id")
-          .lean()
-          .exec();
-        return "Passcode sent to your email successfully";
-      } catch (error) {
-        // NOTE: log error to debug
-        devErrorLogger(error);
-        handleError(error, UserInputError, generalErrorMessage);
-      }
-    },
     changePassword: async (
       _: any,
       { newPassword, passCode }: ChangePasswordVariableType,
-      { UserModel }: GraphContextType
+      { UserModel, req: { cookies }, res }: GraphContextType
     ): Promise<string | undefined> => {
       try {
-        // find by passcode
-        const user = await UserModel.findOne({ passCode })
-          .select("codeEnd")
-          .lean()
-          .exec();
-        // throw error if user is not found or cod eexpires
-        handleError(
-          !user || user?.codeEnd < new Date(),
-          UserInputError,
-          "Wrong or expired passcode. Try again."
+        // throws error if passCodeData is undefined.
+        // if no error then update the user password
+        // clear passcode data from cookies
+        // return successful message
+        return (
+          await UserModel.findOneAndUpdate(
+            // @ts-ignore
+            { email: verifyPassCodeData(cookies.passCodeData, passCode) },
+            {
+              $set: { password: newPassword },
+            }
+          )
+            .select("_id")
+            .lean()
+            .exec(),
+          setCookie(res, COOKIE_PASSCODE, COOKIE_CLEAR_OPTIONS),
+          "Password changed successfully."
         );
-        // if user exist
-        await UserModel.findByIdAndUpdate(user?._id, {
-          $set: { ...(await getHashedPassword(newPassword)) },
-        });
-        return "Password changed successfully.";
       } catch (error) {
         // NOTE: log error to debug
         devErrorLogger(error);
-        handleError(error, UserInputError, generalErrorMessage);
+        handleError(
+          error,
+          ForbiddenError,
+          "Failed! Get a new passcode and try again."
+        );
       }
     },
     myServiceUpdate: async (

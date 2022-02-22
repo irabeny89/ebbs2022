@@ -95,6 +95,12 @@ export const USER_LOGIN = gql`
   }
 `;
 
+export const USER_REQUEST_PASSCODE = gql`
+  query RequestPassCode($email: String!) {
+    requestPassCode(email: $email)
+  }
+`;
+
 export const SERVICE = gql`
   ${PRODUCT_FRAGMENT}
   ${SERVICE_FRAGMENT}
@@ -439,12 +445,6 @@ export const USER_REGISTER = gql`
 export const USER_PASSWORD_CHANGE = gql`
   mutation PasswordChange($passCode: String!, $newPassword: String!) {
     changePassword(passCode: $passCode, newPassword: $newPassword)
-  }
-`;
-
-export const USER_REQUEST_PASSCODE = gql`
-  mutation RequestPassCode($email: String!) {
-    requestPassCode(email: $email)
   }
 `;
 
