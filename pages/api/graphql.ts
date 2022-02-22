@@ -1,6 +1,6 @@
 import { MicroRequest } from "apollo-server-micro/dist/types";
 import { NextApiResponse } from "next";
-import apolloServer from "../../graphql";
+import apolloServer from "../../graphql/apollo-server";
 import appConfig from "config";
 
 const { graphqlUri } = appConfig.environmentVariable;
