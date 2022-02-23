@@ -44,13 +44,10 @@ export const getStaticProps: GetStaticProps = async () => {
         products: CursorConnectionType<ProductVertexType>;
         services: CursorConnectionType<ServiceVertexType>;
       },
-      Record<"productArgs" | "commentArgs" | "serviceArgs" | "serviceProductArgs", PagingInputType>
+      Record<"productArgs" | "serviceArgs" | "serviceProductArgs", PagingInputType>
     >({
       query: FEW_PRODUCTS_AND_SERVICES,
       variables: {
-        commentArgs: {
-          last: 20,
-        },
         productArgs: {
           last: 20,
         },

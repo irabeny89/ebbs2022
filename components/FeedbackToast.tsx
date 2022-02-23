@@ -7,8 +7,8 @@ const FeedbackToast = ({
   setShowToast,
   showToast,
 }: {
-  error: any;
-  successText: string;
+  error?: any;
+  successText?: string;
   showToast: boolean;
   setShowToast: Dispatch<SetStateAction<boolean>>;
 }) => {

@@ -1,5 +1,5 @@
 import { getCursorConnection } from "../../utils/";
-import { testList } from "@/models/mockData";
+import { testList } from "mockData";
 
 describe("getCursorConnection", () => {
   it("should return cursor connection with first 1 item", () => {

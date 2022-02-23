@@ -1,4 +1,4 @@
-import config from "config";
+import config from "../../config";
 import { model, Schema, Model, models } from "mongoose";
 import type { ServiceType } from "types";
 

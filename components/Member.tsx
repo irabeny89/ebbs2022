@@ -24,19 +24,18 @@ import type {
   UserLoginVariableType,
   RegisterVariableType,
 } from "types";
-import { accessTokenVar, toastsVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import {
   USER_LOGIN,
   USER_PASSWORD_CHANGE,
   USER_REGISTER,
-  USER_REQUEST_PASSCODE,
 } from "@/graphql/documentNodes";
 import { useRouter } from "next/router";
 import EmailValidationForm from "./EmailValidationForm";
 
 // fetch web app meta data
-const { webPages, generalErrorMessage } = config.appData,
+const { webPages } = config.appData,
   // find home page data
   memberPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "member"
@@ -58,7 +57,7 @@ const Member = () => {
     [show, setShow] = useState(false),
     [showAlert, setShowAlert] = useState(false),
     // login mutation
-    [login, { data, error, loading }] = useLazyQuery<
+    [login, { data, loading }] = useLazyQuery<
       Record<"login", string>,
       UserLoginVariableType
     >(USER_LOGIN),

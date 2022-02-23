@@ -2,48 +2,32 @@ import Accordion from "react-bootstrap/Accordion";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
-import Toast from "react-bootstrap/Toast";
 import { MdSend } from "react-icons/md";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { USER_REQUEST_PASSCODE } from "@/graphql/documentNodes";
+import FeedbackToast from "./FeedbackToast";
 
 const EmailValidationForm = () => {
   // passcode form validation state
   const [passcodeValidated, setPassCodeValidated] = useState(false),
-    [show, setShow] = useState(false),
+    [showToast, setShowToast] = useState(false),
     // passcode request query
     [requestPassCode, { data, error, loading }] = useLazyQuery<
       Record<"requestPassCode", string>,
       Record<"email", string>
     >(USER_REQUEST_PASSCODE);
 
-  useEffect(() => {
-    (data || error) && setShow(true);
-  }, [error, data]);
-
   return (
     <Accordion>
-      <Toast
-        bg={error ? "danger" : "success"}
-        show={show}
-        onClose={() => setShow(false)}
-        autohide
-      >
-        <Toast.Header className="justify-content-between h5">
-          {error?.name || "Success"}
-        </Toast.Header>
-        {error && (
-          <Toast.Body className="justify-content-between text-white">
-            {error.message}
-          </Toast.Body>
-        )}
-        {data && (
-          <Toast.Body className="justify-content-between text-white">
-            {data.requestPassCode}
-          </Toast.Body>
-        )}
-      </Toast>
+      <FeedbackToast
+        {...{
+          error,
+          showToast,
+          setShowToast,
+          successText: data?.requestPassCode!,
+        }}
+      />
       <Accordion.Item eventKey="0">
         <Accordion.Header>Request Passcode</Accordion.Header>
         <Accordion.Body>

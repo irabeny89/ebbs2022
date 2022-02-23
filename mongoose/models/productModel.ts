@@ -1,6 +1,6 @@
 import { model, models, Schema, Model } from "mongoose";
 import type { ProductType } from "types";
-import config from "../config";
+import config from "../../config";
 
 const schema = new Schema<ProductType>(
   {

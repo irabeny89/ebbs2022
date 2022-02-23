@@ -9,10 +9,14 @@ import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
 import { BiMessageAltDots, BiLike, BiInfoCircle, BiSend } from "react-icons/bi";
-import type { ServiceLabelPropType } from "types";
+import type {
+  PagingInputType,
+  ServiceLabelPropType,
+  ServiceVertexType,
+} from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { CSSProperties, useEffect, useState } from "react";
-import { useMutation } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import AjaxFeedback from "./AjaxFeedback";
 import Link from "next/link";
 import useAuthPayload from "hooks/useAuthPayload";
@@ -21,6 +25,7 @@ import {
   FEW_SERVICES,
   MY_COMMENT,
   MY_FAV_SERVICE,
+  SERVICE_LIKE_DATA,
 } from "@/graphql/documentNodes";
 
 const styling: { [key: string]: CSSProperties } = {
@@ -34,11 +39,11 @@ const styling: { [key: string]: CSSProperties } = {
     title,
     state,
     logo,
-    comments,
-    commentCount,
+    // comments,
+    // commentCount,
     description,
-    happyClients,
-    likeCount,
+    // happyClients,
+    // likeCount,
     className,
     style,
   }: ServiceLabelPropType) => {
@@ -50,14 +55,32 @@ const styling: { [key: string]: CSSProperties } = {
       [showComment, setShowComment] = useState(false),
       // the auth payload
       { authPayload, accessToken } = useAuthPayload(),
-      // services state
-      
+      // query dynamically service like data
+      { data: serviceData, loading: serviceDataLoading } = useQuery<
+        Record<
+          "service",
+          Required<
+            Pick<
+              ServiceVertexType,
+              "happyClients" | "likeCount" | "commentCount" | "comments"
+            >
+          >
+        >,
+        Record<"serviceId", string> & Record<"commentArgs", PagingInputType>
+      >(SERVICE_LIKE_DATA, {
+        variables: {
+          serviceId: _id?.toString()!,
+          commentArgs: {
+            last: 20,
+          },
+        },
+      }),
       // comment posting
       [postComment, { loading: postLoading, data: postData }] = useMutation<
         Record<"myCommentPost", string>,
         Record<"serviceId" | "post", string>
       >(MY_COMMENT, {
-        refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
+        refetchQueries: [SERVICE_LIKE_DATA],
         context: {
           headers: {
             authorization: `Bearer ${accessToken}`,
@@ -73,17 +96,17 @@ const styling: { [key: string]: CSSProperties } = {
         Record<"myFavService", boolean>,
         Record<"serviceId", string> & Record<"isFav", boolean>
       >(MY_FAV_SERVICE, {
-        refetchQueries: [FEW_PRODUCTS_AND_SERVICES, FEW_SERVICES],
+        refetchQueries: [SERVICE_LIKE_DATA],
         context: {
           headers: {
             authorization: `Bearer ${accessToken}`,
           },
         },
-        fetchPolicy: "network-only"
+        fetchPolicy: "network-only",
       });
     // useEffect hook to manage rerenders
     useEffect(() => {
-      fetch("/api/revalidateHome")
+      fetch("/api/revalidateHome");
       postData && setPost("");
     }, [postData, likeData]);
 
@@ -110,7 +133,7 @@ const styling: { [key: string]: CSSProperties } = {
           <Modal.Body>
             <Container fluid>
               <Row>
-                {comments?.edges
+                {(serviceData?.service?.comments?.edges ?? [])
                   .map((edge) => edge.node)
                   .map((comment) => (
                     <Col key={comment._id.toString()} sm="6">
@@ -173,10 +196,7 @@ const styling: { [key: string]: CSSProperties } = {
             />
           </Col>
           <Link href={`/services/${_id}`}>
-            <Col
-              className="text-capitalize"
-              style={{ cursor: "pointer" }}
-            >
+            <Col className="text-capitalize" style={{ cursor: "pointer" }}>
               <Row className="h5">{title}</Row>
               <Row style={styling.smallTextStyle}>{state}</Row>
             </Col>
@@ -189,7 +209,7 @@ const styling: { [key: string]: CSSProperties } = {
               size="sm"
               className="py-0 w-100"
               variant={
-                happyClients?.includes(authPayload?.sub!)
+                serviceData?.service?.happyClients?.includes(authPayload?.sub!)
                   ? "primary"
                   : "outline-primary"
               }
@@ -197,7 +217,9 @@ const styling: { [key: string]: CSSProperties } = {
                 likeOrUnlike({
                   variables: {
                     serviceId: _id!.toString(),
-                    isFav: happyClients?.includes(authPayload?.sub!)
+                    isFav: serviceData?.service?.happyClients?.includes(
+                      authPayload?.sub!
+                    )
                       ? false
                       : true,
                   },
@@ -205,7 +227,8 @@ const styling: { [key: string]: CSSProperties } = {
               }
             >
               {loading && <Spinner animation="grow" size="sm" />}
-              <BiLike size={18} /> {getCompactNumberFormat(likeCount!)}
+              <BiLike size={18} />{" "}
+              {getCompactNumberFormat(serviceData?.service?.likeCount! ?? 0)}
             </Button>
           </Col>
           <Col>
@@ -216,7 +239,7 @@ const styling: { [key: string]: CSSProperties } = {
               onClick={() => setShowComment(true)}
             >
               <BiMessageAltDots size={18} />{" "}
-              {getCompactNumberFormat(commentCount!)}
+              {getCompactNumberFormat(serviceData?.service?.commentCount! ?? 0)}
             </Button>
           </Col>
           <Col>

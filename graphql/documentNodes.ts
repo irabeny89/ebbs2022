@@ -142,6 +142,28 @@ export const SERVICE = gql`
   }
 `;
 
+export const SERVICE_LIKE_DATA = gql`
+  query ServiceLikeData($serviceId: ID!, $commentArgs: PagingInput!) {
+    service(serviceId: $serviceId) {
+      happyClients
+      likeCount
+      commentCount
+      comments(args: $commentArgs) {
+        edges {
+          node {
+            _id
+            post
+            poster {
+              username
+            }
+            createdAt
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const SERVICE_PRODUCT = gql`
   ${PRODUCT_FRAGMENT}
   query ServiceProducts($productArgs: PagingInput!, $serviceId: ID!) {
@@ -216,7 +238,6 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
   query FewProductsAndServices(
     $productArgs: PagingInput!
     $serviceArgs: PagingInput!
-    $commentArgs: PagingInput!
     $serviceProductArgs: PagingInput!
   ) {
     products(args: $productArgs) {
@@ -246,18 +267,6 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
                   _id
                   title
                 }
-              }
-            }
-          }
-          comments(args: $commentArgs) {
-            edges {
-              node {
-                _id
-                post
-                poster {
-                  username
-                }
-                createdAt
               }
             }
           }
@@ -494,4 +503,4 @@ export const SET_ORDER_DELIVERY_DATE = gql`
   mutation SetOrderDeliveryDate($orderId: ID!, $deliveryDate: String!) {
     setOrderDeliveryDate(orderId: $orderId, deliveryDate: $deliveryDate)
   }
-`
+`;

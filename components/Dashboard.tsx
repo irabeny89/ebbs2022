@@ -39,6 +39,7 @@ import useAuthPayload from "hooks/useAuthPayload";
 import UnAuth from "./UnAuth";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import FeedbackToast from "./FeedbackToast";
 
 const { webPages, productCategories } = config.appData,
   // tab title style
@@ -67,7 +68,9 @@ const ServiceAlert = () => (
       // video file size state
       [videoFileSize, setVideoFileSize] = useState(0),
       // product creation form modal state
-      [show, setShow] = useState(false);
+      [show, setShow] = useState(false),
+      // toast state
+      [showToast, setShowToast] = useState(false);
     // query user data
     const {
         data: userData,
@@ -96,7 +99,7 @@ const ServiceAlert = () => (
       [logout, { data: logoutData, loading: loggingOut, client }] =
         useLazyQuery<Record<"logout", string>>(LOGOUT),
       // add new product mutation
-      [addProduct, { data: newProductData, loading: newProductLoading }] =
+      [addProduct, { data: newProductData, loading: newProductLoading, error: newProductError }] =
         useMutation<Record<"newProduct", string>, NewProductVariableType>(
           ADD_NEW_PRODUCT,
           {
@@ -135,7 +138,6 @@ const ServiceAlert = () => (
     useEffect(() => {
       // when logged out clear store, accessTokenVar & redirect to home page
       logoutData && client.clearStore() && router.push("/member");
-      newProductData && setShow(false);
       return () => {
         setFileSizes([]);
         setVideoFileSize(0);
@@ -176,6 +178,12 @@ const ServiceAlert = () => (
               Add a product...
             </Modal.Header>
             <Modal.Body>
+              <FeedbackToast {...{
+                error: newProductError,
+                successText: newProductData?.newProduct,
+                setShowToast,
+                showToast
+              }} />
               <Form
                 validated={validated}
                 noValidate
@@ -377,7 +385,7 @@ const ServiceAlert = () => (
           {/* title */}
           <Row className="justify-content-between align-items-center">
             <Col className="h1 my-5" as="h2" xs="8">
-              <MdDashboardCustomize size={40} /> Dashboard
+              <MdDashboardCustomize size={40} /> Dashboard | &lt;{username}&gt;
             </Col>
             <Col xs="auto">
               <Button

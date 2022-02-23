@@ -11,7 +11,7 @@ import Carousel from "react-bootstrap/Carousel";
 import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
-import { mockMedia } from "@/models/mockData";
+import { mockMedia } from "mockData";
 import { cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";

@@ -1,7 +1,7 @@
 import { MockedProvider } from "@apollo/client/testing";
 import { render, cleanup } from "@testing-library/react";
 import ProductList from "@/components/ProductList";
-import { productProps } from "@/models/mockData";
+import { productProps } from "mockData";
 
 const items = [productProps, { ...productProps, _id: "2" }];
 

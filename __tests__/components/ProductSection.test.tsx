@@ -2,7 +2,7 @@ import { MockedProvider } from "@apollo/client/testing";
 import { render, cleanup, screen } from "@testing-library/react";
 import ProductSection from "@/components/ProductSection";
 import { ProductSectionPropType } from "types";
-import { productProps } from "@/models/mockData";
+import { productProps } from "mockData";
 
 const productSectionProps: ProductSectionPropType = {
   items: [productProps, { ...productProps, _id: "2" }],

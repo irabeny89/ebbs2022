@@ -4,9 +4,8 @@ import {
   SET_ORDER_DELIVERY_DATE,
   UPDATE_ORDER_ITEM_STATUS,
 } from "@/graphql/documentNodes";
-import resolvers from "@/graphql/resolvers";
-import typeDefs from "@/graphql/typeDefs";
 import { ApolloServer } from "apollo-server-micro";
+import apolloServer from "@/graphql/apollo-server";
 import { verify } from "jsonwebtoken";
 import { authUser, setCookie, getAuthPayload } from "@/utils/index";
 
@@ -26,36 +25,36 @@ jest.mock("@/utils/index", () => ({
 }));
 
 describe("Apollo Server", () => {
-  const testServer = new ApolloServer({
-    typeDefs,
-    resolvers,
-    context: () => ({
-      req: {
-        cookies: { token: "refreshtoken" },
-        headers: { authorization: "access token" },
-      },
-      OrderModel: {
-        findByIdAndUpdate: jest.fn(),
-        findOneAndUpdate: jest.fn(() => ({
-          select: jest.fn(() => ({
-            lean: jest.fn(() => ({
-              exec: jest.fn(),
-            })),
-          })),
-        })),
-        findOne: jest.fn(() => ({
-          select: jest.fn(() => ({
-            lean: jest.fn(() => ({
-              exec: jest.fn(),
-            })),
-          })),
-        })),
-      },
-    }),
-  });
+  // const apolloServer = new ApolloServer({
+  //   typeDefs,
+  //   resolvers,
+  //   context: () => ({
+  //     req: {
+  //       cookies: { token: "refreshtoken" },
+  //       headers: { authorization: "access token" },
+  //     },
+  //     OrderModel: {
+  //       findByIdAndUpdate: jest.fn(),
+  //       findOneAndUpdate: jest.fn(() => ({
+  //         select: jest.fn(() => ({
+  //           lean: jest.fn(() => ({
+  //             exec: jest.fn(),
+  //           })),
+  //         })),
+  //       })),
+  //       findOne: jest.fn(() => ({
+  //         select: jest.fn(() => ({
+  //           lean: jest.fn(() => ({
+  //             exec: jest.fn(),
+  //           })),
+  //         })),
+  //       })),
+  //     },
+  //   }),
+  // });
   // hello query
   it("returns the string 'world' from hello query", async () => {
-    const { data, errors } = await testServer.executeOperation({
+    const { data, errors } = await apolloServer.executeOperation({
       query: "{hello}",
     });
 
@@ -64,7 +63,7 @@ describe("Apollo Server", () => {
   });
   // refreshToken query
   it("returns access token from refreshToken query", async () => {
-    const { data, errors } = await testServer.executeOperation({
+    const { data, errors } = await apolloServer.executeOperation({
       query: REFRESH_TOKEN_QUERY,
     });
 
@@ -73,7 +72,7 @@ describe("Apollo Server", () => {
   });
   // logout query
   it("logs out successfully without error", async () => {
-    const { errors } = await testServer.executeOperation({
+    const { errors } = await apolloServer.executeOperation({
       query: LOGOUT,
     });
 
@@ -81,7 +80,7 @@ describe("Apollo Server", () => {
   });
   // user item status update mutation
   it("updates user order status, non-nullable & return status", async () => {
-    const { errors, data } = await testServer.executeOperation({
+    const { errors, data } = await apolloServer.executeOperation({
       query: UPDATE_ORDER_ITEM_STATUS,
       variables: {
         orderItemStatusArgs: {
@@ -97,7 +96,7 @@ describe("Apollo Server", () => {
   });
   // delivery date update mutation
   it("sets the delivery date without error & return non-nullable value", async () => {
-    const { errors, data } = await testServer.executeOperation({
+    const { errors, data } = await apolloServer.executeOperation({
       query: SET_ORDER_DELIVERY_DATE,
       variables: {
         orderId: "test_orderId_12345",

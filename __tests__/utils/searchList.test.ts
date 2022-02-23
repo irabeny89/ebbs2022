@@ -1,5 +1,5 @@
 import { searchList } from "../..//utils/";
-import { testList } from "@/models/mockData";
+import { testList } from "mockData";
 
 describe("searchList", () => {
   const testList2 = testList.map((item, i) => ({
