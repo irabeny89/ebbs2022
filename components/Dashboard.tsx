@@ -1,3 +1,4 @@
+import Image from "react-bootstrap/Image";
 import Card from "react-bootstrap/Card";
 import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
@@ -41,7 +42,6 @@ import { useEffect, useState } from "react";
 import config from "../config";
 import ProductList from "./ProductList";
 import { useRouter } from "next/router";
-import Image from "next/image";
 import FeedbackToast from "./FeedbackToast";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";

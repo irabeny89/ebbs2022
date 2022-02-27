@@ -1,7 +1,7 @@
 import FormControl from "react-bootstrap/FormControl";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Card from "react-bootstrap/Card";
-import Image from "next/image";
+import Image from "react-bootstrap/Image";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -28,6 +28,7 @@ import {
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import { JwtPayload } from "jsonwebtoken";
+import web3storage from "web3storage";
 
 const styling: { [key: string]: CSSProperties } = {
     smallTextStyle: {
@@ -46,7 +47,9 @@ const styling: { [key: string]: CSSProperties } = {
   }: ServiceLabelPropType) => {
     // info modal state
     const [show, setShow] = useState(false),
-    [authPayload, setAuthPayload] = useState<UserPayloadType & JwtPayload>(),
+      [authPayload, setAuthPayload] = useState<UserPayloadType & JwtPayload>(),
+      // logo state
+      [logoSrc, setLogoSrc] = useState(""),
       // comment post text state
       [post, setPost] = useState(""),
       // comment modal state
@@ -109,8 +112,18 @@ const styling: { [key: string]: CSSProperties } = {
     }, [postData, likeData]);
 
     useEffect(() => {
-      setAuthPayload(JSON.parse(localStorage.getItem(config.appData.constants.AUTH_PAYLOAD)!))
-    }, [])
+      setAuthPayload(
+        JSON.parse(localStorage.getItem(config.appData.constants.AUTH_PAYLOAD)!)
+      );
+    }, []);
+    // set image source states on mount
+    useEffect(() => {
+      web3storage
+        .get(logoCID!)
+        .then((res) => res?.files())
+        .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
+        .catch(console.error);
+    }, [logoCID]);
 
     return _id ? (
       <Container {...{ style, className }}>
@@ -191,7 +204,7 @@ const styling: { [key: string]: CSSProperties } = {
         <Row className="align-items-center">
           <Col xs="auto" className="pt-2">
             <Image
-              src="/Ferrari Scuderia Spider.jpg"
+              src={logoSrc}
               width="50"
               height="50"
               className="rounded-circle"
