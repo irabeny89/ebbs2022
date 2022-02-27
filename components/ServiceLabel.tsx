@@ -13,20 +13,21 @@ import type {
   PagingInputType,
   ServiceLabelPropType,
   ServiceVertexType,
+  UserPayloadType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { CSSProperties, useEffect, useState } from "react";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import AjaxFeedback from "./AjaxFeedback";
 import Link from "next/link";
-import useAuthPayload from "hooks/useAuthPayload";
 import {
-  FEW_PRODUCTS_AND_SERVICES,
-  FEW_SERVICES,
   MY_COMMENT,
   MY_FAV_SERVICE,
   SERVICE_LIKE_DATA,
 } from "@/graphql/documentNodes";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
+import config from "../config";
+import { JwtPayload } from "jsonwebtoken";
 
 const styling: { [key: string]: CSSProperties } = {
     smallTextStyle: {
@@ -38,25 +39,22 @@ const styling: { [key: string]: CSSProperties } = {
     _id,
     title,
     state,
-    logo,
-    // comments,
-    // commentCount,
+    logoCID,
     description,
-    // happyClients,
-    // likeCount,
     className,
     style,
   }: ServiceLabelPropType) => {
     // info modal state
     const [show, setShow] = useState(false),
+    [authPayload, setAuthPayload] = useState<UserPayloadType & JwtPayload>(),
       // comment post text state
       [post, setPost] = useState(""),
       // comment modal state
       [showComment, setShowComment] = useState(false),
       // the auth payload
-      { authPayload, accessToken } = useAuthPayload(),
+      accessToken = useReactiveVar(accessTokenVar),
       // query dynamically service like data
-      { data: serviceData, loading: serviceDataLoading } = useQuery<
+      { data: serviceData } = useQuery<
         Record<
           "service",
           Required<
@@ -109,6 +107,10 @@ const styling: { [key: string]: CSSProperties } = {
       fetch("/api/revalidateHome");
       postData && setPost("");
     }, [postData, likeData]);
+
+    useEffect(() => {
+      setAuthPayload(JSON.parse(localStorage.getItem(config.appData.constants.AUTH_PAYLOAD)!))
+    }, [])
 
     return _id ? (
       <Container {...{ style, className }}>

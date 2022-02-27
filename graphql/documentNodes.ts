@@ -6,8 +6,8 @@ export const PRODUCT_FRAGMENT = gql`
       name
       description
       category
-      images
-      video
+      imagesCID
+      videoCID
       tags
       price
       saleCount
@@ -17,7 +17,7 @@ export const PRODUCT_FRAGMENT = gql`
     fragment ServiceFields on UserService {
       _id
       title
-      logo
+      logoCID
       description
       state
       happyClients
@@ -234,7 +234,6 @@ export const FEW_SERVICES = gql`
 
 export const FEW_PRODUCTS_AND_SERVICES = gql`
   ${PRODUCT_FRAGMENT}
-  ${SERVICE_FRAGMENT}
   query FewProductsAndServices(
     $productArgs: PagingInput!
     $serviceArgs: PagingInput!
@@ -258,7 +257,12 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
     services(args: $serviceArgs) {
       edges {
         node {
-          ...ServiceFields
+          _id
+          title
+          logoCID
+          description
+          state
+          categories
           products(args: $serviceProductArgs) {
             edges {
               node {
@@ -330,7 +334,7 @@ export const MY_PROFILE = gql`
       service {
         _id
         title
-        logo
+        logoCID
         description
         state
         happyClients

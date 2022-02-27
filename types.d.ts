@@ -53,7 +53,7 @@ type UserType = {
 type ServiceType = {
   owner: mongoose.Types.ObjectId | string;
   title: string;
-  logo: string;
+  logoCID: string;
   description: string;
   state: string;
   maxProduct: number;
@@ -63,8 +63,8 @@ type ProductType = {
   name: string;
   description: string;
   category: ProductCategoryType;
-  images: string[];
-  video?: string;
+  imagesCID: string;
+  videoCID?: string;
   tags?: string[];
   price: number;
   provider: mongoose.Types.ObjectId;
@@ -209,7 +209,7 @@ type ChangePasswordVariableType = Record<"passCode" | "newPassword", string>;
 
 type ServiceUpdateVariableType = Record<
   "serviceUpdate",
-  Pick<ServiceType, "title" | "description" | "logo" | "state">
+  Pick<ServiceType, "title" | "description" | "logoCID" | "state">
 >;
 
 type NewProductVariableType = Record<

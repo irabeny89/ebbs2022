@@ -5,22 +5,16 @@ import Link from "next/link";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
 import Alert from "react-bootstrap/Alert";
-import Toast from "react-bootstrap/Toast";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useLazyQuery, useMutation, useReactiveVar } from "@apollo/client";
-import {
-  accessTokenVar,
-  cartItemsVar,
-  toastsVar,
-} from "@/graphql/reactiveVariables";
+import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
-import useAuthPayload from "../hooks/useAuthPayload";
 import type {
   CursorConnectionType,
   LayoutPropsType,
@@ -48,9 +42,8 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
   {
     title,
     author,
-    constants: { CART_ITEMS_KEY },
+    constants: { CART_ITEMS_KEY, AUTH_PAYLOAD },
     webPages,
-    generalErrorMessage,
   } = config.appData;
 // layout style
 const mainStyle: CSSProperties = {
@@ -66,8 +59,6 @@ const Layout = ({ children }: LayoutPropsType) => {
     [validated, setValidated] = useState(false),
     // get reactive cart items variable
     cartItems = useReactiveVar(cartItemsVar),
-    // get token payload
-    authPayload = useAuthPayload(),
     // access token
     accessToken = useReactiveVar(accessTokenVar),
     // send order mutation
@@ -98,9 +89,13 @@ const Layout = ({ children }: LayoutPropsType) => {
           PagingInputType
         >
       >(FEW_PRODUCTS_AND_SERVICES);
+      // initialize auth payload variable
+      let authPayload
   // on mount update cart items reactive variable from local storage
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
+    // get token payload
+    authPayload = JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!)
   }, []);
   useEffect(() => {
     // show search result when ready

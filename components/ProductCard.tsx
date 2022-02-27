@@ -1,4 +1,4 @@
-import type { ProductCardPropType } from "types";
+import type { ProductCardPropType, UserPayloadType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -12,20 +12,20 @@ import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
 import { mockMedia } from "mockData";
-import { cartItemsVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
-import { useState } from "react";
-import { useMutation } from "@apollo/client";
+import { useEffect, useState } from "react";
+import { useMutation, useReactiveVar } from "@apollo/client";
 import {
   DELETE_MY_PRODUCT,
   FEW_PRODUCTS_AND_SERVICES,
   MY_PROFILE,
 } from "@/graphql/documentNodes";
-import useAuthPayload from "../hooks/useAuthPayload";
+import web3storage from "web3storage";
 
-const { CART_ITEMS_KEY } = config.appData.constants,
+const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
   // custom style
   cardStyling = {
     cardStyle: {
@@ -43,18 +43,22 @@ const { CART_ITEMS_KEY } = config.appData.constants,
     name,
     price,
     tags,
-    images,
-    video,
+    imagesCID,
+    videoCID,
     description,
     saleCount,
     provider,
     className,
     style,
   }: ProductCardPropType) => {
-    // get auth payload
-    const { authPayload, accessToken } = useAuthPayload();
+    // get auth access token
+    const accessToken = useReactiveVar(accessTokenVar);
     // product info modal state
     const [show, setShow] = useState(false),
+      // media file state
+      [media, setMedia] = useState<typeof mockMedia>([]),
+      // auth payload state
+      [authPayload, setAuthPayload] = useState<UserPayloadType>(),
       // product delete modal dialog state
       [showDialog, setShowDialog] = useState(false);
     // deletion mutation
@@ -72,6 +76,15 @@ const { CART_ITEMS_KEY } = config.appData.constants,
         productId: _id.toString(),
       },
     });
+
+    useEffect(() => {
+      setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
+      Promise.all(
+        [web3storage.get(imagesCID)].concat(
+          videoCID ? web3storage.get(videoCID) : []
+        )
+      ).then(console.log, process.env.NODE_ENV === "development" ? console.error : null);
+    }, []);
 
     return (
       <Container fluid {...{ className, style }}>
@@ -158,27 +171,28 @@ const { CART_ITEMS_KEY } = config.appData.constants,
           </Card.Header>
           <Card.Body>
             <Carousel controls={false} interval={6e4}>
-              {mockMedia.map(({ src, type }) =>
-                type === "video" ? (
-                  <Carousel.Item
-                    key={src}
-                    style={{ width: cardStyling.mediaStyle.width }}
-                  >
-                    <video src={src} controls {...cardStyling.mediaStyle} />
-                  </Carousel.Item>
-                ) : (
-                  <Carousel.Item
-                    key={src}
-                    style={{ width: cardStyling.mediaStyle.width }}
-                  >
-                    <Image
-                      src={src}
-                      {...cardStyling.mediaStyle}
-                      layout="fixed"
-                      alt="product picture"
-                    />
-                  </Carousel.Item>
-                )
+              {(process.env.NODE_ENV === "development" ? mockMedia : media).map(
+                ({ src, type }) =>
+                  type === "video" ? (
+                    <Carousel.Item
+                      key={src}
+                      style={{ width: cardStyling.mediaStyle.width }}
+                    >
+                      <video src={src} controls {...cardStyling.mediaStyle} />
+                    </Carousel.Item>
+                  ) : (
+                    <Carousel.Item
+                      key={src}
+                      style={{ width: cardStyling.mediaStyle.width }}
+                    >
+                      <Image
+                        src={src}
+                        {...cardStyling.mediaStyle}
+                        layout="fixed"
+                        alt="product picture"
+                      />
+                    </Carousel.Item>
+                  )
               )}
             </Carousel>
           </Card.Body>

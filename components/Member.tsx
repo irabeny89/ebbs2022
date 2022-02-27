@@ -33,9 +33,14 @@ import {
 } from "@/graphql/documentNodes";
 import { useRouter } from "next/router";
 import EmailValidationForm from "./EmailValidationForm";
+import { decode } from "jsonwebtoken";
+import web3storage from "../web3storage";
 
 // fetch web app meta data
-const { webPages } = config.appData,
+const {
+    webPages,
+    constants: { AUTH_PAYLOAD },
+  } = config.appData,
   // find home page data
   memberPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "member"
@@ -44,9 +49,9 @@ const { webPages } = config.appData,
 const tabTitleStyle = { fontSize: 16 };
 // member page - login, register & password revocery
 const Member = () => {
-  const router = useRouter();
-  // login form validation state
-  const [validated, setValidated] = useState(false),
+  const router = useRouter(),
+    // login form validation state
+    [validated, setValidated] = useState(false),
     // register form validation state
     [registerValidated, setRegisterValidated] = useState(false),
     // password form validation state
@@ -78,15 +83,26 @@ const Member = () => {
     >(USER_PASSWORD_CHANGE);
 
   useEffect(() => {
-    // update access token on login success
-    data && (accessTokenVar(data.login), router.push("/member/dashboard"));
-    // update access token on register success
-    registerData &&
-      (accessTokenVar(registerData.register ?? ""),
+    // update access token on login success & save payload in storage
+    data &&
+      (localStorage.setItem(AUTH_PAYLOAD, JSON.stringify(decode(data.login))),
+      accessTokenVar(data.login),
       router.push("/member/dashboard"));
-    // update access token on password change success
+    // update access token on register success & save payload in storage
+    registerData &&
+      (localStorage.setItem(
+        AUTH_PAYLOAD,
+        JSON.stringify(decode(registerData.register))
+      ),
+      accessTokenVar(registerData.register),
+      router.push("/member/dashboard"));
+    // update access token on password change success & save payload in storage
     passwordData &&
-      (accessTokenVar(passwordData.changePassword ?? ""),
+      (localStorage.setItem(
+        AUTH_PAYLOAD,
+        JSON.stringify(decode(passwordData.changePassword))
+      ),
+      accessTokenVar(passwordData.changePassword),
       router.push("/member/dashboard"));
   }, [data, registerData, passwordData]);
 
@@ -121,7 +137,7 @@ const Member = () => {
                   onSubmit={(e) => {
                     e.preventDefault();
                     const formData = new FormData(e.currentTarget);
-                    // check form validity without submitting...
+                    // check form validity before submitting...
                     e.currentTarget.checkValidity()
                       ? // ...if valid, off validity, send the query & reset form inputs
                         (login({
@@ -205,7 +221,7 @@ const Member = () => {
               data-testid="registerForm"
               noValidate
               validated={registerValidated}
-              onSubmit={(e) => {
+              onSubmit={ async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget),
                   username = formData.get("username")?.toString()!,
@@ -237,8 +253,7 @@ const Member = () => {
                           password,
                           username,
                           title,
-                          // TODO: CID string from web3Storage client
-                          logo: "",
+                          logo: logo ? await web3storage.put([logo]) : "",
                           description,
                           state,
                         },

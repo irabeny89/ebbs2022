@@ -15,15 +15,15 @@ import { MdInfo } from "react-icons/md";
 import { OrdersOrRequestsPropType, StatusType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import getLocalePrice from "@/utils/getLocalePrice";
-import { useMutation } from "@apollo/client";
+import { useMutation, useReactiveVar } from "@apollo/client";
 import {
   MY_PROFILE,
   SET_ORDER_DELIVERY_DATE,
   UPDATE_ORDER_ITEM_STATUS,
 } from "@/graphql/documentNodes";
-import useAuthPayload from "hooks/useAuthPayload";
 import { forwardRef } from "react";
 import Link from "next/link";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
 
 const getStatusColor = (status: string) =>
   status[0] === "P"
@@ -88,7 +88,7 @@ const OrdersOrRequests = ({
   ...rest
 }: OrdersOrRequestsPropType) => {
   // auth payload
-  const { accessToken } = useAuthPayload();
+  const accessToken = useReactiveVar(accessTokenVar);
   // order status update mutation
   const [setOrderStatus] = useMutation<
       {

@@ -24,7 +24,7 @@ module.exports = {
     // Path aliase
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/pages/(.*)$': '<rootDir>/pages/$1',
-    '^@/models/(.*)$': '<rootDir>/models/$1',
+    '^@/mongoose/(.*)$': '<rootDir>/mongoose/$1',
     '^@/graphql/(.*)$': '<rootDir>/graphql/$1',
     '^@/styles/(.*)$': '<rootDir>/styles/$1',
     '^@/utils/(.*)$': '<rootDir>/utils/$1'

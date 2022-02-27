@@ -51,6 +51,7 @@ const config = {
     },
     generalErrorMessage: "Something went wrong. Login or check your inputs and try again",
     constants: {
+      AUTH_PAYLOAD: "authPayload",
       CART_ITEMS_KEY: "ebbsCartItems",
       COOKIE_PASSCODE: "passCodeData",
       COOKIE_CLEAR_OPTIONS: {
@@ -204,6 +205,7 @@ const config = {
     ebbsPassword: process.env.EBBS_PASSWORD!,
     ebbsEmailHost: process.env.EBBS_EMAIL_HOST!,
     ebbsEmailPort: +process.env.EBBS_EMAIL_PORT!,
+    web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY!
   },
 };
 

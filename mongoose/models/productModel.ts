@@ -14,13 +14,11 @@ const schema = new Schema<ProductType>(
       required: [true, "Product description is required"],
       maxlength: 255,
     },
-    images: [
-      {
-        type: String,
-        required: [true, "Product image is required; atleast 1"],
-      },
-    ],
-    video: String,
+    imagesCID: {
+      type: String,
+      required: [true, "Product image is required; atleast 1"],
+    },
+    videoCID: String,
     category: {
       type: String,
       required: [true, "Product category is required"],

@@ -20,7 +20,12 @@ import {
   UserVertexType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import {
+  useLazyQuery,
+  useMutation,
+  useQuery,
+  useReactiveVar,
+} from "@apollo/client";
 import {
   ADD_NEW_PRODUCT,
   MY_PROFILE,
@@ -35,13 +40,17 @@ import OrdersOrRequests from "./OrdersOrRequests";
 import { useEffect, useState } from "react";
 import config from "../config";
 import ProductList from "./ProductList";
-import useAuthPayload from "hooks/useAuthPayload";
-import UnAuth from "./UnAuth";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import FeedbackToast from "./FeedbackToast";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
+import web3storage from "web3storage";
 
-const { webPages, productCategories } = config.appData,
+const {
+    webPages,
+    productCategories,
+    constants: { AUTH_PAYLOAD },
+  } = config.appData,
   // tab title style
   tabTitleStyle = { fontSize: 16 };
 // service alert component
@@ -49,8 +58,8 @@ const ServiceAlert = () => (
     <Container>
       <Alert variant="info" className="text-center h3">
         Setup a service from the{" "}
-        <Badge className="bg-light text-primary">Profile</Badge> tab above before
-        using this feature.
+        <Badge className="bg-light text-primary">Profile</Badge> tab above
+        before using this feature.
       </Alert>
     </Container>
   ),
@@ -58,9 +67,11 @@ const ServiceAlert = () => (
   Dashboard = () => {
     const router = useRouter();
     // use auth payload & access token
-    const { authPayload, accessToken } = useAuthPayload();
+    const accessToken = useReactiveVar(accessTokenVar);
     // state variable for form
     const [validated, setValidated] = useState(false),
+      // logo source state
+      [logoSrc, setLogoSrc] = useState(""),
       // file size state
       [fileSize, setFileSize] = useState(0),
       // image file size state
@@ -72,11 +83,7 @@ const ServiceAlert = () => (
       // toast state
       [showToast, setShowToast] = useState(false);
     // query user data
-    const {
-        data: userData,
-        loading: userLoading,
-        fetchMore: fetchMoreUserData,
-      } = useQuery<
+    const { data: userData, fetchMore: fetchMoreUserData } = useQuery<
         Record<"me", UserVertexType>,
         Record<
           "productArgs" | "commentArgs" | "orderArgs" | "requestArgs",
@@ -99,18 +106,24 @@ const ServiceAlert = () => (
       [logout, { data: logoutData, loading: loggingOut, client }] =
         useLazyQuery<Record<"logout", string>>(LOGOUT),
       // add new product mutation
-      [addProduct, { data: newProductData, loading: newProductLoading, error: newProductError }] =
-        useMutation<Record<"newProduct", string>, NewProductVariableType>(
-          ADD_NEW_PRODUCT,
-          {
-            refetchQueries: [MY_PROFILE, FEW_PRODUCTS_AND_SERVICES],
-            context: {
-              headers: {
-                authorization: `Bearer ${accessToken}`,
-              },
+      [
+        addProduct,
+        {
+          data: newProductData,
+          loading: newProductLoading,
+          error: newProductError,
+        },
+      ] = useMutation<Record<"newProduct", string>, NewProductVariableType>(
+        ADD_NEW_PRODUCT,
+        {
+          refetchQueries: [MY_PROFILE, FEW_PRODUCTS_AND_SERVICES],
+          context: {
+            headers: {
+              authorization: `Bearer ${accessToken}`,
             },
-          }
-        ),
+          },
+        }
+      ),
       // comment mutation
       [sendPost] = useMutation<
         Record<"myComment", string>,
@@ -137,14 +150,27 @@ const ServiceAlert = () => (
     // cleanup state when modal closed
     useEffect(() => {
       // when logged out clear store, accessTokenVar & redirect to home page
-      logoutData && client.clearStore() && router.push("/member");
+      logoutData &&
+        (client.clearStore(),
+        accessTokenVar(""),
+        localStorage.removeItem(AUTH_PAYLOAD),
+        router.push("/member"));
       return () => {
         setFileSizes([]);
         setVideoFileSize(0);
         setValidated(false);
       };
-    }, [show, newProductData, loggingOut]);
-    if (userLoading) return <AjaxFeedback loading />;
+    }, [show, newProductData, logoutData]);
+    // set image source states on mount
+    useEffect(() => {
+      userData?.me.service?.logoCID &&
+        web3storage
+          .get(userData?.me.service?.logoCID!)
+          .then((res) => res?.files())
+          .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
+          .catch(console.error);
+    }, [userData?.me.service?.logoCID]);
+    
     if (userData) {
       const {
         username,
@@ -162,7 +188,6 @@ const ServiceAlert = () => (
           title,
           description,
           likeCount,
-          logo,
         },
         requests,
         requestCount,
@@ -178,24 +203,32 @@ const ServiceAlert = () => (
               Add a product...
             </Modal.Header>
             <Modal.Body>
-              <FeedbackToast {...{
-                error: newProductError,
-                successText: newProductData?.newProduct,
-                setShowToast,
-                showToast
-              }} />
+              <FeedbackToast
+                {...{
+                  error: newProductError,
+                  successText: newProductData?.newProduct,
+                  setShowToast,
+                  showToast,
+                }}
+              />
               <Form
                 validated={validated}
                 noValidate
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
-                  const formData = new FormData(e.currentTarget);
-
-                  // TODO: get cid from web3 storage module after storing the files then store the cid strings
+                  const formData = new FormData(e.currentTarget),
+                    video = formData.get("video") as unknown as
+                      | HTMLInputElement
+                      | undefined,
+                    images = formData.get(
+                      "images"
+                    ) as unknown as HTMLInputElement;
                   const newProduct = {
                     ...Object.fromEntries(formData.entries()),
-                    video: "cid",
-                    images: ["cid"],
+                    video: video
+                      ? await web3storage.put([video?.files![0]])
+                      : "",
+                    images: await web3storage.put(images.files as FileList),
                     price: +formData.get("price")!,
                     tags: formData
                       .get("tags")!
@@ -227,6 +260,7 @@ const ServiceAlert = () => (
                     name="name"
                     required
                     aria-label="product name"
+                    className="text-capitalize"
                   />
                   <Form.Control.Feedback type="invalid">
                     This field is required!
@@ -584,8 +618,9 @@ const ServiceAlert = () => (
                         <Card className="my-3">
                           <Card.Header
                             className={`${
-                              authPayload?.username ===
-                                comment.poster?.username && "bg-info"
+                              JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!)
+                                ?.username === comment.poster?.username &&
+                              "bg-info"
                             }`}
                           >
                             <Card.Title>{comment?.poster?.username}</Card.Title>
@@ -652,7 +687,7 @@ const ServiceAlert = () => (
                     <Row className="justify-content-center mb-5">
                       <Col xs="10">
                         <Image
-                          src="/Ferrari Scuderia Spider.jpg"
+                          src={logoSrc}
                           width="120"
                           height="120"
                           className="rounded-circle"
@@ -748,18 +783,23 @@ const ServiceAlert = () => (
                     <Form
                       noValidate
                       validated={validated}
-                      onSubmit={(e) => {
+                      onSubmit={async (e) => {
                         e.preventDefault();
-
-                        const serviceUpdate = {
-                          ...Object.fromEntries(
-                            new FormData(e.currentTarget).entries()
-                          ),
-                          logo: "cid",
-                        } as Pick<
-                          ServiceType,
-                          "title" | "description" | "logo" | "state"
-                        >;
+                        const formData = new FormData(e.currentTarget),
+                          serviceUpdate = {
+                            ...Object.fromEntries(formData.entries()),
+                            logoCID:
+                              process.env.NODE_ENV === "development"
+                                ? "cid"
+                                : await web3storage.put([
+                                    formData.get("logo")! as unknown as File,
+                                  ]),
+                          } as Pick<
+                            ServiceType,
+                            "title" | "description" | "logoCID" | "state"
+                          >;
+                        // @ts-ignore
+                        delete serviceUpdate.logo;
 
                         fileSize < 1e6 && e.currentTarget.checkValidity()
                           ? (setValidated(true),
@@ -850,6 +890,7 @@ const ServiceAlert = () => (
                           aria-label="serviceName"
                           defaultValue={title}
                           name="title"
+                          className="text-capitalize"
                         />
                       </Form.FloatingLabel>
                       <Form.FloatingLabel
@@ -880,7 +921,7 @@ const ServiceAlert = () => (
         </Container>
       );
     }
-    return <UnAuth />;
+    return <AjaxFeedback loading />;
   };
 
 export default Dashboard;
