@@ -49,7 +49,8 @@ const config = {
       from: "<no-reply>@gmail.com",
       body: "Hello, enter the access code to change your password on EBBS website - ",
     },
-    generalErrorMessage: "Something went wrong. Login or check your inputs and try again",
+    generalErrorMessage:
+      "Something went wrong. Login or check your inputs and try again",
     constants: {
       AUTH_PAYLOAD: "authPayload",
       CART_ITEMS_KEY: "ebbsCartItems",
@@ -59,7 +60,7 @@ const config = {
         httpOnly: true,
         sameSite: "lax",
         secure: process.env.NODE_ENV === "production",
-      } as CookieSerializeOptions
+      } as CookieSerializeOptions,
     },
     webPages: [
       {
@@ -189,6 +190,20 @@ const config = {
           },
         ],
       },
+      {
+        route: "/about",
+        links: [],
+        privacy: "ALL",
+        pageTitle: "About",
+        description: "Learn about EBBS - the About Us page",
+        parargraphs: [
+          "EveryBodyBuySell- EBBS, is a platform that allows you to create an online business profile.",
+          "You can buy and sell to other people on the platform.",
+          "Once you create a profile you will have access to a dashboard where you can manage your business like monitoring orders, your personal requests for other people's products/services, set the orders/requests statuses and set delivery dates where necessary, comments and share updates with your customers or get there reviews etc.",
+          "More features will always be added to support your online business, also you can request for features as well through the telegram channel.",
+        ],
+        requests: [],
+      },
     ],
   },
   environmentVariable: {
@@ -205,7 +220,7 @@ const config = {
     ebbsPassword: process.env.EBBS_PASSWORD!,
     ebbsEmailHost: process.env.EBBS_EMAIL_HOST!,
     ebbsEmailPort: +process.env.EBBS_EMAIL_PORT!,
-    web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY!
+    web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY!,
   },
 };
 
