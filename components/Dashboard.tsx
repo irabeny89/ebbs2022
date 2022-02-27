@@ -218,17 +218,13 @@ const ServiceAlert = () => (
                   e.preventDefault();
                   const formData = new FormData(e.currentTarget),
                     video = formData.get("video") as unknown as
-                      | HTMLInputElement
+                      | File
                       | undefined,
-                    images = formData.get(
-                      "images"
-                    ) as unknown as HTMLInputElement;
+                    images = formData.get("images") as unknown as FileList;
                   const newProduct = {
                     ...Object.fromEntries(formData.entries()),
-                    video: video
-                      ? await web3storage.put([video?.files![0]])
-                      : "",
-                    images: await web3storage.put(images.files as FileList),
+                    video: video ? await web3storage.put([video!]) : "",
+                    images: await web3storage.put(images),
                     price: +formData.get("price")!,
                     tags: formData
                       .get("tags")!
@@ -788,12 +784,9 @@ const ServiceAlert = () => (
                         const formData = new FormData(e.currentTarget),
                           serviceUpdate = {
                             ...Object.fromEntries(formData.entries()),
-                            logoCID:
-                              process.env.NODE_ENV === "development"
-                                ? "cid"
-                                : await web3storage.put([
-                                    formData.get("logo")! as unknown as File,
-                                  ]),
+                            logoCID: await web3storage.put([
+                              formData.get("logo")! as unknown as File,
+                            ]),
                           } as Pick<
                             ServiceType,
                             "title" | "description" | "logoCID" | "state"

@@ -221,7 +221,7 @@ const Member = () => {
               data-testid="registerForm"
               noValidate
               validated={registerValidated}
-              onSubmit={ async (e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget),
                   username = formData.get("username")?.toString()!,
@@ -253,7 +253,7 @@ const Member = () => {
                           password,
                           username,
                           title,
-                          logo: logo ? await web3storage.put([logo]) : "",
+                          logo: await web3storage.put([logo]),
                           description,
                           state,
                         },
