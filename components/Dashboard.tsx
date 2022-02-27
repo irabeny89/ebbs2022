@@ -166,11 +166,11 @@ const ServiceAlert = () => (
       userData?.me.service?.logoCID &&
         web3storage
           .get(userData?.me.service?.logoCID!)
-          .then((res) => res?.files())
+          .then((res) => res?.files(), console.error)
           .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
           .catch(console.error);
     }, [userData?.me.service?.logoCID]);
-    
+
     if (userData) {
       const {
         username,

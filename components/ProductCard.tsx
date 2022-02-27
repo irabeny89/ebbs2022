@@ -10,7 +10,7 @@ import Container from "react-bootstrap/Container";
 import Carousel from "react-bootstrap/Carousel";
 import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
-import Image from "next/image";
+import Image from "react-bootstrap/Image";
 import { mockMedia } from "mockData";
 import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
@@ -56,7 +56,8 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
     // product info modal state
     const [show, setShow] = useState(false),
       // media file state
-      [media, setMedia] = useState<typeof mockMedia>([]),
+      [imageSrcList, setImageSrcList] = useState<string[]>([]),
+      [videoSrc, setVideoSrc] = useState(""),
       // auth payload state
       [authPayload, setAuthPayload] = useState<UserPayloadType>(),
       // product delete modal dialog state
@@ -79,12 +80,27 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
 
     useEffect(() => {
       setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
-      Promise.all(
-        [web3storage.get(imagesCID)].concat(
-          videoCID ? web3storage.get(videoCID) : []
-        )
-      ).then(console.log, process.env.NODE_ENV === "development" ? console.error : null);
     }, []);
+    // manage side effect when media state changes
+    useEffect(() => {
+      videoCID &&
+        web3storage
+          .get(videoCID)
+          .then((res) => res?.files())
+          .then((files) => files && setVideoSrc(URL.createObjectURL(files[0])))
+          .catch(console.error);
+    }, [videoCID]),
+      useEffect(() => {
+        web3storage
+          .get(imagesCID)
+          .then((res) => res?.files(), console.error)
+          .then(
+            (files) =>
+              files &&
+              setImageSrcList(files.map((file) => URL.createObjectURL(file)))
+          )
+          .catch(console.error);
+      }, [imagesCID]);
 
     return (
       <Container fluid {...{ className, style }}>
@@ -171,28 +187,22 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
           </Card.Header>
           <Card.Body>
             <Carousel controls={false} interval={6e4}>
-              {(process.env.NODE_ENV === "development" ? mockMedia : media).map(
-                ({ src, type }) =>
-                  type === "video" ? (
-                    <Carousel.Item
-                      key={src}
-                      style={{ width: cardStyling.mediaStyle.width }}
-                    >
-                      <video src={src} controls {...cardStyling.mediaStyle} />
-                    </Carousel.Item>
-                  ) : (
-                    <Carousel.Item
-                      key={src}
-                      style={{ width: cardStyling.mediaStyle.width }}
-                    >
-                      <Image
-                        src={src}
-                        {...cardStyling.mediaStyle}
-                        layout="fixed"
-                        alt="product picture"
-                      />
-                    </Carousel.Item>
-                  )
+              {imageSrcList.map((src) => (
+                <Carousel.Item
+                  key={src}
+                  style={{ width: cardStyling.mediaStyle.width }}
+                >
+                  <Image
+                    src={src}
+                    {...cardStyling.mediaStyle}
+                    alt="product picture"
+                  />
+                </Carousel.Item>
+              ))}
+              {!!videoCID && (
+                <Carousel.Item style={{ width: cardStyling.mediaStyle.width }}>
+                  <video src={videoSrc} controls {...cardStyling.mediaStyle} />
+                </Carousel.Item>
               )}
             </Carousel>
           </Card.Body>

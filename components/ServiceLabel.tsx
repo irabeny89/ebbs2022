@@ -120,7 +120,7 @@ const styling: { [key: string]: CSSProperties } = {
     useEffect(() => {
       web3storage
         .get(logoCID!)
-        .then((res) => res?.files())
+        .then((res) => res?.files(), console.error)
         .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
         .catch(console.error);
     }, [logoCID]);
