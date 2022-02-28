@@ -5,7 +5,7 @@ import type { ServiceType } from "types";
 const schema = new Schema<ServiceType>(
   {
     title: String,
-    logo: String,
+    logoCID: String,
     description: {
       type: String,
       maxlength: 255,

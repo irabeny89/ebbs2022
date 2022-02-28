@@ -2,7 +2,6 @@
   "name": "ts-ebs",
   "description": "An online market app to buy, sell and also bid.",
   "version": "0.1.0",
-  "engines": { "node": ">=15" },
   "private": true,
   "scripts": {
     "dev": "next dev",
