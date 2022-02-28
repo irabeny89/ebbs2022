@@ -12,7 +12,7 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
+    "module": "commonjs",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -44,9 +44,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "jest.config.js",
-    "jest.setup.js",
-    "apollo.config.js"
+    "types.d.ts"
   ],
   "exclude": [
     "node_modules"

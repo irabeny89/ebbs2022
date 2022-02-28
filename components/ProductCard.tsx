@@ -11,7 +11,6 @@ import Carousel from "react-bootstrap/Carousel";
 import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "react-bootstrap/Image";
-import { mockMedia } from "mockData";
 import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
@@ -23,7 +22,7 @@ import {
   FEW_PRODUCTS_AND_SERVICES,
   MY_PROFILE,
 } from "@/graphql/documentNodes";
-import web3storage from "web3storage";
+import web3storage from "../web3storage";
 
 const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
   // custom style

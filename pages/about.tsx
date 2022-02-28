@@ -1,12 +1,18 @@
+import { FaTelegram } from "react-icons/fa";
 import Layout from "@/components/Layout";
 import config from "../config";
 import Head from "next/head";
 import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import Button from "react-bootstrap/Button";
 import { MdOutlineInfo } from "react-icons/md";
 // fetch page data
-const { webPages, abbr, features } = config.appData,
+const {
+    webPages,
+    abbr,
+    socialMedia: [{ link }],
+  } = config.appData,
   // find home page data
   aboutPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "about"
@@ -28,13 +34,22 @@ const About = () => (
         </Col>
       </Row>
       {/* first paragraph */}
-      {aboutPage?.parargraphs.map((paragraph, i) => <Row
-            as="p"
-            className="my-4 text-center justify-content-center display-5"
-            key={i}
-          >
-            {paragraph}
-          </Row>)}
+      {aboutPage?.parargraphs.map((paragraph, i) => (
+        <Row
+          as="p"
+          className="my-4 text-center justify-content-center display-5"
+          key={i}
+        >
+          {paragraph}
+        </Row>
+      ))}
+      <Row className="justify-content-center">
+        <Col xs="auto">
+          <Button as="a" variant="outline-primary" href={link}>
+            Join Telegram group <FaTelegram size={30} color="#197acf" />
+          </Button>
+        </Col>
+      </Row>
     </Container>
   </Layout>
 );

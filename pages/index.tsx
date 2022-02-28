@@ -24,7 +24,12 @@ import Container from "react-bootstrap/Container";
 import { FaBoxes } from "react-icons/fa";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
 // fetch page data
-const { webPages, abbr, features } = config.appData,
+const {
+    webPages,
+    abbr,
+    features,
+    socialMedia: [{ link }],
+  } = config.appData,
   // find home page data
   homePage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "home"
@@ -44,7 +49,10 @@ export const getStaticProps: GetStaticProps = async () => {
         products: CursorConnectionType<ProductVertexType>;
         services: CursorConnectionType<ServiceVertexType>;
       },
-      Record<"productArgs" | "serviceArgs" | "serviceProductArgs", PagingInputType>
+      Record<
+        "productArgs" | "serviceArgs" | "serviceProductArgs",
+        PagingInputType
+      >
     >({
       query: FEW_PRODUCTS_AND_SERVICES,
       variables: {
@@ -58,7 +66,7 @@ export const getStaticProps: GetStaticProps = async () => {
           first: 10,
         },
       },
-      fetchPolicy: "no-cache"
+      fetchPolicy: "no-cache",
     });
 
     return error
@@ -103,7 +111,7 @@ export const getStaticProps: GetStaticProps = async () => {
             <Modal.Footer>
               <Row>
                 <Col>
-                  <Button as="a" variant="outline-primary">
+                  <Button as="a" variant="outline-primary" href={link}>
                     Join Telegram group <FaTelegram size={30} color="#197acf" />
                   </Button>
                 </Col>

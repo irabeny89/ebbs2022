@@ -7,6 +7,7 @@ const config = {
     author: "Ernest Irabor",
     title: "EBBS - EveryBodyBuySell",
     abbr: "EBBS",
+    socialMedia: [{ name: "telegram", link: "https://t.me/ebbs2022" }],
     description:
       "EBBS - EveryBodyBuySell is a platform for everybody to create and manage their online businesses.",
     features: [
@@ -197,10 +198,9 @@ const config = {
         pageTitle: "About",
         description: "Learn about EBBS - the About Us page",
         parargraphs: [
-          "EveryBodyBuySell- EBBS, is a platform that allows you to create an online business profile.",
-          "You can buy and sell to other people on the platform.",
-          "Once you create a profile you will have access to a dashboard where you can manage your business like monitoring orders, your personal requests for other people's products/services, set the orders/requests statuses and set delivery dates where necessary, comments and share updates with your customers or get there reviews etc.",
-          "More features will always be added to support your online business, also you can request for features as well through the telegram channel.",
+          "EveryBodyBuySell- EBBS, is a platform that allows members to do business with each other.",
+          "Once you create a profile you can monitor orders, requests, comments, add products etc.",
+          "More features will always be added to support your business; also you can request for features as well through the telegram channel.",
         ],
         requests: [],
       },
