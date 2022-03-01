@@ -4,8 +4,6 @@ import { RetryLink } from "@apollo/client/link/retry";
 import axios from "axios";
 import config from "../config";
 import { accessTokenVar } from "./reactiveVariables";
-// import { accessTokenVar } from "@/graphql/reactiveVariables";
-// import axios from "axios";
 
 const {
   environmentVariable: { graphqlUri, host },
@@ -33,10 +31,10 @@ const client = new ApolloClient({
                     data: {
                       data: { refreshToken },
                     },
-                  } = await axios.post<
-                    Record<"data", { refreshToken: string }>
-                  >(host + graphqlUri, {
-                    query: "query{refreshToken}",
+                  } = await axios({
+                    url: host + graphqlUri,
+                    data: { query: "query{refreshToken}" },
+                    method: "post",
                   });
                   accessTokenVar(refreshToken);
                   operation.setContext({

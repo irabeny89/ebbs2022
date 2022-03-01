@@ -16,7 +16,6 @@ describe("More Button Component", () => {
           hasLazyFetched={{ current: false }}
           label={label}
           loading={false}
-          variables={{}}
         />
       </MockedProvider>
     );
@@ -36,7 +35,6 @@ describe("More Button Component", () => {
           hasLazyFetched={{ current: false }}
           label={label}
           loading={true}
-          variables={{}}
         />
       </MockedProvider>
     );
