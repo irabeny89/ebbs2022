@@ -204,13 +204,14 @@ const styling: { [key: string]: CSSProperties } = {
         <Row className="align-items-center">
           <Col xs="auto" className="pt-2">
             <Image
+              alt="logo"
               src={logoSrc}
               width="50"
               height="50"
               className="rounded-circle"
             />
           </Col>
-          <Link href={`/services/${_id}`}>
+          <Link passHref href={`/services/${_id}`}>
             <Col className="text-capitalize" style={{ cursor: "pointer" }}>
               <Row className="h5">{title}</Row>
               <Row style={styling.smallTextStyle}>{state}</Row>

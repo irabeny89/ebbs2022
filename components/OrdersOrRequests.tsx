@@ -36,21 +36,21 @@ const getStatusColor = (status: string) =>
     ? "bg-success"
     : "";
 
-const StatusPopover = forwardRef(
-  (
-    {
-      statusOptions,
-      handleClick,
-      itemId,
-      ...rest
-    }: {
-      statusOptions: StatusType[];
-      handleClick: any;
-      itemId: string;
-      rest?: any;
-    },
-    ref
-  ) => (
+const StatusPopover = forwardRef(function StatusPopover(
+  {
+    statusOptions,
+    handleClick,
+    itemId,
+    ...rest
+  }: {
+    statusOptions: StatusType[];
+    handleClick: any;
+    itemId: string;
+    rest?: any;
+  },
+  ref
+) {
+  return (
     // @ts-ignore
     <Popover {...rest} ref={ref}>
       <Popover.Header className="text-center bg-dark text-white" as="h5">
@@ -59,6 +59,7 @@ const StatusPopover = forwardRef(
       <Popover.Body>
         {statusOptions.map((status) => (
           <Badge
+            key={status}
             pill
             style={{ cursor: "pointer" }}
             className={getStatusColor(status) + " mx-1"}
@@ -78,8 +79,8 @@ const StatusPopover = forwardRef(
         ))}
       </Popover.Body>
     </Popover>
-  )
-);
+  );
+});
 
 const OrdersOrRequests = ({
   asRequestList,

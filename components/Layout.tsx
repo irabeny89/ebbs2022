@@ -23,6 +23,7 @@ import type {
   PagingInputType,
   ProductVertexType,
   ServiceVertexType,
+  UserPayloadType,
 } from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
@@ -53,6 +54,8 @@ const mainStyle: CSSProperties = {
 const Layout = ({ children }: LayoutPropsType) => {
   // state variable to handle cart modal clicks
   const [show, setShow] = useState(false),
+    // auth payload state
+    [authPayload, setAuthPayload] = useState<UserPayloadType>(),
     // state variable for search list modal
     [showSearch, setShowSearch] = useState(false),
     // form validation state
@@ -89,13 +92,11 @@ const Layout = ({ children }: LayoutPropsType) => {
           PagingInputType
         >
       >(FEW_PRODUCTS_AND_SERVICES);
-      // initialize auth payload variable
-      let authPayload
   // on mount update cart items reactive variable from local storage
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
     // get token payload
-    authPayload = JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!)
+    setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
   }, []);
   useEffect(() => {
     // show search result when ready

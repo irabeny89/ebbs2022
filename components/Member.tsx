@@ -104,7 +104,7 @@ const Member = () => {
       ),
       accessTokenVar(passwordData.changePassword),
       router.push("/member/dashboard"));
-  }, [data, registerData, passwordData]);
+  }, [data, registerData, passwordData, router]);
 
   return (
     <Container>

@@ -160,7 +160,7 @@ const ServiceAlert = () => (
         setVideoFileSize(0);
         setValidated(false);
       };
-    }, [show, newProductData, logoutData]);
+    }, [show, newProductData, logoutData, client, router]);
     // set image source states on mount
     useEffect(() => {
       userData?.me.service?.logoCID &&
@@ -683,6 +683,7 @@ const ServiceAlert = () => (
                     <Row className="justify-content-center mb-5">
                       <Col xs="10">
                         <Image
+                          alt="logo"
                           src={logoSrc}
                           width="120"
                           height="120"
