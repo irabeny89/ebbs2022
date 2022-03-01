@@ -213,8 +213,7 @@ const config = {
     dbUrl: isProductionEnv
       ? process.env.DB_URL_ATLAS!
       : process.env.DB_URL_COMPASS!,
-    // host: isProductionEnv ? "https://ebbs.vercel.app" : "http://localhost:3000",
-    host: "http://localhost:3000",
+    host: isProductionEnv ? "https://ebbs.vercel.app" : "http://localhost:3000",
     graphqlUri: "/api/graphql",
     ebbsEmail: process.env.EBBS_EMAIL!,
     ebbsUsername: process.env.EBBS_USERNAME!,
