@@ -1,6 +1,6 @@
 {
   "name": "ts-ebs",
-  "description": "An online market app to buy, sell and also bid.",
+  "description": "An online business app.",
   "version": "0.1.0",
   "private": true,
   "scripts": {
