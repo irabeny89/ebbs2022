@@ -6,7 +6,7 @@ import config from "../config";
 import { accessTokenVar } from "./reactiveVariables";
 
 const {
-  environmentVariable: { graphqlUri, host },
+  environmentVariable: { graphqlUri, apiHost },
   appData: { abbr },
 } = config;
 
@@ -32,7 +32,7 @@ const client = new ApolloClient({
                       data: { refreshToken },
                     },
                   } = await axios({
-                    url: host + graphqlUri,
+                    url: apiHost + graphqlUri,
                     data: { query: "query{refreshToken}" },
                     method: "post",
                   });
@@ -55,7 +55,7 @@ const client = new ApolloClient({
       }),
       new RetryLink(),
       new HttpLink({
-        uri: host + graphqlUri,
+        uri: apiHost + graphqlUri,
       }),
       // log error in dev; i.e remove error link in production
     ].filter((_, i) =>

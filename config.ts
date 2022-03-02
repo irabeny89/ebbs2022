@@ -78,24 +78,6 @@ const config = {
         parargraphs: [
           "EBBS - EveryBodyBuySell is a platform for you to create and manage your online business.",
         ],
-        requests: [
-          {
-            info: "Query for product data.",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "products",
-          },
-          {
-            info: "Query for service data.",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "services",
-          },
-        ],
       },
       {
         route: "/member",
@@ -105,32 +87,6 @@ const config = {
         description: "Authentication and authorization page.",
         parargraphs: [
           "Register, login or retrieve lost password. Note you must be registered to use full features of EBBS.",
-        ],
-        requests: [
-          {
-            info: "Register mutation",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "register",
-          },
-          {
-            info: "Login mutation",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "login",
-          },
-          {
-            info: "Retrieve password mutation",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "passcode, recoverPassword",
-          },
         ],
       },
       {
@@ -142,16 +98,6 @@ const config = {
         parargraphs: [
           "Browse through all services and their corresponding products.",
         ],
-        requests: [
-          {
-            info: "Query services",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "services",
-          },
-        ],
       },
       {
         route: "/products",
@@ -160,16 +106,6 @@ const config = {
         pageTitle: "Products",
         description: "List of all products",
         parargraphs: ["Browse through all products and add to cart."],
-        requests: [
-          {
-            info: "Query products",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "products",
-          },
-        ],
       },
       {
         route: "/member/dashboard",
@@ -179,16 +115,6 @@ const config = {
         description: "Dashboard to manage profile.",
         parargraphs: [
           "Manage your profile - orders, requests, add or remove products, edit service etc.",
-        ],
-        requests: [
-          {
-            info: "Query user data.",
-            url: isProductionEnv
-              ? "https://ebbs.vercel.app/api/graphql"
-              : "http://localhost:3000/api/graphql",
-            httpMethod: "POST",
-            call: "user",
-          },
         ],
       },
       {
@@ -202,15 +128,13 @@ const config = {
           "Once you create a profile you can monitor orders, requests, comments, add products etc.",
           "More features will always be added to support your business; also you can request for features as well through the telegram channel.",
         ],
-        requests: [],
       },
     ],
   },
   environmentVariable: {
-    nodeEnvironment: process.env.NODE_ENV,
-    host: isProductionEnv ? process.env.API_ENDPOINT! : "http://localhost:4000",
+    apiHost: isProductionEnv ? process.env.API_HOST : "http://localhost:4000",
     graphqlUri: "/api/graphql",
-    web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY!,
+    web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY,
   },
 };
 
