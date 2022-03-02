@@ -56,10 +56,11 @@ const client = new ApolloClient({
       new RetryLink(),
       new HttpLink({
         uri: apiHost + graphqlUri,
+        credentials: "include"
       }),
       // log error in dev; i.e remove error link in production
     ].filter((_, i) =>
-      process.env.NODE_ENV === "development" ? true : i !== 1
+      process.env.NODE_ENV === "development" ? true : i > 0
     )
   ),
 });

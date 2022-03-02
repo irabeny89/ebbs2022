@@ -55,26 +55,31 @@ export const getStaticPaths: GetStaticPaths = async () => {
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const { data, error } = await client.query<
-      {
-        service: ServiceVertexType;
-      },
-      { serviceId: string } & Record<
-        "productArgs" | "commentArgs",
-        PagingInputType
-      >
-    >({
-      query: SERVICE,
-      variables: {
-        serviceId: params?.id! as string,
-        productArgs: { last: 20 },
-        commentArgs: { last: 20 },
-      },
-    });
+    if (!params?.id) return { notFound: true };
+    try {
+      const { data, error } = await client.query<
+        {
+          service: ServiceVertexType;
+        },
+        { serviceId: string } & Record<
+          "productArgs" | "commentArgs",
+          PagingInputType
+        >
+      >({
+        query: SERVICE,
+        variables: {
+          serviceId: params.id as string,
+          productArgs: { last: 20 },
+          commentArgs: { last: 20 },
+        },
+      });
 
-    return error || !data?.service
-      ? { notFound: true }
-      : { props: data.service, revalidate: 60 };
+      return error || !data?.service
+        ? { notFound: true }
+        : { props: data.service, revalidate: 60 };
+    } catch (error) {
+      return { notFound: true };
+    }
   },
   // service page component
   ServicePage = ({
