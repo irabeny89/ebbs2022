@@ -31,10 +31,8 @@ const client = new ApolloClient({
                     data: {
                       data: { refreshToken },
                     },
-                  } = await axios({
-                    url: apiHost + graphqlUri,
-                    data: { query: "query{refreshToken}" },
-                    method: "post",
+                  } = await axios.post(apiHost + graphqlUri, {
+                    data: "query{refreshToken}",
                   });
                   accessTokenVar(refreshToken);
                   operation.setContext({
@@ -45,7 +43,9 @@ const client = new ApolloClient({
                   });
                   return forward(operation);
                 } catch (error) {
-                  console.error(error);
+                  console.log("=========refreshToken===============");
+                  console.log(error);
+                  console.log("====================================");
                 }
               }
             }

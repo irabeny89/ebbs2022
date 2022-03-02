@@ -72,7 +72,9 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
       },
     });
 
-    return error ? { notFound: true } : { props: data.service, revalidate: 10 };
+    return error || !data?.service
+      ? { notFound: true }
+      : { props: data.service, revalidate: 60 };
   },
   // service page component
   ServicePage = ({

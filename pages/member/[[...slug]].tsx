@@ -8,9 +8,11 @@ import { useRouter } from "next/router";
 import UnAuth from "@/components/UnAuth";
 import { useEffect, useState } from "react";
 // fetch page data
-const { webPages, abbr, constants: {
-  AUTH_PAYLOAD
-} } = config.appData,
+const {
+    webPages,
+    abbr,
+    constants: { AUTH_PAYLOAD },
+  } = config.appData,
   // find home page data
   dashboardPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "dashboard"
@@ -22,13 +24,13 @@ const { webPages, abbr, constants: {
 // member page component
 const MemberPage = () => {
   const { slug } = useRouter().query as {
-    slug?: string[];
-  },
-  // access token
-  [authPayload, setAuthPayload] = useState({})
-    useEffect(() => {
-      setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
-    }, [])
+      slug?: string[];
+    },
+    // access token
+    [authPayload, setAuthPayload] = useState({});
+  useEffect(() => {
+    setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
+  }, []);
   // if route- /member/xxx/xx ==> slug == [xxx,xx]
   return slug ? (
     // when route == member/dashboard
