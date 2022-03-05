@@ -189,7 +189,7 @@ type CursorConnectionArgsType<T> = Record<"list", T[]> & PagingInputType;
 type RegisterVariableType = Record<
   "registerInput",
   Pick<UserType, "username" | "password"> &
-    Partial<Pick<ServiceType, "title" | "logo" | "description" | "state">> &
+    Partial<Pick<ServiceType, "title" | "logoCID" | "description" | "state">> &
     Record<"passCode", string>
 >;
 

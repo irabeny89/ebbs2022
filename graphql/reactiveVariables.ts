@@ -1,11 +1,13 @@
 import { makeVar } from "@apollo/client";
 import { JwtPayload } from "jsonwebtoken";
-import type { OrderItemType, ServiceCardPropType, ServiceLabelPropType, ServiceVertexType, UserPayloadType } from "types";
+import type { OrderItemType, UserPayloadType } from "types";
 
 export const accessTokenVar = makeVar("");
 
 export const authPayloadVar = makeVar<Partial<UserPayloadType> & JwtPayload>(
   {}
 );
+
+export const hasAuthPayloadVar = makeVar(false);
 
 export const cartItemsVar = makeVar<OrderItemType[]>([]);

@@ -36,6 +36,9 @@
       ],
       "@/utils/*": [
         "utils/*"
+      ],
+      "@/web3storage/*": [
+        "web3storage/*"
       ]
     },
     "incremental": true

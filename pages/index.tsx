@@ -76,6 +76,7 @@ export const getStaticProps: GetStaticProps = async () => {
             products: products.edges.map((edge) => edge.node),
             services: services.edges
               .map((edge) => edge.node)
+              // filter out services without a single product
               .filter((item) => item.products?.edges.length! > 0),
           },
           revalidate: 60,

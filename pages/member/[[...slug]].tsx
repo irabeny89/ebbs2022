@@ -7,6 +7,8 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import UnAuth from "@/components/UnAuth";
 import { useEffect, useState } from "react";
+import { useReactiveVar } from "@apollo/client";
+import { authPayloadVar, hasAuthPayloadVar } from "@/graphql/reactiveVariables";
 // fetch page data
 const {
     webPages,
@@ -26,11 +28,7 @@ const MemberPage = () => {
   const { slug } = useRouter().query as {
       slug?: string[];
     },
-    // access token
-    [authPayload, setAuthPayload] = useState({});
-  useEffect(() => {
-    setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
-  }, []);
+hasAuthPayload = useReactiveVar(hasAuthPayloadVar)
   // if route- /member/xxx/xx ==> slug == [xxx,xx]
   return slug ? (
     // when route == member/dashboard
@@ -41,14 +39,14 @@ const MemberPage = () => {
             {abbr} &trade; | {dashboardPage?.pageTitle}
           </title>
         </Head>
-        {!!authPayload ? <Dashboard /> : <UnAuth />}
+        {hasAuthPayload ? <Dashboard /> : <UnAuth />}
       </Layout>
     ) : (
       // if route /member/x is not defined above
       <ErrorPage title="404" message="Page Not Found!" />
     )
   ) : (
-    // if slug (/member/x) not provided
+    // if slug value is not provided i.e /member/x where x is not provided
     <Layout>
       {/* tab title */}
       <Head>

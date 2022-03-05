@@ -24,7 +24,11 @@ import type {
   UserLoginVariableType,
   RegisterVariableType,
 } from "types";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import {
+  accessTokenVar,
+  authPayloadVar,
+  hasAuthPayloadVar,
+} from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import {
   USER_LOGIN,
@@ -35,6 +39,7 @@ import { useRouter } from "next/router";
 import EmailValidationForm from "./EmailValidationForm";
 import { decode } from "jsonwebtoken";
 import web3storage from "../web3storage";
+import FeedbackToast from "./FeedbackToast";
 
 // fetch web app meta data
 const {
@@ -61,8 +66,10 @@ const Member = () => {
     // alert state for new user register password comparison
     [show, setShow] = useState(false),
     [showAlert, setShowAlert] = useState(false),
+    // feedback toast
+    [showToast, setShowToast] = useState(false),
     // login mutation
-    [login, { data, loading }] = useLazyQuery<
+    [login, { data, loading, error }] = useLazyQuery<
       Record<"login", string>,
       UserLoginVariableType
     >(USER_LOGIN),
@@ -86,6 +93,9 @@ const Member = () => {
     // update access token on login success & save payload in storage
     data &&
       (localStorage.setItem(AUTH_PAYLOAD, JSON.stringify(decode(data.login))),
+      // @ts-ignore
+      authPayloadVar(decode(data.login)),
+      hasAuthPayloadVar(true),
       accessTokenVar(data.login),
       router.push("/member/dashboard"));
     // update access token on register success & save payload in storage
@@ -94,6 +104,9 @@ const Member = () => {
         AUTH_PAYLOAD,
         JSON.stringify(decode(registerData.register))
       ),
+      // @ts-ignore
+      authPayloadVar(decode(registerData.register)),
+      hasAuthPayloadVar(true),
       accessTokenVar(registerData.register),
       router.push("/member/dashboard"));
     // update access token on password change success & save payload in storage
@@ -102,6 +115,9 @@ const Member = () => {
         AUTH_PAYLOAD,
         JSON.stringify(decode(passwordData.changePassword))
       ),
+      // @ts-ignore
+      authPayloadVar(decode(passwordData.changePassword)),
+      hasAuthPayloadVar(true),
       accessTokenVar(passwordData.changePassword),
       router.push("/member/dashboard"));
   }, [data, registerData, passwordData, router]);
@@ -188,6 +204,15 @@ const Member = () => {
                       This field is required!
                     </Form.Control.Feedback>
                   </Form.FloatingLabel>
+                  {/* register form feedback toast */}
+                  <FeedbackToast
+                    {...{
+                      error,
+                      showToast,
+                      setShowToast,
+                      successText: data?.login,
+                    }}
+                  />
                   <Button
                     data-testid="loginButton"
                     size="lg"
@@ -217,6 +242,7 @@ const Member = () => {
                 <EmailValidationForm />
               </Col>
             </Row>
+
             <Form
               data-testid="registerForm"
               noValidate
@@ -253,7 +279,7 @@ const Member = () => {
                           password,
                           username,
                           title,
-                          logo: await web3storage.put([logo]),
+                          logoCID: await web3storage.put([logo]),
                           description,
                           state,
                         },
@@ -269,6 +295,7 @@ const Member = () => {
                 <Col md="6" className="mb-3">
                   <Form.FloatingLabel label="Username">
                     <Form.Control
+                      className="text-capitalize"
                       data-testid="registerUsername"
                       aria-label="username"
                       placeholder="Username"
@@ -389,6 +416,7 @@ const Member = () => {
                           placeholder="Service name"
                           aria-label="serviceName"
                           name="title"
+                          className="text-capitalize"
                         />
                         <Form.Control.Feedback type="invalid">
                           This field is required!
@@ -464,6 +492,15 @@ const Member = () => {
                   </Row>
                 </Accordion.Body>
               </Accordion>
+              {/* register form feedback toast */}
+              <FeedbackToast
+                {...{
+                  error: registerError,
+                  showToast,
+                  setShowToast,
+                  successText: registerData?.register,
+                }}
+              />
               <Button
                 data-testid="registerButton"
                 size="lg"
@@ -579,6 +616,15 @@ const Member = () => {
                       Passwords do not match. Try again.
                     </Alert>
                   )}
+                  {/* register form feedback toast */}
+                  <FeedbackToast
+                    {...{
+                      error: passwordError,
+                      showToast,
+                      setShowToast,
+                      successText: passwordData?.changePassword,
+                    }}
+                  />
                   <Button
                     size="lg"
                     className="my-5"

@@ -10,7 +10,12 @@ import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useLazyQuery, useMutation, useReactiveVar } from "@apollo/client";
-import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
+import {
+  accessTokenVar,
+  authPayloadVar,
+  cartItemsVar,
+  hasAuthPayloadVar,
+} from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
 import Nav from "react-bootstrap/Nav";
@@ -23,7 +28,6 @@ import type {
   PagingInputType,
   ProductVertexType,
   ServiceVertexType,
-  UserPayloadType,
 } from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
 import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
@@ -54,14 +58,16 @@ const mainStyle: CSSProperties = {
 const Layout = ({ children }: LayoutPropsType) => {
   // state variable to handle cart modal clicks
   const [show, setShow] = useState(false),
-    // auth payload state
-    [authPayload, setAuthPayload] = useState<UserPayloadType>(),
     // state variable for search list modal
     [showSearch, setShowSearch] = useState(false),
     // form validation state
     [validated, setValidated] = useState(false),
     // get reactive cart items variable
     cartItems = useReactiveVar(cartItemsVar),
+    // log out reactive state
+    hasAuthPayload = useReactiveVar(hasAuthPayloadVar),
+    // auth payload state
+    authPayload = useReactiveVar(authPayloadVar),
     // access token
     accessToken = useReactiveVar(accessTokenVar),
     // send order mutation
@@ -95,9 +101,13 @@ const Layout = ({ children }: LayoutPropsType) => {
   // on mount update cart items reactive variable from local storage
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
-    // get token payload
-    setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
   }, []);
+  useEffect(() => {
+    // get token payload
+    authPayloadVar(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
+    // update only when auth payload is in store
+    localStorage.getItem(AUTH_PAYLOAD) && hasAuthPayloadVar(true);
+  }, [hasAuthPayload]);
   useEffect(() => {
     // show search result when ready
     searchData && setShowSearch(true);
@@ -118,8 +128,6 @@ const Layout = ({ children }: LayoutPropsType) => {
 
   return (
     <Container fluid as="main">
-      {/* toast */}
-
       {/* cart modal */}
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
@@ -457,11 +465,14 @@ const Layout = ({ children }: LayoutPropsType) => {
           <Navbar.Collapse id="responsive-navbar-nav">
             <Nav className="me-auto">
               {/* nav links */}
-              {webPages.map((page) => (
-                <Link passHref href={page.route} key={page.pageTitle}>
-                  <Nav.Link>{page.pageTitle}</Nav.Link>
-                </Link>
-              ))}
+              {webPages.map((page) =>
+                page.pageTitle.toLowerCase() === "dashboard" &&
+                !authPayload ? null : (
+                  <Link passHref href={page.route} key={page.pageTitle}>
+                    <Nav.Link>{page.pageTitle}</Nav.Link>
+                  </Link>
+                )
+              )}
             </Nav>
           </Navbar.Collapse>
         </Navbar>

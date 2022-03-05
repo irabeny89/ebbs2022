@@ -43,7 +43,11 @@ import config from "../config";
 import ProductList from "./ProductList";
 import { useRouter } from "next/router";
 import FeedbackToast from "./FeedbackToast";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import {
+  accessTokenVar,
+  authPayloadVar,
+  hasAuthPayloadVar,
+} from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";
 
 const {
@@ -154,6 +158,8 @@ const ServiceAlert = () => (
         (client.clearStore(),
         accessTokenVar(""),
         localStorage.removeItem(AUTH_PAYLOAD),
+        authPayloadVar({}),
+        hasAuthPayloadVar(false),
         router.push("/member"));
       return () => {
         setFileSizes([]);

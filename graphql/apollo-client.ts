@@ -31,9 +31,18 @@ const client = new ApolloClient({
                     data: {
                       data: { refreshToken },
                     },
-                  } = await axios.post(apiHost + graphqlUri, {
-                    data: "query{refreshToken}",
-                  });
+                  } = await axios.post(
+                    apiHost + graphqlUri,
+                    {
+                      query: "{refreshToken}",
+                    },
+                    {
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      withCredentials: true,
+                    }
+                  );
                   accessTokenVar(refreshToken);
                   operation.setContext({
                     headers: {
@@ -43,7 +52,9 @@ const client = new ApolloClient({
                   });
                   return forward(operation);
                 } catch (error) {
-                  console.log("=========refreshToken===============");
+                  console.log(
+                    "=========apolloClient:refreshToken==============="
+                  );
                   console.log(error);
                   console.log("====================================");
                 }
@@ -56,12 +67,10 @@ const client = new ApolloClient({
       new RetryLink(),
       new HttpLink({
         uri: apiHost + graphqlUri,
-        credentials: "include"
+        credentials: "include",
       }),
       // log error in dev; i.e remove error link in production
-    ].filter((_, i) =>
-      process.env.NODE_ENV === "development" ? true : i > 0
-    )
+    ].filter((_, i) => (process.env.NODE_ENV === "development" ? true : i > 0))
   ),
 });
 
