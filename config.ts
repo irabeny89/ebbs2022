@@ -70,7 +70,7 @@ const config = {
           { route: "/member", pageTitle: "Member" },
           { route: "/products", pageTitle: "Products" },
           { route: "/services", pageTitle: "Services" },
-          { route: "/member/dashboard", pageTitle: "Dashboard" },
+          { route: "/dashboard", pageTitle: "Dashboard" },
         ],
         privacy: "ALL",
         pageTitle: "Home",
@@ -81,7 +81,7 @@ const config = {
       },
       {
         route: "/member",
-        links: [{ route: "/member/dashboard", pageTitle: "Dashboard" }],
+        links: [{ route: "/dashboard", pageTitle: "Dashboard" }],
         privacy: "ALL",
         pageTitle: "Member",
         description: "Authentication and authorization page.",
@@ -108,7 +108,7 @@ const config = {
         parargraphs: ["Browse through all products and add to cart."],
       },
       {
-        route: "/member/dashboard",
+        route: "/dashboard",
         links: [],
         privacy: "USER",
         pageTitle: "Dashboard",

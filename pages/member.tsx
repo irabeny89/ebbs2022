@@ -1,3 +1,5 @@
+import Layout from "@/components/Layout";
+import Head from "next/head";
 import {
   MdRememberMe,
   MdCardMembership,
@@ -36,25 +38,24 @@ import {
   USER_REGISTER,
 } from "@/graphql/documentNodes";
 import { useRouter } from "next/router";
-import EmailValidationForm from "./EmailValidationForm";
+import EmailValidationForm from "@/components/EmailValidationForm";
 import { decode } from "jsonwebtoken";
 import web3storage from "../web3storage";
-import FeedbackToast from "./FeedbackToast";
-import AjaxFeedback from "./AjaxFeedback";
-
+import FeedbackToast from "@/components/FeedbackToast";
 // fetch web app meta data
 const {
     webPages,
+    abbr,
     constants: { AUTH_PAYLOAD },
   } = config.appData,
-  // find home page data
+  // find member page data
   memberPage = webPages.find(
     ({ pageTitle }) => pageTitle.toLowerCase() === "member"
   );
 // tab title style
 const tabTitleStyle = { fontSize: 16 };
-// member page - login, register & password revocery
-const Member = () => {
+// member page component
+const MemberPage = () => {
   const router = useRouter(),
     // login form validation state
     [validated, setValidated] = useState(false),
@@ -98,7 +99,7 @@ const Member = () => {
       authPayloadVar(decode(data.login)),
       hasAuthPayloadVar(true),
       accessTokenVar(data.login),
-      router.push("/member/dashboard"));
+      router.push("/dashboard"));
     // update access token on register success & save payload in storage
     registerData &&
       (localStorage.setItem(
@@ -109,7 +110,7 @@ const Member = () => {
       authPayloadVar(decode(registerData.register)),
       hasAuthPayloadVar(true),
       accessTokenVar(registerData.register),
-      router.push("/member/dashboard"));
+      router.push("/dashboard"));
     // update access token on password change success & save payload in storage
     passwordData &&
       (localStorage.setItem(
@@ -121,9 +122,15 @@ const Member = () => {
       hasAuthPayloadVar(true),
       accessTokenVar(passwordData.changePassword));
   }, [data, registerData, passwordData, router]);
-
   return (
-    <Container>
+    <Layout>
+      {/* tab title */}
+      <Head>
+        <title>
+          {abbr} &trade; | {memberPage?.pageTitle}
+        </title>
+      </Head>
+      <Container>
       {/* page title */}
       <Row className="mb-5 h1">
         <Col>
@@ -641,7 +648,8 @@ const Member = () => {
         </Tab>
       </Tabs>
     </Container>
+    </Layout>
   );
 };
 
-export default Member;
+export default MemberPage;
