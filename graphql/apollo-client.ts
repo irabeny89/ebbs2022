@@ -66,7 +66,7 @@ const client = new ApolloClient({
       }),
       new RetryLink(),
       new HttpLink({
-        uri: "https://ebbs-io.vercel.app/api/graphql",
+        uri: `${apiHost}${graphqlUri}`,
         credentials: "include",
       }),
       // log error in dev; i.e remove error link in production

@@ -45,11 +45,6 @@ const config = {
     // time in minutes
     passCodeDuration: 15,
     maxProductAllowed: 12,
-    passwordRecoveryOption: {
-      subject: "EBBS - Password Recovery",
-      from: "<no-reply>@gmail.com",
-      body: "Hello, enter the access code to change your password on EBBS website - ",
-    },
     generalErrorMessage:
       "Something went wrong. Login or check your inputs and try again",
     constants: {
@@ -66,12 +61,6 @@ const config = {
     webPages: [
       {
         route: "/",
-        links: [
-          { route: "/member", pageTitle: "Member" },
-          { route: "/products", pageTitle: "Products" },
-          { route: "/services", pageTitle: "Services" },
-          { route: "/dashboard", pageTitle: "Dashboard" },
-        ],
         privacy: "ALL",
         pageTitle: "Home",
         description: "List of products and services.",
@@ -81,7 +70,6 @@ const config = {
       },
       {
         route: "/member",
-        links: [{ route: "/dashboard", pageTitle: "Dashboard" }],
         privacy: "ALL",
         pageTitle: "Member",
         description: "Authentication and authorization page.",
@@ -91,7 +79,6 @@ const config = {
       },
       {
         route: "/services",
-        links: [],
         privacy: "ALL",
         pageTitle: "Services",
         description: "List of all services",
@@ -101,7 +88,6 @@ const config = {
       },
       {
         route: "/products",
-        links: [],
         privacy: "ALL",
         pageTitle: "Products",
         description: "List of all products",
@@ -109,7 +95,6 @@ const config = {
       },
       {
         route: "/dashboard",
-        links: [],
         privacy: "USER",
         pageTitle: "Dashboard",
         description: "Dashboard to manage profile.",
@@ -132,7 +117,7 @@ const config = {
     ],
   },
   environmentVariable: {
-    apiHost: isProductionEnv ? process.env.API_HOST : "http://localhost:4000",
+    apiHost: isProductionEnv ? "https://ebbs-io.vercel.app" : "http://localhost:4000",
     graphqlUri: "/api/graphql",
     web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY,
   },

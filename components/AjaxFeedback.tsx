@@ -8,6 +8,7 @@ import Row from "react-bootstrap/Row";
 const AjaxFeedback = ({
   loading,
   error,
+  successText,
   text = config.appData.abbr,
   ...rest
 }: AjaxFeedbackProps) => {
@@ -20,12 +21,12 @@ const AjaxFeedback = ({
           </Spinner>
         </Row>
       )}
-      {error && (
+      {(error || successText) && (
         <Row>
-          <Alert variant="danger">
+          <Alert variant={successText ? "success" : "danger"}>
             <Alert.Heading>Alert</Alert.Heading>
             <hr />
-            <Row>{error.message}</Row>
+            <Row>{error?.message || successText}</Row>
           </Alert>
         </Row>
       )}

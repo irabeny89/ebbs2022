@@ -280,6 +280,7 @@ type AjaxFeedbackProps = {
   loading?: boolean;
   error?: any;
   text?: string;
+  successText?: string;
 } & StyleType;
 
 type MoreButtonPropType = {

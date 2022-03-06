@@ -835,15 +835,17 @@ const ServiceAlert = () => (
                         onSubmit={async (e) => {
                           e.preventDefault();
                           const formData = new FormData(e.currentTarget),
+                            logo = formData.get("logo")! as unknown as File,
                             serviceUpdate = {
                               ...Object.fromEntries(formData.entries()),
-                              logoCID: await web3storage.put([
-                                formData.get("logo")! as unknown as File,
-                              ]),
+                              logoCID: logo.name
+                                ? await web3storage.put([logo])
+                                : undefined,
                             } as Pick<
                               ServiceType,
                               "title" | "description" | "logoCID" | "state"
                             >;
+                          // remove logo field; not defined in gql schema
                           // @ts-ignore
                           delete serviceUpdate.logo;
 

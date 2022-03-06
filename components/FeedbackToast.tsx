@@ -14,6 +14,7 @@ const FeedbackToast = ({
 }) => {
   useEffect(() => {
     (successText || error) && setShowToast(true);
+    return setShowToast(false)
   }, [error, setShowToast, successText]);
 
   return (
