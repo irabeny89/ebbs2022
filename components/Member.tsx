@@ -40,6 +40,7 @@ import EmailValidationForm from "./EmailValidationForm";
 import { decode } from "jsonwebtoken";
 import web3storage from "../web3storage";
 import FeedbackToast from "./FeedbackToast";
+import AjaxFeedback from "./AjaxFeedback";
 
 // fetch web app meta data
 const {
@@ -118,8 +119,7 @@ const Member = () => {
       // @ts-ignore
       authPayloadVar(decode(passwordData.changePassword)),
       hasAuthPayloadVar(true),
-      accessTokenVar(passwordData.changePassword),
-      router.push("/member/dashboard"));
+      accessTokenVar(passwordData.changePassword));
   }, [data, registerData, passwordData, router]);
 
   return (
@@ -250,16 +250,16 @@ const Member = () => {
               onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget),
-                  username = formData.get("username")?.toString()!,
-                  passCode = formData.get("passCode")?.toString()!,
-                  password = formData.get("password")?.toString()!,
+                  username = formData.get("username")?.toString().trim()!,
+                  passCode = formData.get("passCode")?.toString().trim()!,
+                  password = formData.get("password")?.toString(),
                   confirmPassword = formData
                     .get("confirmPassword")
                     ?.toString()!,
-                  title = formData.get("title")?.toString(),
+                  title = formData.get("title")?.toString().trim(),
                   logo = formData.get("logo") as File,
-                  description = formData.get("description")?.toString(),
-                  state = formData.get("state")?.toString(),
+                  description = formData.get("description")?.toString().trim(),
+                  state = formData.get("state")?.toString().trim(),
                   // compare password & give feedback accordingly
                   hasConfirmedPassword = confirmPassword === password;
                 // show the message if passwords are not same
@@ -580,13 +580,13 @@ const Member = () => {
                   <Form.Text className="text-info">
                     Password should be 8 or more characters
                   </Form.Text>
-                  <Form.FloatingLabel label="Password" className="mb-4">
+                  <Form.FloatingLabel label="New Password" className="mb-4">
                     <Form.Control
                       onChange={() => setShowAlert(false)}
                       type="password"
                       minLength={8}
-                      aria-label="password"
-                      placeholder="Password"
+                      aria-label="New Password"
+                      placeholder="New Password"
                       name="password"
                       size="lg"
                       data-testid="changePassword"
@@ -616,7 +616,7 @@ const Member = () => {
                       Passwords do not match. Try again.
                     </Alert>
                   )}
-                  {/* register form feedback toast */}
+                  {/* change password form feedback toast */}
                   <FeedbackToast
                     {...{
                       error: passwordError,
