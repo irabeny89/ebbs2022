@@ -217,7 +217,7 @@ const MemberPage = () => {
                       error,
                       showToast,
                       setShowToast,
-                      successText: data?.login,
+                      successText: "Login successfully. Welcome!",
                     }}
                   />
                   <Button
@@ -249,7 +249,7 @@ const MemberPage = () => {
                 <EmailValidationForm />
               </Col>
             </Row>
-
+            {/* basic user registeration form */}
             <Form
               data-testid="registerForm"
               noValidate
@@ -286,7 +286,7 @@ const MemberPage = () => {
                           password,
                           username,
                           title,
-                          logoCID: await web3storage.put([logo]),
+                          logoCID: logo.name ? await web3storage.put([logo]) : undefined,
                           description,
                           state,
                         },
