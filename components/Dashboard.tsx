@@ -161,6 +161,7 @@ const ServiceAlert = () => (
         authPayloadVar({}),
         hasAuthPayloadVar(false),
         router.push("/member"));
+        // cleanup when toggling modal & new product creation
       return () => {
         setFileSizes([]);
         setVideoFileSize(0);
@@ -227,16 +228,21 @@ const ServiceAlert = () => (
                       | File
                       | undefined,
                     images = formData.get("images") as unknown as FileList;
+
                   const newProduct = {
                     ...Object.fromEntries(formData.entries()),
-                    video: video ? await web3storage.put([video!]) : "",
-                    images: await web3storage.put(images),
+                    videoCID: video ? await web3storage.put([video]) : "",
+                    imagesCID: await web3storage.put(images),
                     price: +formData.get("price")!,
                     tags: formData
                       .get("tags")!
-                      .toString()
+                      .toString().trim()
                       .split(" ") as string[],
                   } as unknown as Omit<ProductType, "provider">;
+                  // @ts-ignore
+                  delete newProduct.images
+                  // @ts-ignore
+                  delete newProduct.video
 
                   e.currentTarget.checkValidity() &&
                   fileSizes.length < 4 &&
