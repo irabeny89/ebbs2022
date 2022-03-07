@@ -504,7 +504,9 @@ const MemberPage = () => {
                     error: registerError,
                     showToast,
                     setShowToast,
-                    successText: registerData?.register,
+                    successText:
+                      registerData?.register &&
+                      "Registration successful. You can login Now.",
                   }}
                 />
                 <Button
