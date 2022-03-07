@@ -205,13 +205,13 @@ const MemberPage = () => {
                         This field is required!
                       </Form.Control.Feedback>
                     </Form.FloatingLabel>
-                    {/* register form feedback toast */}
+                    {/* login form feedback toast */}
                     <FeedbackToast
                       {...{
                         error,
                         showToast,
                         setShowToast,
-                        successText: "Login successfully. Welcome!",
+                        successText: registerData?.register && "Login successfully. Welcome!",
                       }}
                     />
                     <Button

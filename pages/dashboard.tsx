@@ -13,6 +13,7 @@ import Badge from "react-bootstrap/Badge";
 import Spinner from "react-bootstrap/Spinner";
 import { MdDashboardCustomize, MdAdd, MdSend } from "react-icons/md";
 import {
+  AuthComponentType,
   NewProductVariableType,
   PagingInputType,
   ProductType,
@@ -76,7 +77,7 @@ const ServiceAlert = () => (
     </Container>
   ),
   // dashboard component
-  DashboardPage = () => {
+  DashboardPage: AuthComponentType = () => {
     const router = useRouter();
     // use auth payload & access token
     const accessToken = useReactiveVar(accessTokenVar);
@@ -189,16 +190,6 @@ const ServiceAlert = () => (
           .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
           .catch(console.error);
     }, [userData?.me.service?.logoCID]);
-
-    if (userLoading)
-      return (
-        <Layout>
-          <Head>
-            <title>{abbr} &trade; | Forbidden Page</title>
-          </Head>
-          <AjaxFeedback loading />
-        </Layout>
-      );
 
     if (userData) {
       const {
@@ -972,12 +963,15 @@ const ServiceAlert = () => (
     }
     return (
       <Layout>
-        <Head>
-          <title>{abbr} &trade; | Forbidden Page</title>
-        </Head>
-        <UnAuth />
-      </Layout>
+          <Head>
+            <title>{abbr} &trade; | {dashboardPage?.pageTitle}</title>
+          </Head>
+          <AjaxFeedback loading />
+        </Layout>
     );
   };
 
+  DashboardPage.audiences = ["user", "admin"]
+  DashboardPage.displayName = "DashboardPage"
+  
 export default DashboardPage;

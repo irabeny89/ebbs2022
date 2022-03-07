@@ -10,10 +10,16 @@ import SMTPTransport from "nodemailer/lib/smtp-transport";
 
 type PassCodeDataType = Record<"email" | "hashedPassCode", string>;
 
+type AuthComponentType<PropsType = {}> = {
+  (PropsType): JSX.Element;
+  audiences: UserPayloadType["audience"][];
+  displayName: string;
+}
+
 type UserPayloadType = {
   serviceId?: string;
   username: string;
-  audience: "ADMIN" | "USER";
+  audience: "admin" | "user";
   id: string;
 };
 

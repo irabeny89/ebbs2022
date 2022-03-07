@@ -12,12 +12,10 @@ const FeedbackToast = ({
   showToast: boolean;
   setShowToast: Dispatch<SetStateAction<boolean>>;
 }) => {
-  useEffect(() => {
-    (successText || error) && setShowToast(true);
-    return () => {
-      setShowToast(false);
-    };
-  }, [error, setShowToast, successText]);
+  useEffect(
+    () => (successText || error) && setShowToast(true),
+    [error, setShowToast, successText]
+  );
 
   return (
     <Toast

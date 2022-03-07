@@ -125,7 +125,10 @@ const OrdersOrRequests = ({
         {items.map((order) => (
           <Col md="6" lg="4" className="my-3" key={order._id!.toString()}>
             <Accordion>
-              <Accordion.Item eventKey={order._id!.toString()}>
+              <Accordion.Item
+                eventKey={order._id!.toString()}
+                className="border-primary border-2"
+              >
                 <Accordion.Header>
                   <Row>
                     <Row>
@@ -151,7 +154,7 @@ const OrdersOrRequests = ({
                             <span>
                               {" "}
                               | ETA:{" "}
-                              <Badge>{`${new Date(
+                              <Badge className="bg-secondary pills">{`${new Date(
                                 +order.deliveryDate
                               ).toDateString()}`}</Badge>
                             </span>
@@ -160,6 +163,7 @@ const OrdersOrRequests = ({
                       </Col>
                     </Row>
                     <Card.Subtitle>
+                      Items:{" "}
                       <Badge className="bg-secondary pills">
                         {getCompactNumberFormat(order.items!.length)}
                       </Badge>{" "}
@@ -167,7 +171,7 @@ const OrdersOrRequests = ({
                       <Badge className="bg-dark">
                         {getLocalePrice(order.totalCost!)}
                       </Badge>{" "}
-                      |
+                      |&nbsp;
                       <Badge className="bg-dark">
                         {new Date(+order?.createdAt! || 0).toDateString()}
                       </Badge>
@@ -267,8 +271,42 @@ const OrdersOrRequests = ({
                       </tr>
                     </tbody>
                   </Table>
+                  <hr />
+                  <h5 className="mt-5">Delivery Details:</h5>
+                  <Form.FloatingLabel label="State">
+                    <Form.Control
+                      placeholder="State"
+                      className="my-3"
+                      value={order.state}
+                      disabled
+                    />
+                  </Form.FloatingLabel>
+                  <Form.FloatingLabel label="Address">
+                    <Form.Control
+                      placeholder="Address"
+                      className="my-3"
+                      value={order.address}
+                      disabled
+                    />
+                  </Form.FloatingLabel>
+                  <Form.FloatingLabel label="Nearest Bus Stop">
+                    <Form.Control
+                      value={order.nearestBusStop}
+                      className="my-3"
+                      disabled
+                    />
+                  </Form.FloatingLabel>
+                  <Form.FloatingLabel label="Phone">
+                    <Form.Control
+                      className="mb-4"
+                      value={order.phone}
+                      disabled
+                    />
+                  </Form.FloatingLabel>
+                  <hr />
                   {!asRequestList && (
-                    <Row className="my-4">
+                    <Row className="my-5">
+                      <h5>Set Delivery Date:</h5>
                       <Form
                         onSubmit={(e) => {
                           e.preventDefault();
@@ -306,47 +344,17 @@ const OrdersOrRequests = ({
                             type="submit"
                             size="lg"
                             variant="outline-primary"
+                            className="mt-3 w-100"
                           >
                             {deliveryDateLoading && (
                               <Spinner animation="grow" size="sm" />
                             )}{" "}
-                            Update
+                            Update ETA
                           </Button>
                         </Col>
                       </Form>
                     </Row>
                   )}
-                  <h5 className="my-4">Delivery Details:</h5>
-                  <Form.FloatingLabel label="State">
-                    <Form.Control
-                      placeholder="State"
-                      className="my-3"
-                      value={order.state}
-                      disabled
-                    />
-                  </Form.FloatingLabel>
-                  <Form.FloatingLabel label="Address">
-                    <Form.Control
-                      placeholder="Address"
-                      className="my-3"
-                      value={order.address}
-                      disabled
-                    />
-                  </Form.FloatingLabel>
-                  <Form.FloatingLabel label="Nearest Bus Stop">
-                    <Form.Control
-                      value={order.nearestBusStop}
-                      className="my-3"
-                      disabled
-                    />
-                  </Form.FloatingLabel>
-                  <Form.FloatingLabel label="Phone">
-                    <Form.Control
-                      className="mb-4"
-                      value={order.phone}
-                      disabled
-                    />
-                  </Form.FloatingLabel>
                 </Accordion.Body>
               </Accordion.Item>
             </Accordion>
