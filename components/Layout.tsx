@@ -146,7 +146,7 @@ const Layout = ({ children }: LayoutPropsType) => {
             <Alert>
               <Alert.Heading>{data.serviceOrder}</Alert.Heading>
               Go to{" "}
-              <Link href="/member/dashboard" passHref>
+              <Link href="/dashboard" passHref>
                 <Alert.Link>dashboard</Alert.Link>
               </Link>{" "}
               to see your requests.

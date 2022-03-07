@@ -259,7 +259,7 @@ const ServiceAlert = () => (
 
                     const newProduct = {
                       ...Object.fromEntries(formData.entries()),
-                      videoCID: video ? await web3storage.put([video]) : "",
+                      videoCID: video?.name ? await web3storage.put([video]) : undefined,
                       imagesCID: await web3storage.put(images),
                       price: +formData.get("price")!,
                       tags: formData

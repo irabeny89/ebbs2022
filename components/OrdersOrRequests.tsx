@@ -131,7 +131,9 @@ const OrdersOrRequests = ({
                     <Row>
                       <Col>
                         <Card.Title>
-                          {order.client.username}{" "}
+                          {asRequestList
+                            ? "My requests..."
+                            : order.client.username}{" "}
                           {Object.entries(order.orderStats).map(
                             ([key, value]) =>
                               typeof value === "number" &&
@@ -144,6 +146,15 @@ const OrdersOrRequests = ({
                                   {value + key[0]}
                                 </Badge>
                               )
+                          )}{" "}
+                          {order?.deliveryDate && (
+                            <span>
+                              {" "}
+                              | ETA:{" "}
+                              <Badge>{`${new Date(
+                                +order.deliveryDate
+                              ).toDateString()}`}</Badge>
+                            </span>
                           )}
                         </Card.Title>
                       </Col>
