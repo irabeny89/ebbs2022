@@ -26,11 +26,7 @@ import type {
   UserLoginVariableType,
   RegisterVariableType,
 } from "types";
-import {
-  accessTokenVar,
-  authPayloadVar,
-  hasAuthPayloadVar,
-} from "@/graphql/reactiveVariables";
+import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import {
   USER_LOGIN,
@@ -43,11 +39,12 @@ import { decode } from "jsonwebtoken";
 import web3storage from "../web3storage";
 import FeedbackToast from "@/components/FeedbackToast";
 import AjaxFeedback from "@/components/AjaxFeedback";
+import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 // fetch web app meta data
 const {
     webPages,
     abbr,
-    constants: { AUTH_PAYLOAD },
+    constants: { AUTH_PAYLOAD, CART_ITEMS_KEY },
   } = config.appData,
   // find member page data
   memberPage = webPages.find(
@@ -93,12 +90,18 @@ const MemberPage = () => {
     >(USER_PASSWORD_CHANGE);
 
   useEffect(() => {
-    // update access token on login success & save payload in storage
+    // update access token on login success, filter cart items & save payload in storage
     data &&
       (localStorage.setItem(AUTH_PAYLOAD, JSON.stringify(decode(data.login))),
-      // @ts-ignore
-      authPayloadVar(decode(data.login)),
-      hasAuthPayloadVar(true),
+      localStorage.setItem(
+        CART_ITEMS_KEY,
+        JSON.stringify(
+          getLastCartItemsFromStorage(localStorage).filter(
+            // @ts-ignore
+            ({ providerId }) => providerId !== decode(data.login)?.serviceId
+          )
+        )
+      ),
       accessTokenVar(data.login),
       router.push("/dashboard"));
     // update access token on register success & save payload in storage
@@ -107,12 +110,10 @@ const MemberPage = () => {
         AUTH_PAYLOAD,
         JSON.stringify(decode(registerData.register))
       ),
-      // @ts-ignore
-      authPayloadVar(decode(registerData.register)),
-      hasAuthPayloadVar(true),
       accessTokenVar(registerData.register),
       router.push("/dashboard"));
   }, [data, registerData, router]);
+
   return (
     <Layout>
       {/* tab title */}
@@ -211,7 +212,9 @@ const MemberPage = () => {
                         error,
                         showToast,
                         setShowToast,
-                        successText: registerData?.register && "Login successfully. Welcome!",
+                        successText:
+                          registerData?.register &&
+                          "Login successfully. Welcome!",
                       }}
                     />
                     <Button

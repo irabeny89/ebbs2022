@@ -134,9 +134,7 @@ const OrdersOrRequests = ({
                     <Row>
                       <Col>
                         <Card.Title>
-                          {asRequestList
-                            ? "My requests..."
-                            : order.client.username}{" "}
+                          {!asRequestList && order.client.username}{" "}
                           {Object.entries(order.orderStats).map(
                             ([key, value]) =>
                               typeof value === "number" &&
@@ -154,7 +152,13 @@ const OrdersOrRequests = ({
                             <span>
                               {" "}
                               | ETA:{" "}
-                              <Badge className="bg-secondary pills">{`${new Date(
+                              <Badge
+                                className={
+                                  +order.deliveryDate < Date.now()
+                                    ? "bg-danger"
+                                    : "bg-primary"
+                                }
+                              >{`${new Date(
                                 +order.deliveryDate
                               ).toDateString()}`}</Badge>
                             </span>
@@ -345,6 +349,9 @@ const OrdersOrRequests = ({
                             size="lg"
                             variant="outline-primary"
                             className="mt-3 w-100"
+                            disabled={order?.items?.every(
+                              ({ status }) => status === "DELIVERED"
+                            )}
                           >
                             {deliveryDateLoading && (
                               <Spinner animation="grow" size="sm" />

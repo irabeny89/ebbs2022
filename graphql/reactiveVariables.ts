@@ -8,6 +8,4 @@ export const authPayloadVar = makeVar<Partial<UserPayloadType> & JwtPayload>(
   {}
 );
 
-export const hasAuthPayloadVar = makeVar(false);
-
 export const cartItemsVar = makeVar<OrderItemType[]>([]);

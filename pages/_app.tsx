@@ -1,11 +1,11 @@
 import "bootstrap/dist/css/bootstrap.min.css";
-import { ApolloProvider, useReactiveVar } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client";
 import type { AppProps } from "next/app";
 import client from "@/graphql/apollo-client";
 import { SSRProvider } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import { UserPayloadType } from "types";
-import { hasAuthPayloadVar } from "@/graphql/reactiveVariables";
+import { authPayloadVar } from "@/graphql/reactiveVariables";
 import config from "config";
 import UnAuth from "@/components/UnAuth";
 import Head from "next/head";
@@ -17,14 +17,13 @@ const {
 } = config.appData;
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const [audience, setAudience] = useState<UserPayloadType["audience"]>(),
-    hasAuthPayload = useReactiveVar(hasAuthPayloadVar);
+  const [audience, setAudience] = useState<UserPayloadType["audience"]>();
   useEffect(() => {
-    setAudience(
-      // @ts-ignore
-      JSON.parse(localStorage.getItem(AUTH_PAYLOAD))?.aud
-    );
-  }, [hasAuthPayload]);
+    // @ts-ignore
+    const authPayload = JSON.parse(localStorage.getItem(AUTH_PAYLOAD));
+    authPayloadVar(authPayload);
+    setAudience(authPayload?.aud);
+  }, [Component.displayName]);
 
   return (
     <ApolloProvider client={client}>

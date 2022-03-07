@@ -13,7 +13,7 @@ import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "react-bootstrap/Image";
 import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
-import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
+import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
 import { useEffect, useState } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";

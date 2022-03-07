@@ -47,12 +47,10 @@ import FeedbackToast from "@/components/FeedbackToast";
 import {
   accessTokenVar,
   authPayloadVar,
-  hasAuthPayloadVar,
 } from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";
 import Layout from "@/components/Layout";
 import Head from "next/head";
-import UnAuth from "@/components/UnAuth";
 
 const {
     abbr,
@@ -172,7 +170,6 @@ const ServiceAlert = () => (
         accessTokenVar(""),
         localStorage.removeItem(AUTH_PAYLOAD),
         authPayloadVar({}),
-        hasAuthPayloadVar(false),
         router.push("/member"));
       // cleanup when toggling modal & new product creation
       return () => {

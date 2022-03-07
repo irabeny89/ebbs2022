@@ -14,7 +14,7 @@ import {
   accessTokenVar,
   authPayloadVar,
   cartItemsVar,
-  hasAuthPayloadVar,
+  // hasAuthPayloadVar,
 } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
@@ -30,7 +30,7 @@ import type {
   ServiceVertexType,
 } from "types";
 import getLocalePrice from "@/utils/getLocalePrice";
-import getLastCartItemsFromStorage from "@/utils/getCartItemsFromStorage";
+import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 import {
   FEW_PRODUCTS_AND_SERVICES,
   MY_PROFILE,
@@ -64,8 +64,6 @@ const Layout = ({ children }: LayoutPropsType) => {
     [validated, setValidated] = useState(false),
     // get reactive cart items variable
     cartItems = useReactiveVar(cartItemsVar),
-    // log out reactive state
-    hasAuthPayload = useReactiveVar(hasAuthPayloadVar),
     // auth payload state
     authPayload = useReactiveVar(authPayloadVar),
     // access token
@@ -102,14 +100,8 @@ const Layout = ({ children }: LayoutPropsType) => {
   useEffect(() => {
     cartItemsVar(getLastCartItemsFromStorage(localStorage));
   }, []);
+  // show search result when ready
   useEffect(() => {
-    // get token payload
-    authPayloadVar(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
-    // update only when auth payload is in store
-    localStorage.getItem(AUTH_PAYLOAD) && hasAuthPayloadVar(true);
-  }, [hasAuthPayload]);
-  useEffect(() => {
-    // show search result when ready
     searchData && setShowSearch(true);
   }, [searchData]);
   // clear order alert after some time
