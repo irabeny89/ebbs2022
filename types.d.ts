@@ -14,7 +14,7 @@ type AuthComponentType<PropsType = {}> = {
   (PropsType): JSX.Element;
   audiences: UserPayloadType["audience"][];
   displayName: string;
-}
+};
 
 type UserPayloadType = {
   serviceId?: string;
@@ -215,7 +215,7 @@ type ChangePasswordVariableType = Record<"passCode" | "newPassword", string>;
 
 type ServiceUpdateVariableType = Record<
   "serviceUpdate",
-  Pick<ServiceType, "title" | "description" | "logoCID" | "state">
+  Partial<Pick<ServiceType, "title" | "description" | "logoCID" | "state">>
 >;
 
 type NewProductVariableType = Record<

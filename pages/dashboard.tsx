@@ -88,13 +88,14 @@ const ServiceAlert = () => (
       [videoFileSize, setVideoFileSize] = useState(0),
       // product creation form modal state
       [show, setShow] = useState(false),
+      // file uploading state
+      [uploading, setUploading] = useState(false),
       // toast state
       [showToast, setShowToast] = useState(false);
     // query user data
     const {
         data: userData,
         loading: userLoading,
-        error: userError,
         fetchMore: fetchMoreUserData,
       } = useQuery<
         Record<"me", UserVertexType>,
@@ -821,36 +822,49 @@ const ServiceAlert = () => (
                         noValidate
                         validated={validated}
                         onSubmit={async (e) => {
-                          e.preventDefault();
-                          const formData = new FormData(e.currentTarget),
-                            logo = formData.get("logo")! as unknown as File,
-                            serviceUpdate = {
-                              ...Object.fromEntries(formData.entries()),
-                            } as Pick<
-                              ServiceType,
-                              "title" | "description" | "logoCID" | "state"
-                            >;
-                          // remove logo field; not defined in gql schema
-                          // @ts-ignore
-                          delete serviceUpdate.logo;
-
-                          fileSize < 1e6 && e.currentTarget.checkValidity()
-                            ? (setValidated(true),
+                          try {
+                            e.preventDefault();
+                            const formData = Object.fromEntries(
+                              new FormData(e.currentTarget)
+                            ) as Partial<{
+                              title: string;
+                              description: string;
+                              state: string;
+                              logo: File;
+                            }>;
+                            // check validity & file size of media file
+                            if (
+                              fileSize < 1e6 &&
+                              e.currentTarget.checkValidity()
+                            ) {
+                              setValidated(true);
+                              // store file remotely or return undefiend if log is not selected
+                              const logoCID =
+                                formData?.logo?.name &&
+                                (setUploading(true),
+                                await web3storage.put([formData.logo]));
+                              setUploading(false);
+                              // alert & log if logo uploaded
+                              logoCID &&
+                                console.log("file uploaded => CID:", logoCID);
+                              // remove logo field; it's not part of gql schema
+                              delete formData.logo;
                               updateService({
                                 variables: {
                                   serviceUpdate: {
-                                    ...serviceUpdate,
-                                    // @ts-ignore
-                                    logoCID: logo.name
-                                      ? await web3storage.put([logo])
-                                      : undefined,
+                                    ...formData,
+                                    logoCID,
                                   },
                                 },
                               }),
-                              e.currentTarget.reset())
-                            : (e.preventDefault(),
-                              e.stopPropagation(),
-                              setValidated(false));
+                                e.currentTarget.reset();
+                            } else
+                              e.preventDefault(),
+                                e.stopPropagation(),
+                                setValidated(false);
+                          } catch (error) {
+                            console.error(error), setUploading(false);
+                          }
                         }}
                       >
                         <Form.Group>
@@ -948,7 +962,7 @@ const ServiceAlert = () => (
                           />
                         </Form.FloatingLabel>
                         <Button size="lg" className="my-5 w-100" type="submit">
-                          {serviceUpdateLoading && (
+                          {(serviceUpdateLoading || uploading) && (
                             <Spinner animation="grow" size="sm" />
                           )}
                           <MdSend /> Submit
@@ -970,7 +984,7 @@ const ServiceAlert = () => (
             {abbr} &trade; | {dashboardPage?.pageTitle}
           </title>
         </Head>
-        <AjaxFeedback loading={userLoading} error={userError} />
+        <AjaxFeedback loading={userLoading} />
       </Layout>
     );
   };
