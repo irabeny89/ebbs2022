@@ -76,7 +76,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
       return error || !data?.service
         ? { notFound: true }
-        : { props: data.service, revalidate: 60 };
+        : { props: data.service, revalidate: 30 };
     } catch (error) {
       return { notFound: true };
     }

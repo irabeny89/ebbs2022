@@ -154,6 +154,7 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
                   size="sm"
                   className="rounded py-0"
                   variant="outline-danger"
+                  aria-label="delete button"
                   onClick={() => setShowDialog(true)}
                 >
                   <MdDeleteForever />

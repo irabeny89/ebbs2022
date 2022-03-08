@@ -97,6 +97,7 @@ const ServiceAlert = () => (
     const {
         data: userData,
         loading: userLoading,
+        error: userError,
         fetchMore: fetchMoreUserData,
       } = useQuery<
         Record<"me", UserVertexType>,
@@ -963,7 +964,7 @@ const ServiceAlert = () => (
           <Head>
             <title>{abbr} &trade; | {dashboardPage?.pageTitle}</title>
           </Head>
-          <AjaxFeedback loading />
+          <AjaxFeedback loading={userLoading} error={userError} />
         </Layout>
     );
   };

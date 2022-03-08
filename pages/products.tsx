@@ -36,7 +36,9 @@ export const getStaticProps: GetStaticProps = async () => {
       fetchPolicy: "no-cache",
     });
 
-    return error ? { notFound: true } : { props: data.products, revalidate: 5 };
+    return error
+      ? { notFound: true }
+      : { props: data.products, revalidate: 30 };
   },
   // products page component
   ProductsPage = ({

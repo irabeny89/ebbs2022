@@ -54,8 +54,8 @@ const config = {
       COOKIE_CLEAR_OPTIONS: {
         maxAge: 0,
         httpOnly: true,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        sameSite: "none",
+        secure: true,
       } as CookieSerializeOptions,
     },
     webPages: [

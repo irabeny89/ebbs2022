@@ -263,6 +263,7 @@ const styling: { [key: string]: CSSProperties } = {
               size="sm"
               className="py-0 w-100"
               variant="outline-info"
+              aria-label="info button"
               onClick={() => setShow(true)}
             >
               <BiInfoCircle size={18} />

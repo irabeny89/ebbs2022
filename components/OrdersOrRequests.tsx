@@ -153,6 +153,7 @@ const OrdersOrRequests = ({
                               {" "}
                               | ETA:{" "}
                               <Badge
+                                pill
                                 className={
                                   +order.deliveryDate < Date.now()
                                     ? "bg-danger"
@@ -168,15 +169,15 @@ const OrdersOrRequests = ({
                     </Row>
                     <Card.Subtitle>
                       Items:{" "}
-                      <Badge className="bg-secondary pills">
+                      <Badge className="bg-secondary" pill>
                         {getCompactNumberFormat(order.items!.length)}
                       </Badge>{" "}
                       |{" "}
-                      <Badge className="bg-dark">
+                      <Badge className="bg-dark" pill>
                         {getLocalePrice(order.totalCost!)}
                       </Badge>{" "}
                       |&nbsp;
-                      <Badge className="bg-dark">
+                      <Badge className="bg-dark" pill>
                         {new Date(+order?.createdAt! || 0).toDateString()}
                       </Badge>
                     </Card.Subtitle>
@@ -340,6 +341,9 @@ const OrdersOrRequests = ({
                                   +order?.deliveryDate!
                                 ).toLocaleDateString("en-CA") ?? ""
                               }
+                              disabled={order?.items?.every(
+                                ({ status }) => status === "DELIVERED"
+                              )}
                             />
                           </Form.FloatingLabel>
                         </Col>

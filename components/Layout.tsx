@@ -507,14 +507,14 @@ const Layout = ({ children }: LayoutPropsType) => {
                 <Col>
                   <Form.FloatingLabel label="Search...">
                     <Form.Control
-                      placeholder="Find..."
+                      placeholder="Search..."
                       arial-label="search product or service"
                       name="search"
                     />
                   </Form.FloatingLabel>
                 </Col>
                 <Col>
-                  <Button size="lg" type="submit" variant="outline-info">
+                  <Button size="lg" type="submit" variant="secondary">
                     {searchLoading && <Spinner size="sm" animation="grow" />}
                     Search
                   </Button>
