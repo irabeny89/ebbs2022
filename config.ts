@@ -117,7 +117,10 @@ const config = {
     ],
   },
   environmentVariable: {
-    apiHost: isProductionEnv ? "https://ebbs-io.vercel.app" : "http://localhost:4000",
+    apiHost:
+      isProductionEnv && !process.env.OFFLINE!
+        ? "https://ebbs-io.vercel.app"
+        : "http://localhost:4000",
     graphqlUri: "/api/graphql",
     web3storageKey: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY,
   },

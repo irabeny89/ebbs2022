@@ -44,10 +44,7 @@ import config from "../config";
 import ProductList from "@/components/ProductList";
 import { useRouter } from "next/router";
 import FeedbackToast from "@/components/FeedbackToast";
-import {
-  accessTokenVar,
-  authPayloadVar,
-} from "@/graphql/reactiveVariables";
+import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";
 import Layout from "@/components/Layout";
 import Head from "next/head";
@@ -187,7 +184,7 @@ const ServiceAlert = () => (
           .then((res) => res?.files(), console.error)
           .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
           .catch(console.error);
-    }, [userData?.me.service?.logoCID]);
+    }, [userData?.me?.service?.logoCID]);
 
     if (userData) {
       const {
@@ -248,7 +245,9 @@ const ServiceAlert = () => (
 
                     const newProduct = {
                       ...Object.fromEntries(formData.entries()),
-                      videoCID: video?.name ? await web3storage.put([video]) : undefined,
+                      videoCID: video?.name
+                        ? await web3storage.put([video])
+                        : undefined,
                       imagesCID: await web3storage.put(images),
                       price: +formData.get("price")!,
                       tags: formData
@@ -827,9 +826,6 @@ const ServiceAlert = () => (
                             logo = formData.get("logo")! as unknown as File,
                             serviceUpdate = {
                               ...Object.fromEntries(formData.entries()),
-                              logoCID: logo.name
-                                ? await web3storage.put([logo])
-                                : undefined,
                             } as Pick<
                               ServiceType,
                               "title" | "description" | "logoCID" | "state"
@@ -841,7 +837,15 @@ const ServiceAlert = () => (
                           fileSize < 1e6 && e.currentTarget.checkValidity()
                             ? (setValidated(true),
                               updateService({
-                                variables: { serviceUpdate },
+                                variables: {
+                                  serviceUpdate: {
+                                    ...serviceUpdate,
+                                    // @ts-ignore
+                                    logoCID: logo.name
+                                      ? await web3storage.put([logo])
+                                      : undefined,
+                                  },
+                                },
                               }),
                               e.currentTarget.reset())
                             : (e.preventDefault(),
@@ -961,15 +965,17 @@ const ServiceAlert = () => (
     }
     return (
       <Layout>
-          <Head>
-            <title>{abbr} &trade; | {dashboardPage?.pageTitle}</title>
-          </Head>
-          <AjaxFeedback loading={userLoading} error={userError} />
-        </Layout>
+        <Head>
+          <title>
+            {abbr} &trade; | {dashboardPage?.pageTitle}
+          </title>
+        </Head>
+        <AjaxFeedback loading={userLoading} error={userError} />
+      </Layout>
     );
   };
 
-  DashboardPage.audiences = ["user", "admin"]
-  DashboardPage.displayName = "DashboardPage"
-  
+DashboardPage.audiences = ["user", "admin"];
+DashboardPage.displayName = "DashboardPage";
+
 export default DashboardPage;
