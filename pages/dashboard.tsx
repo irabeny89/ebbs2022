@@ -16,7 +16,6 @@ import {
   NewProductFormDataType,
   NewProductVariableType,
   PagingInputType,
-  ProductType,
   ServiceUpdateFormDataType,
   ServiceUpdateVariableType,
   UserVertexType,
@@ -762,7 +761,7 @@ const ServiceAlert = () => (
                         <Col xs="10">
                           <Image
                             alt="logo"
-                            src={logoCID ? getIpfsGateWay(logoCID) : ""}
+                            src={getIpfsGateWay(logoCID ?? "")}
                             width="120"
                             height="120"
                             className="rounded-circle"
