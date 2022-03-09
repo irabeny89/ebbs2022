@@ -748,13 +748,15 @@ const ServiceAlert = () => (
                     <Col sm="5" className="mb-4">
                       <Row className="justify-content-center mb-5">
                         <Col xs="10">
-                          <Image
-                            alt="logo"
-                            src={getIpfsGateWay(logoCID ?? "")}
-                            width="120"
-                            height="120"
-                            className="rounded-circle"
-                          />
+                          {logoCID && (
+                            <Image
+                              alt="logo"
+                              src={getIpfsGateWay(logoCID)}
+                              width="120"
+                              height="120"
+                              className="rounded-circle"
+                            />
+                          )}
                         </Col>
                       </Row>
                       <Row>
