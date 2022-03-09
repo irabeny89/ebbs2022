@@ -38,18 +38,18 @@ import {
 import AjaxFeedback from "@/components/AjaxFeedback";
 import SortedListWithTabs from "@/components/SortedListWithTabs";
 import OrdersOrRequests from "@/components/OrdersOrRequests";
-import { useEffect, useState } from "react";
-import config from "../config";
 import ProductList from "@/components/ProductList";
-import { useRouter } from "next/router";
 import FeedbackToast from "@/components/FeedbackToast";
 import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";
 import Layout from "@/components/Layout";
-import Head from "next/head";
-import Image from "next/image";
 import getCidMod from "@/utils/getCidMod";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import Head from "next/head";
+import Image from "next/image";
+import config from "../config";
 
 const {
     abbr,
@@ -82,8 +82,6 @@ const ServiceAlert = () => (
     const accessToken = useReactiveVar(accessTokenVar);
     // state variable for form
     const [validated, setValidated] = useState(false),
-      // logo source state
-      [logoSrc, setLogoSrc] = useState(""),
       // file size state
       [fileSize, setFileSize] = useState(0),
       // image file size state
@@ -181,15 +179,6 @@ const ServiceAlert = () => (
         setValidated(false);
       };
     }, [show, newProductData, logoutData, client, router]);
-    // set image source states on mount
-    useEffect(() => {
-      userData?.me.service?.logoCID &&
-        web3storage
-          .get(userData?.me.service?.logoCID!)
-          .then((res) => res?.files(), console.error)
-          .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
-          .catch(console.error);
-    }, [userData?.me?.service?.logoCID]);
 
     if (userData) {
       const {
