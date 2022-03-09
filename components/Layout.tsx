@@ -1,6 +1,12 @@
 import { CSSProperties, useEffect } from "react";
 import config from "../config";
-import { FaShoppingCart, FaTrash, FaFirstOrder } from "react-icons/fa";
+import {
+  FaShoppingCart,
+  FaTrash,
+  FaFirstOrder,
+  FaTelegramPlane,
+} from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
 import Link from "next/link";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
@@ -47,7 +53,8 @@ const getCartItemsTotalCount = (cartItems: OrderItemType[]) =>
   {
     title,
     author,
-    constants: { CART_ITEMS_KEY, AUTH_PAYLOAD },
+    socialMedia,
+    constants: { CART_ITEMS_KEY },
     webPages,
   } = config.appData;
 // layout style
@@ -391,8 +398,8 @@ const Layout = ({ children }: LayoutPropsType) => {
       </Modal>
       {/* search result modal */}
       <Modal show={showSearch} onHide={() => setShowSearch(false)} fullscreen>
-        <Modal.Header closeButton className="bg-warning">
-          <Modal.Title>Search results</Modal.Title>
+        <Modal.Header closeButton>
+          <Modal.Title>Search result ...</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Modal.Title>
@@ -540,7 +547,25 @@ const Layout = ({ children }: LayoutPropsType) => {
         as="footer"
         className="bg-secondary text-white py-2 justify-content-center"
       >
-        {author} | {title}&trade; | &copy;2021
+        {author} | {title}&trade; | &copy;2021{" "}
+      </Row>
+      <Row>
+        <Col className="p-2 bg-secondary text-white">
+          Social:
+          {socialMedia.map(({ name, link }) =>
+            name.toLowerCase() === "telegram" ? (
+              <a href={link} className="p-2 text-white" key={name}>
+                <FaTelegramPlane /> {name}
+              </a>
+            ) : name.toLowerCase() === "email" ? (
+              <a href={`mailto:${link}`} className="p-2 text-white" key={name}>
+                <MdEmail /> {name}
+              </a>
+            ) : (
+              <a href={link} key={name}>{name}</a>
+            )
+          )}
+        </Col>
       </Row>
     </Container>
   );

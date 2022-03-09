@@ -13,9 +13,11 @@ import Spinner from "react-bootstrap/Spinner";
 import { MdDashboardCustomize, MdAdd, MdSend } from "react-icons/md";
 import {
   AuthComponentType,
+  NewProductFormDataType,
   NewProductVariableType,
   PagingInputType,
   ProductType,
+  ServiceUpdateFormDataType,
   ServiceUpdateVariableType,
   UserVertexType,
 } from "types";
@@ -53,6 +55,8 @@ import getIpfsGateWay from "@/utils/getIpfsGateWay";
 const {
     abbr,
     webPages,
+    mediaMaxSize,
+    maxImageFiles,
     productCategories,
     constants: { AUTH_PAYLOAD },
   } = config.appData,
@@ -241,46 +245,73 @@ const ServiceAlert = () => (
                   onSubmit={async (e) => {
                     try {
                       e.preventDefault();
-                      const formData = new FormData(e.currentTarget),
-                        video = formData.get("video") as unknown as
-                          | File
-                          | undefined,
-                        images = formData.get("images") as unknown as FileList;
-
-                      const newProduct = {
-                        ...Object.fromEntries(formData.entries()),
-                        videoCID: video?.name
-                          ? await web3storage.put([video])
-                          : undefined,
-                        imagesCID: await web3storage.put(images),
-                        price: +formData.get("price")!,
-                        tags: formData
-                          .get("tags")!
-                          .toString()
-                          .trim()
-                          .split(" ") as string[],
-                      } as unknown as Omit<ProductType, "provider">;
-                      // @ts-ignore
-                      delete newProduct.images;
-                      // @ts-ignore
-                      delete newProduct.video;
-
-                      e.currentTarget.checkValidity() &&
-                      fileSizes.length < 4 &&
-                      fileSizes.find((fileSize) => fileSize < 5e6) &&
-                      videoFileSize < 1e7
-                        ? (e.currentTarget.reset(),
+                      const formData = Object.fromEntries(
+                          new FormData(e.currentTarget)
+                        ) as unknown as NewProductFormDataType,
+                        // formData does not contain FileList but File
+                        // so, using DOM directly
+                        // @ts-ignore
+                        imageFileList = e.currentTarget.querySelector(
+                          "input[name='images']"
+                          // @ts-ignore
+                        ).files as FileList;
+                      // validate form & maximum file sizes
+                      if (
+                        e.currentTarget.checkValidity() &&
+                        fileSizes.length <= maxImageFiles &&
+                        fileSizes.find(
+                          (fileSize) => fileSize < mediaMaxSize.image
+                        ) &&
+                        videoFileSize < mediaMaxSize.video
+                      ) {
+                        // store file remotely or return undefined if video is not selected
+                        // alert while uploading
+                        const videoCID =
+                          formData?.video?.name &&
+                          (setUploading(true),
+                          await getCidMod(web3storage, formData.video));
+                        setUploading(false);
+                        // if uploaded log to console the cid
+                        videoCID &&
+                          console.log("video file uploaded => CID:", videoCID);
+                        // remove video field; it's not part of gql schema
+                        delete formData.video;
+                        // store images remotely & attach file names separated by comma & alert while uploading
+                        setUploading(true);
+                        // @ts-ignore
+                        const imagesCID = Array.from(imageFileList)
+                          .map(({ name }: File) => encodeURIComponent(name))
+                          .concat(await web3storage.put(imageFileList))
+                          .join() as string;
+                        // alert & log if images uploaded
+                        setUploading(false),
+                          console.log("images uploaded =>", imagesCID);
+                        // remove video field; it's not part of gql schema
+                        // @ts-ignore
+                        delete formData.images;
+                        // call the mutate function
+                        addProduct({
+                          variables: {
+                            newProduct: {
+                              ...formData,
+                              imagesCID,
+                              videoCID,
+                              tags: formData?.tags
+                                ?.trim()
+                                .split(" ")
+                                .filter((text) => text !== ""),
+                              price: +formData.price,
+                            },
+                          },
+                        }),
                           setValidated(false),
                           setFileSizes([]),
                           setVideoFileSize(0),
-                          addProduct({
-                            variables: {
-                              newProduct,
-                            },
-                          }))
-                        : (e.preventDefault(),
+                          e.currentTarget.reset();
+                      } else
+                        e.preventDefault(),
                           e.stopPropagation(),
-                          setValidated(true));
+                          setValidated(true);
                     } catch (error) {
                       console.error(error), setUploading(false);
                     }
@@ -444,7 +475,7 @@ const ServiceAlert = () => (
                     </Form.Control.Feedback>
                   </Form.FloatingLabel>
                   <Button className="w-100 my-4" type="submit" size="lg">
-                    {newProductLoading && (
+                    {(newProductLoading || uploading) && (
                       <Spinner animation="grow" size="sm" />
                     )}{" "}
                     <MdSend /> Submit
@@ -832,15 +863,10 @@ const ServiceAlert = () => (
                             e.preventDefault();
                             const formData = Object.fromEntries(
                               new FormData(e.currentTarget)
-                            ) as Partial<{
-                              title: string;
-                              description: string;
-                              state: string;
-                              logo: File;
-                            }>;
+                            ) as ServiceUpdateFormDataType;
                             // check validity & file size of media file
                             if (
-                              fileSize < 1e6 &&
+                              fileSize < mediaMaxSize.logo &&
                               e.currentTarget.checkValidity()
                             ) {
                               setValidated(true);
@@ -852,7 +878,10 @@ const ServiceAlert = () => (
                               setUploading(false);
                               // alert & log if logo uploaded
                               logoCID &&
-                                console.log("file uploaded => CID:", logoCID);
+                                console.log(
+                                  "logo file uploaded => CID:",
+                                  logoCID
+                                );
                               // remove logo field; it's not part of gql schema
                               delete formData.logo;
                               updateService({
@@ -875,14 +904,20 @@ const ServiceAlert = () => (
                       >
                         <Form.Group>
                           <Form.Label
-                            className={`${fileSize > 1e6 && "text-danger"}`}
+                            className={`${
+                              fileSize > mediaMaxSize.logo && "text-danger"
+                            }`}
                           >
                             Logo(.jpg, .png & .jpeg - 1MB max){" "}
                             {!!fileSize &&
                               `| ${getCompactNumberFormat(fileSize).replace(
                                 "B",
                                 "G"
-                              )} ${fileSize > 1e6 ? "\u2717" : "\u2713"}`}
+                              )} ${
+                                fileSize > mediaMaxSize.logo
+                                  ? "\u2717"
+                                  : "\u2713"
+                              }`}
                           </Form.Label>
                           <Form.Control
                             type="file"

@@ -218,10 +218,22 @@ type ServiceUpdateVariableType = Record<
   Partial<Pick<ServiceType, "title" | "description" | "logoCID" | "state">>
 >;
 
+type ServiceUpdateFormDataType = Partial<{
+  title: string;
+  description: string;
+  state: string;
+  logo: File;
+}>;
+
 type NewProductVariableType = Record<
   "newProduct",
-  Omit<ProductType, "provider">
+  Omit<ProductType, "provider" | "createdAt" | "updatedAt" | "_id">
 >;
+
+type NewProductFormDataType = Pick<
+  ProductType,
+  "name" | "category" | "description" | "price"
+> & { images: File[]; video?: File, tags?: string };
 
 type GraphContextType = {
   UserModel: Model<UserType>;

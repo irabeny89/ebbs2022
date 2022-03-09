@@ -10,7 +10,7 @@ import Container from "react-bootstrap/Container";
 import Carousel from "react-bootstrap/Carousel";
 import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
-import Image from "react-bootstrap/Image";
+import Image from "next/image";
 import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
@@ -23,6 +23,7 @@ import {
   MY_PROFILE,
 } from "@/graphql/documentNodes";
 import web3storage from "../web3storage";
+import getIpfsGateWay from "@/utils/getIpfsGateWay";
 
 const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
   // custom style
@@ -54,9 +55,6 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
     const accessToken = useReactiveVar(accessTokenVar);
     // product info modal state
     const [show, setShow] = useState(false),
-      // media file state
-      [imageSrcList, setImageSrcList] = useState<string[]>([]),
-      [videoSrc, setVideoSrc] = useState(""),
       // auth payload state
       [authPayload, setAuthPayload] = useState<UserPayloadType>(),
       // product delete modal dialog state
@@ -80,26 +78,26 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
     useEffect(() => {
       setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
     }, []);
-    // manage side effect when media state changes
-    useEffect(() => {
-      videoCID &&
-        web3storage
-          .get(videoCID)
-          .then((res) => res?.files())
-          .then((files) => files && setVideoSrc(URL.createObjectURL(files[0])))
-          .catch(console.error);
-    }, [videoCID]),
-      useEffect(() => {
-        web3storage
-          .get(imagesCID)
-          .then((res) => res?.files(), console.error)
-          .then(
-            (files) =>
-              files &&
-              setImageSrcList(files.map((file) => URL.createObjectURL(file)))
-          )
-          .catch(console.error);
-      }, [imagesCID]);
+    // // manage side effect when media state changes
+    // useEffect(() => {
+    //   videoCID &&
+    //     web3storage
+    //       .get(videoCID)
+    //       .then((res) => res?.files())
+    //       .then((files) => files && setVideoSrc(URL.createObjectURL(files[0])))
+    //       .catch(console.error);
+    // }, [videoCID]),
+    // useEffect(() => {
+    //   web3storage
+    //     .get(imagesCID)
+    //     .then((res) => res?.files(), console.error)
+    //     .then(
+    //       (files) =>
+    //         files &&
+    //         setImageSrcList(files.map((file) => URL.createObjectURL(file)))
+    //     )
+    //     .catch(console.error);
+    // }, [imagesCID]);
 
     return (
       <Container fluid {...{ className, style }}>
@@ -187,21 +185,30 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
           </Card.Header>
           <Card.Body>
             <Carousel controls={false} interval={6e4}>
-              {imageSrcList.map((src) => (
-                <Carousel.Item
-                  key={src}
-                  style={{ width: cardStyling.mediaStyle.width }}
-                >
-                  <Image
-                    src={src}
-                    {...cardStyling.mediaStyle}
-                    alt="product picture"
-                  />
-                </Carousel.Item>
-              ))}
+              {imagesCID
+                .split(",")
+                .slice(0, -1)
+                .map((fileName) => (
+                  <Carousel.Item
+                    key={fileName}
+                    style={{ width: cardStyling.mediaStyle.width }}
+                  >
+                    <Image
+                      src={`https://ipfs.io/ipfs/${
+                        imagesCID.split(",").slice(-1)[0]
+                      }/${fileName}`}
+                      {...cardStyling.mediaStyle}
+                      alt="product picture"
+                    />
+                  </Carousel.Item>
+                ))}
               {!!videoCID && (
                 <Carousel.Item style={{ width: cardStyling.mediaStyle.width }}>
-                  <video src={videoSrc} controls {...cardStyling.mediaStyle} />
+                  <video
+                    src={getIpfsGateWay(videoCID)}
+                    controls
+                    {...cardStyling.mediaStyle}
+                  />
                 </Carousel.Item>
               )}
             </Carousel>

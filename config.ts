@@ -7,7 +7,7 @@ const config = {
     author: "Ernest Irabor",
     title: "EBBS - EveryBodyBuySell",
     abbr: "EBBS",
-    socialMedia: [{ name: "telegram", link: "https://t.me/ebbs2022" }],
+    socialMedia: [{ name: "Telegram", link: "https://t.me/ebbs2022" }, { name: "Email", link: "Everybodybuysell@gmail.com" }],
     description:
       "EBBS - EveryBodyBuySell is a platform for everybody to create and manage their online businesses.",
     features: [
@@ -42,6 +42,13 @@ const config = {
         costPerDay: 500,
       },
     ],
+    maxImageFiles: 3,
+    // size in bytes
+    mediaMaxSize: {
+      image: 5e6,
+      video: 1e7,
+      logo: 1e6,
+    },
     // time in minutes
     passCodeDuration: 15,
     maxProductAllowed: 12,
