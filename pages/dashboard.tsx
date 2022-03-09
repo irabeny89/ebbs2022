@@ -107,7 +107,7 @@ const ServiceAlert = () => (
         >
       >(MY_PROFILE, {
         variables: {
-          commentArgs: { last: 20 },
+          commentArgs: { last: 50 },
           orderArgs: { last: 20 },
           productArgs: { last: 20 },
           requestArgs: { last: 20 },
