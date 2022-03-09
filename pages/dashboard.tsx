@@ -456,7 +456,7 @@ const ServiceAlert = () => (
                       required
                       aria-label="product description"
                       as="textarea"
-                      style={{ height: "6rem" }}
+                      style={{ height: "8rem" }}
                     />
                     <Form.Control.Feedback type="invalid">
                       This field is required!
@@ -989,7 +989,7 @@ const ServiceAlert = () => (
                             aria-label="service Description"
                             name="description"
                             as="textarea"
-                            style={{ height: "6rem" }}
+                            style={{ height: "8rem" }}
                           />
                         </Form.FloatingLabel>
                         <Button size="lg" className="my-5 w-100" type="submit">
