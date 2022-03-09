@@ -69,9 +69,9 @@ const {
 const ServiceAlert = () => (
     <Container>
       <Alert variant="info" className="text-center h3">
-        Setup a service from the{" "}
+        Update/setup a service from the{" "}
         <Badge className="bg-light text-primary">Profile</Badge> tab above
-        before using this feature.
+        before using this tab.
       </Alert>
     </Container>
   ),
