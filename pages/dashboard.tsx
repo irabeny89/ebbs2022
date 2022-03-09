@@ -1,4 +1,3 @@
-import Image from "react-bootstrap/Image";
 import Card from "react-bootstrap/Card";
 import Alert from "react-bootstrap/Alert";
 import Modal from "react-bootstrap/Modal";
@@ -17,7 +16,6 @@ import {
   NewProductVariableType,
   PagingInputType,
   ProductType,
-  ServiceType,
   ServiceUpdateVariableType,
   UserVertexType,
 } from "types";
@@ -48,6 +46,9 @@ import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";
 import Layout from "@/components/Layout";
 import Head from "next/head";
+import Image from "next/image";
+import getCidMod from "@/utils/getCidMod";
+import getIpfsGateWay from "@/utils/getIpfsGateWay";
 
 const {
     abbr,
@@ -204,6 +205,7 @@ const ServiceAlert = () => (
           title,
           description,
           likeCount,
+          logoCID,
         },
         requests,
         requestCount,
@@ -237,47 +239,51 @@ const ServiceAlert = () => (
                   validated={validated}
                   noValidate
                   onSubmit={async (e) => {
-                    e.preventDefault();
-                    const formData = new FormData(e.currentTarget),
-                      video = formData.get("video") as unknown as
-                        | File
-                        | undefined,
-                      images = formData.get("images") as unknown as FileList;
+                    try {
+                      e.preventDefault();
+                      const formData = new FormData(e.currentTarget),
+                        video = formData.get("video") as unknown as
+                          | File
+                          | undefined,
+                        images = formData.get("images") as unknown as FileList;
 
-                    const newProduct = {
-                      ...Object.fromEntries(formData.entries()),
-                      videoCID: video?.name
-                        ? await web3storage.put([video])
-                        : undefined,
-                      imagesCID: await web3storage.put(images),
-                      price: +formData.get("price")!,
-                      tags: formData
-                        .get("tags")!
-                        .toString()
-                        .trim()
-                        .split(" ") as string[],
-                    } as unknown as Omit<ProductType, "provider">;
-                    // @ts-ignore
-                    delete newProduct.images;
-                    // @ts-ignore
-                    delete newProduct.video;
+                      const newProduct = {
+                        ...Object.fromEntries(formData.entries()),
+                        videoCID: video?.name
+                          ? await web3storage.put([video])
+                          : undefined,
+                        imagesCID: await web3storage.put(images),
+                        price: +formData.get("price")!,
+                        tags: formData
+                          .get("tags")!
+                          .toString()
+                          .trim()
+                          .split(" ") as string[],
+                      } as unknown as Omit<ProductType, "provider">;
+                      // @ts-ignore
+                      delete newProduct.images;
+                      // @ts-ignore
+                      delete newProduct.video;
 
-                    e.currentTarget.checkValidity() &&
-                    fileSizes.length < 4 &&
-                    fileSizes.find((fileSize) => fileSize < 5e6) &&
-                    videoFileSize < 1e7
-                      ? (e.currentTarget.reset(),
-                        setValidated(false),
-                        setFileSizes([]),
-                        setVideoFileSize(0),
-                        addProduct({
-                          variables: {
-                            newProduct,
-                          },
-                        }))
-                      : (e.preventDefault(),
-                        e.stopPropagation(),
-                        setValidated(true));
+                      e.currentTarget.checkValidity() &&
+                      fileSizes.length < 4 &&
+                      fileSizes.find((fileSize) => fileSize < 5e6) &&
+                      videoFileSize < 1e7
+                        ? (e.currentTarget.reset(),
+                          setValidated(false),
+                          setFileSizes([]),
+                          setVideoFileSize(0),
+                          addProduct({
+                            variables: {
+                              newProduct,
+                            },
+                          }))
+                        : (e.preventDefault(),
+                          e.stopPropagation(),
+                          setValidated(true));
+                    } catch (error) {
+                      console.error(error), setUploading(false);
+                    }
                   }}
                 >
                   <Form.FloatingLabel label="Product Name">
@@ -725,7 +731,7 @@ const ServiceAlert = () => (
                         <Col xs="10">
                           <Image
                             alt="logo"
-                            src={logoSrc}
+                            src={logoCID ? getIpfsGateWay(logoCID) : ""}
                             width="120"
                             height="120"
                             className="rounded-circle"
@@ -842,7 +848,7 @@ const ServiceAlert = () => (
                               const logoCID =
                                 formData?.logo?.name &&
                                 (setUploading(true),
-                                await web3storage.put([formData.logo]));
+                                await getCidMod(web3storage, formData.logo));
                               setUploading(false);
                               // alert & log if logo uploaded
                               logoCID &&
