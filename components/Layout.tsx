@@ -20,7 +20,6 @@ import {
   accessTokenVar,
   authPayloadVar,
   cartItemsVar,
-  // hasAuthPayloadVar,
 } from "@/graphql/reactiveVariables";
 import Modal from "react-bootstrap/Modal";
 import { useState } from "react";
@@ -562,7 +561,9 @@ const Layout = ({ children }: LayoutPropsType) => {
                 <MdEmail /> {name}
               </a>
             ) : (
-              <a href={link} key={name}>{name}</a>
+              <a href={link} key={name}>
+                {name}
+              </a>
             )
           )}
         </Col>
