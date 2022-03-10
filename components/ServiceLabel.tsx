@@ -1,7 +1,7 @@
 import FormControl from "react-bootstrap/FormControl";
 import FloatingLabel from "react-bootstrap/FloatingLabel";
 import Card from "react-bootstrap/Card";
-import Image from "react-bootstrap/Image";
+import Image from "next/image";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
@@ -28,7 +28,6 @@ import {
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import { JwtPayload } from "jsonwebtoken";
-import web3storage from "web3storage";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
 
 const styling: { [key: string]: CSSProperties } = {

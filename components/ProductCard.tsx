@@ -22,7 +22,6 @@ import {
   FEW_PRODUCTS_AND_SERVICES,
   MY_PROFILE,
 } from "@/graphql/documentNodes";
-import web3storage from "../web3storage";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
 
 const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
@@ -78,26 +77,6 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
     useEffect(() => {
       setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
     }, []);
-    // // manage side effect when media state changes
-    // useEffect(() => {
-    //   videoCID &&
-    //     web3storage
-    //       .get(videoCID)
-    //       .then((res) => res?.files())
-    //       .then((files) => files && setVideoSrc(URL.createObjectURL(files[0])))
-    //       .catch(console.error);
-    // }, [videoCID]),
-    // useEffect(() => {
-    //   web3storage
-    //     .get(imagesCID)
-    //     .then((res) => res?.files(), console.error)
-    //     .then(
-    //       (files) =>
-    //         files &&
-    //         setImageSrcList(files.map((file) => URL.createObjectURL(file)))
-    //     )
-    //     .catch(console.error);
-    // }, [imagesCID]);
 
     return (
       <Container fluid {...{ className, style }}>
