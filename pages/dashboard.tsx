@@ -881,8 +881,9 @@ const ServiceAlert = () => (
                                     logoCID,
                                   },
                                 },
-                              }),
-                                e.currentTarget.reset();
+                              });
+                              // @ts-ignore
+                              e.target.reset();
                             } else
                               e.preventDefault(),
                                 e.stopPropagation(),
@@ -917,7 +918,7 @@ const ServiceAlert = () => (
                             name="logo"
                             accept=".jpeg,.jpg,.png"
                             onChange={(e: any) => {
-                              setFileSize(e.target.files[0].size);
+                              setFileSize(e.target?.files[0]?.size ?? 0);
                             }}
                           />
                         </Form.Group>
