@@ -29,6 +29,7 @@ import { accessTokenVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import { JwtPayload } from "jsonwebtoken";
 import web3storage from "web3storage";
+import getIpfsGateWay from "@/utils/getIpfsGateWay";
 
 const styling: { [key: string]: CSSProperties } = {
     smallTextStyle: {
@@ -48,8 +49,6 @@ const styling: { [key: string]: CSSProperties } = {
     // info modal state
     const [show, setShow] = useState(false),
       [authPayload, setAuthPayload] = useState<UserPayloadType & JwtPayload>(),
-      // logo state
-      [logoSrc, setLogoSrc] = useState(""),
       // comment post text state
       [post, setPost] = useState(""),
       // comment modal state
@@ -116,14 +115,6 @@ const styling: { [key: string]: CSSProperties } = {
         JSON.parse(localStorage.getItem(config.appData.constants.AUTH_PAYLOAD)!)
       );
     }, []);
-    // set image source states on mount
-    useEffect(() => {
-      web3storage
-        .get(logoCID!)
-        .then((res) => res?.files(), console.error)
-        .then((files) => files && setLogoSrc(URL.createObjectURL(files[0])))
-        .catch(console.error);
-    }, [logoCID]);
 
     return _id ? (
       <Container {...{ style, className }}>
@@ -203,13 +194,15 @@ const styling: { [key: string]: CSSProperties } = {
         </Row>
         <Row className="align-items-center">
           <Col xs="auto" className="pt-2">
-            <Image
-              alt="logo"
-              src={logoSrc}
-              width="50"
-              height="50"
-              className="rounded-circle"
-            />
+            {logoCID && (
+              <Image
+                alt="logo"
+                src={getIpfsGateWay(logoCID)}
+                width="50"
+                height="50"
+                className="rounded-circle"
+              />
+            )}
           </Col>
           <Link passHref href={`/services/${_id}`}>
             <Col className="text-capitalize" style={{ cursor: "pointer" }}>
