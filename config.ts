@@ -30,6 +30,9 @@ const config = {
       "VEHICLES",
       "ELECTRONICS",
       "FOOD_DRUGS",
+      "SOFTWARES",
+      "PETS",
+      "ARTS"
     ],
     orderStatuses: ["PENDING", "SHIPPED", "DELIVERED", "CANCELED"],
     subscriptionInfos: [
