@@ -222,7 +222,7 @@ const ServiceAlert = () => (
                 <FeedbackToast
                   {...{
                     error: newProductError,
-                    successText: newProductData?.newProduct,
+                    successText: newProductData ? "Product added!" : undefined,
                     setShowToast,
                     showToast,
                   }}

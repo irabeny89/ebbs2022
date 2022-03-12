@@ -1,4 +1,4 @@
-import type { ProductCardPropType, UserPayloadType } from "types";
+import type { ProductCardPropType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -11,20 +11,21 @@ import Carousel from "react-bootstrap/Carousel";
 import { MdShoppingCart, MdDeleteForever } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
-import { accessTokenVar, cartItemsVar } from "@/graphql/reactiveVariables";
+import {
+  accessTokenVar,
+  authPayloadVar,
+  cartItemsVar,
+} from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
 import { useEffect, useState } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";
-import {
-  DELETE_MY_PRODUCT,
-  FEW_PRODUCTS_AND_SERVICES,
-  MY_PROFILE,
-} from "@/graphql/documentNodes";
+import { DELETE_MY_PRODUCT, MY_PROFILE } from "@/graphql/documentNodes";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
+import FeedbackToast from "./FeedbackToast";
 
-const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
+const { CART_ITEMS_KEY } = config.appData.constants,
   // custom style
   cardStyling = {
     cardStyle: {
@@ -54,16 +55,21 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
     const accessToken = useReactiveVar(accessTokenVar);
     // product info modal state
     const [show, setShow] = useState(false),
+      // feedback toast state
+      [showToast, setShowToast] = useState(false),
       // auth payload state
-      [authPayload, setAuthPayload] = useState<UserPayloadType>(),
+      authPayload = useReactiveVar(authPayloadVar),
       // product delete modal dialog state
       [showDialog, setShowDialog] = useState(false);
     // deletion mutation
-    const [deleteProduct, { loading }] = useMutation<
+    const [
+      deleteProduct,
+      { loading: deleteLoading, data: deleteData, error: deleteError },
+    ] = useMutation<
       Record<"deleteMyProduct", string>,
       Record<"productId", string>
     >(DELETE_MY_PRODUCT, {
-      refetchQueries: [FEW_PRODUCTS_AND_SERVICES, MY_PROFILE],
+      refetchQueries: [MY_PROFILE],
       context: {
         headers: {
           authorization: `Bearer ${accessToken}`,
@@ -75,8 +81,8 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
     });
 
     useEffect(() => {
-      setAuthPayload(JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!));
-    }, []);
+      deleteData && fetch("/api/revalidateHome");
+    }, [deleteData]);
 
     return (
       <Container fluid {...{ className, style }}>
@@ -102,10 +108,19 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
               </Badge>
               ?
             </Modal.Header>
-            <Modal.Body>Are you sure? This cannot be undone.</Modal.Body>
+            <Modal.Body>
+              <FeedbackToast
+                {...{
+                  error: deleteError,
+                  successText: deleteData?.deleteMyProduct,
+                  setShowToast,
+                  showToast,
+                }}
+              />
+            </Modal.Body>
             <Modal.Footer>
               <Button variant="danger" onClick={() => deleteProduct()}>
-                {loading && <Spinner animation="grow" size="sm" />}Delete
+                {deleteLoading && <Spinner animation="grow" size="sm" />}Delete
               </Button>
               <Button variant="secondary" onClick={() => setShowDialog(false)}>
                 Cancel
@@ -178,6 +193,8 @@ const { CART_ITEMS_KEY, AUTH_PAYLOAD } = config.appData.constants,
                       }/${fileName}`}
                       {...cardStyling.mediaStyle}
                       alt="product picture"
+                      width={cardStyling.mediaStyle.width}
+                      height={cardStyling.mediaStyle.height}
                     />
                   </Carousel.Item>
                 ))}

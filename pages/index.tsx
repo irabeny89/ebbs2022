@@ -79,7 +79,7 @@ export const getStaticProps: GetStaticProps = async () => {
               // filter out services without a single product
               .filter((item) => item.products?.edges.length! > 0),
           },
-          revalidate: 30,
+          revalidate: 20,
         };
   },
   // home page component
@@ -123,7 +123,10 @@ export const getStaticProps: GetStaticProps = async () => {
           <Row className="mb-5 h1">
             <Col>
               <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
-              <Button onClick={() => setShow(true)} variant="outline-dark border-2">
+              <Button
+                onClick={() => setShow(true)}
+                variant="outline-dark border-2"
+              >
                 Features
               </Button>
             </Col>
