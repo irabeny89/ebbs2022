@@ -37,14 +37,14 @@ const About = () => (
       {aboutPage?.parargraphs.map((paragraph, i) => (
         <Row
           as="p"
-          className="my-4 text-center justify-content-center display-5"
+          className="my-4 p-4 justify-content-center display-5"
           key={i}
         >
           {paragraph}
         </Row>
       ))}
       <Row className="justify-content-center">
-        <Col xs="auto">
+        <Col xs="auto" className="mt-5">
           <Button as="a" variant="outline-primary" href={link}>
             Join Telegram group <FaTelegram size={30} color="#197acf" />
           </Button>
