@@ -10,7 +10,7 @@ import Head from "next/head";
 import config from "config";
 import Link from "next/link";
 import { FaHome, FaTelegram } from "react-icons/fa";
-import { MdBusinessCenter } from "react-icons/md";
+import { MdBusinessCenter, MdHowToReg } from "react-icons/md";
 import { CSSProperties, useState } from "react";
 import { GetStaticProps } from "next";
 import client from "@/graphql/apollo-client";
@@ -100,9 +100,10 @@ export const getStaticProps: GetStaticProps = async () => {
           {/* site features modal */}
           <Modal show={show} onHide={() => setShow(false)}>
             <Modal.Header closeButton>
-              <Modal.Title>Features</Modal.Title>
+              <Modal.Title>Quick Start</Modal.Title>
             </Modal.Header>
             <Modal.Body>
+              <h3>Features:</h3>
               <ul>
                 {features.map((feature) => (
                   <li key={feature}>{feature}</li>
@@ -112,34 +113,43 @@ export const getStaticProps: GetStaticProps = async () => {
             <Modal.Footer>
               <Row>
                 <Col>
+                  <Button as="a" variant="outline-secondary" href="/about#new">
+                    How to get started <MdHowToReg size={30} />
+                  </Button>
+                </Col>
+                <Col>
                   <Button as="a" variant="outline-primary" href={link}>
-                    Join Telegram group <FaTelegram size={30} color="#197acf" />
+                    Telegram group <FaTelegram size={30} color="#197acf" />
                   </Button>
                 </Col>
               </Row>
             </Modal.Footer>
           </Modal>
           {/* page title */}
-          <Row className="mb-5 h1">
+          <Row className="mb-4 h1">
             <Col>
               <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
               <Button
                 onClick={() => setShow(true)}
                 variant="outline-dark border-2"
               >
-                Features
+                Quick Start
               </Button>
             </Col>
           </Row>
+          <hr />
           {/* first paragraph */}
-          <Row
-            as="p"
-            className="my-4 text-center justify-content-center display-5"
-          >
-            {homePage?.parargraphs[0]}
+          <Row className="my-4 text-center">
+            <Col>{homePage?.parargraphs[0]}</Col>
           </Row>
           <Row className="text-center">
-            <Link href="/member">Be a member</Link>
+            <Col>
+              <Link href="/member" passHref>
+                <Button as="a" variant="outline-primary" href={link}>
+                  Be a member <MdHowToReg size={30} color="#197acf" />
+                </Button>
+              </Link>
+            </Col>
           </Row>
           {/* Products Section */}
           <Row className="mt-5 rounded" style={highlightStyle}>
@@ -155,7 +165,13 @@ export const getStaticProps: GetStaticProps = async () => {
           </Row>
           {/* link to products page */}
           <Row className="text-center mt-4 mb-5">
-            <Link href="/products">Go see all products</Link>
+            <Col>
+              <Link href="/products" passHref>
+                <Button as="a" variant="outline-primary" href={link}>
+                  All Products <FaBoxes size={30} color="#197acf" />
+                </Button>
+              </Link>
+            </Col>
           </Row>
           {/* Services Section */}
           <Row className="mt-5 rounded" style={highlightStyle}>
@@ -171,7 +187,13 @@ export const getStaticProps: GetStaticProps = async () => {
           </Row>
           {/* link to services page */}
           <Row className="text-center mt-4 mb-5">
-            <Link href="/services">Go see all services</Link>
+            <Col>
+              <Link href="/services" passHref>
+                <Button as="a" variant="outline-primary" href={link}>
+                  All Services <MdBusinessCenter size={30} color="#197acf" />
+                </Button>
+              </Link>
+            </Col>
           </Row>
         </Container>
       </Layout>

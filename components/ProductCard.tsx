@@ -172,7 +172,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
               ))}
             </Card.Subtitle>
             <Card.Subtitle className="mt-2">
-              <Row className="h1">
+              <Row className="h2">
                 <Badge className="bg-dark">{getLocalePrice(price!)}</Badge>
               </Row>
             </Card.Subtitle>

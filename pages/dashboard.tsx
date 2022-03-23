@@ -473,9 +473,8 @@ const ServiceAlert = () => (
             </Modal>
             {/* title */}
             <Row className="justify-content-between align-items-center">
-              <Col className="h1 my-5" as="h2" xs="8">
-                <MdDashboardCustomize size={40} /> Dashboard | &lt;{username}
-                &gt;
+              <Col className="h1 my-4" as="h2" xs="8">
+                <MdDashboardCustomize size={40} /> Dashboard | {username}
               </Col>
               <Col xs="auto">
                 <Button
@@ -487,9 +486,10 @@ const ServiceAlert = () => (
                 </Button>
               </Col>
             </Row>
+            <hr />
             {/* first paragraph */}
             <Row>
-              <Col as="p" className="display-5 text-center my-5">
+              <Col className="text-center">
                 {
                   webPages.find(
                     ({ pageTitle }) => pageTitle.toLowerCase() === "dashboard"

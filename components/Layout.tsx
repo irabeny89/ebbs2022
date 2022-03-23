@@ -10,6 +10,7 @@ import { MdEmail } from "react-icons/md";
 import Link from "next/link";
 import Container from "react-bootstrap/Container";
 import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
 import Alert from "react-bootstrap/Alert";
 import Spinner from "react-bootstrap/Spinner";
 import Button from "react-bootstrap/Button";
@@ -508,25 +509,20 @@ const Layout = ({ children }: LayoutPropsType) => {
                 : (e.preventDefault(), e.stopPropagation());
             }}
           >
-            <Form.Group>
-              <Row>
-                <Col>
-                  <Form.FloatingLabel label="Search...">
-                    <Form.Control
-                      placeholder="Search..."
-                      arial-label="search product or service"
-                      name="search"
-                    />
-                  </Form.FloatingLabel>
-                </Col>
-                <Col>
-                  <Button size="lg" type="submit" variant="secondary">
-                    {searchLoading && <Spinner size="sm" animation="grow" />}
-                    Search
-                  </Button>
-                </Col>
-              </Row>
-            </Form.Group>
+            <InputGroup>
+              <Form.FloatingLabel label="Search...">
+                <Form.Control
+                  placeholder="Search..."
+                  arial-label="search product or service"
+                  name="search"
+                  size="sm"
+                />
+              </Form.FloatingLabel>
+              <Button size="sm" type="submit" variant="secondary">
+                {searchLoading && <Spinner size="sm" animation="grow" />}
+                Search
+              </Button>
+            </InputGroup>
           </Form>
         </Col>
         <Col xs="auto" md={{ offset: 2 }} lg={{ offset: 3 }}>

@@ -21,8 +21,7 @@ import { FaBoxes } from "react-icons/fa";
 import ServiceSection from "@/components/ServiceSection";
 import { FEW_SERVICES } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
-import SortedListWithTabs from "@/components/SortedListWithTabs";
-import ServiceList from "@/components/ServiceList";
+
 // fetch web app meta data
 const { webPages, abbr } = config.appData,
   // find products page data
@@ -97,17 +96,15 @@ export const getStaticProps: GetStaticProps = async () => {
         {/* products page content */}
         <Container fluid>
           {/* page title */}
-          <Row className="mb-5 h1">
+          <Row className="mb-4 h1">
             <Col>
               <FaBoxes size="40" className="mb-2" /> {servicesPage?.pageTitle}
             </Col>
           </Row>
+          <hr />
           {/* first paragraph */}
-          <Row
-            as="p"
-            className="my-4 text-center justify-content-center display-5"
-          >
-            {servicesPage?.parargraphs[0]}
+          <Row className="my-4 text-center">
+            <Col>{servicesPage?.parargraphs[0]}</Col>
           </Row>
           {/* category tabs 
           N.B - no need to use SortedListWithTabs component because it is incompatible with the requirements here.

@@ -11,13 +11,17 @@ const config = {
     description:
       "EBBS - EveryBodyBuySell is a platform for everybody to create and manage their online businesses.",
     features: [
-      "Easy to use dashboard to manage your online business.",
-      "Manage your business logistics.",
-      "Customer Relation Management through comments etc.",
-      "Connect with other businesses.",
-      "Monitor your orders.",
-      "Join the Telegram channel below to share your thoughts.",
+      "Simple dashboard to manage online trades.",
+      "Track orders and your requests.",
+      "Add or remove products from catalog.",
+      "Relate with customers via comments tab.",
       "More features coming...",
+    ],
+    gettingStartedSteps: [
+      "Go to the 'Member' page.",
+      "Click the 'Register' tab.",
+      "Fill the form accordingly.",
+      "Then submit. And congrats, member :)."
     ],
     privacyTypes: ["ALL", "USER", "ADMIN"],
     testAccount: {
@@ -75,7 +79,7 @@ const config = {
         pageTitle: "Home",
         description: "List of products and services.",
         parargraphs: [
-          "EBBS - EveryBodyBuySell is a platform for you to create and manage your online business.",
+          "EBBS - EveryBodyBuySell is a platform to trade with other members.",
         ],
       },
       {
@@ -93,7 +97,7 @@ const config = {
         pageTitle: "Services",
         description: "List of all services",
         parargraphs: [
-          "Browse through all services and their corresponding products.",
+          "Browse through all services and their respective products.",
         ],
       },
       {
@@ -119,9 +123,8 @@ const config = {
         pageTitle: "About",
         description: "Learn about EBBS - the About Us page",
         parargraphs: [
-          "EveryBodyBuySell- EBBS, is a platform that allows members to do business with each other.",
-          "Once you create a profile you can monitor orders, requests, comments, add products etc.",
-          "More features will always be added to support your business; also you can request for features as well through the telegram channel.",
+          "EveryBodyBuySell- EBBS is a platform that allows members to trade with each other.",
+          "Once you create a profile you can monitor orders, requests, comments, products etc.",
         ],
       },
     ],

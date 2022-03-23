@@ -26,7 +26,7 @@ import type {
   UserLoginVariableType,
   RegisterVariableType,
 } from "types";
-import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import {
   USER_LOGIN,
@@ -124,18 +124,16 @@ const MemberPage = () => {
       </Head>
       <Container>
         {/* page title */}
-        <Row className="mb-5 h1">
+        <Row className="mb-4 h1">
           <Col>
             <MdCardMembership size="40" className="mb-2" />{" "}
             {memberPage?.pageTitle}
           </Col>
         </Row>
+        <hr />
         {/* first paragraph */}
-        <Row
-          as="p"
-          className="my-4 text-center justify-content-center display-5"
-        >
-          {memberPage?.parargraphs[0]}
+        <Row className="my-4 text-center">
+          <Col>{memberPage?.parargraphs[0]}</Col>
         </Row>
         {/* member authentication tabs */}
         <Tabs id="member-tabs" defaultActiveKey="Login" className="my-5">

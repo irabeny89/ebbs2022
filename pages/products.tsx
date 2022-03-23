@@ -70,17 +70,15 @@ export const getStaticProps: GetStaticProps = async () => {
         {/* products page content */}
         <Container fluid>
           {/* page title */}
-          <Row className="mb-5 h1">
+          <Row className="mb-4 h1">
             <Col>
               <FaBoxes size="40" className="mb-2" /> {productsPage?.pageTitle}
             </Col>
           </Row>
+          <hr />
           {/* first paragraph */}
-          <Row
-            as="p"
-            className="my-4 text-center justify-content-center display-5"
-          >
-            {productsPage?.parargraphs[0]}
+          <Row className="my-4 text-center">
+            <Col>{productsPage?.parargraphs[0]}</Col>
           </Row>
           <SortedListWithTabs
             ListRenderer={ProductSection}
