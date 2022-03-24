@@ -6,7 +6,7 @@ import EmptyList from "./EmptyList";
 import type { SortedListWithTabsPropType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 
-// one level sort eg {a:1} not {a:{b:2}}
+// first level sort eg {a:1} not {a:{b:2}}
 const SortedListWithTabs = ({
   list,
   field,
