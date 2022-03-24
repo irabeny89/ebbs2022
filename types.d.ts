@@ -7,6 +7,17 @@ import path from "path";
 import { MutableRefObject, ReactNode } from "react";
 import Mail from "nodemailer/lib/mailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
+import { Dispatch, SetStateAction } from "react";
+
+type ModalShowStateType = {
+  show: boolean;
+  setShow: Dispatch<SetStateAction<boolean>>;
+};
+
+type FormValidateStateType = {
+  validated: boolean;
+  setValidated: Dispatch<SetStateAction<boolean>>;
+};
 
 type PassCodeDataType = Record<"email" | "hashedPassCode", string>;
 
@@ -233,7 +244,7 @@ type NewProductVariableType = Record<
 type NewProductFormDataType = Pick<
   ProductType,
   "name" | "category" | "description" | "price"
-> & { images: File[]; video?: File, tags?: string };
+> & { images: File[]; video?: File; tags?: string };
 
 type GraphContextType = {
   UserModel: Model<UserType>;
@@ -322,3 +333,28 @@ type OrdersOrRequestsPropType = {
   title: string;
   items: OrderVertexType[];
 } & StyleType;
+
+type QuickStartModalPropType = {
+  features: string[];
+  link: string;
+} & ModalShowStateType;
+
+type CartModalPropType = {
+  cartItemsCount: number;
+  authPayload: Partial<UserPayloadType> & JwtPayload;
+  serviceOrder: string | undefined;
+  cartItems: OrderItemType[];
+  loading: boolean;
+  sendRequest: any;
+} & ModalShowStateType &
+  FormValidateStateType;
+
+  type SearchResultModalType = {
+    foundProducts: ProductVertexType[];
+    productsHasNextPage: boolean | undefined;
+    foundServices: ServiceVertexType[];
+    servicesHasNextPage: boolean | undefined;
+    productsEndCursor: string | Date | undefined;
+    fetchMore: any;
+    searchLoading: boolean;
+  } & ModalShowStateType
