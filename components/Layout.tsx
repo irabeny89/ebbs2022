@@ -542,7 +542,7 @@ const Layout = ({ children }: LayoutPropsType) => {
         as="footer"
         className="bg-secondary text-white py-2 justify-content-center"
       >
-        {author} | {title}&trade; | &copy;2021{" "}
+        {author} | {title}&trade; | &copy;2022{" "}
       </Row>
       <Row>
         <Col className="p-2 bg-secondary text-white">
