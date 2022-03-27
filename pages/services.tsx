@@ -53,7 +53,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
     return error
       ? { notFound: true }
-      : { props: data.services, revalidate: 30 };
+      : { props: data.services, revalidate: 20 };
   },
   // services page component
   ServicesPage = ({

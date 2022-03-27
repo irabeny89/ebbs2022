@@ -38,7 +38,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
     return error
       ? { notFound: true }
-      : { props: data.products, revalidate: 30 };
+      : { props: data.products, revalidate: 20 };
   },
   // products page component
   ProductsPage = ({

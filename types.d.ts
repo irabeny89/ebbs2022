@@ -9,6 +9,17 @@ import Mail from "nodemailer/lib/mailer";
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { Dispatch, SetStateAction } from "react";
 
+type JwtPayload = {
+  [key: string]: any;
+  iss?: string | undefined;
+  sub?: string | undefined;
+  aud?: string | string[] | undefined;
+  exp?: number | undefined;
+  nbf?: number | undefined;
+  iat?: number | undefined;
+  jti?: string | undefined;
+};
+
 type ModalShowStateType = {
   show: boolean;
   setShow: Dispatch<SetStateAction<boolean>>;
@@ -349,12 +360,19 @@ type CartModalPropType = {
 } & ModalShowStateType &
   FormValidateStateType;
 
-  type SearchResultModalType = {
-    foundProducts: ProductVertexType[];
-    productsHasNextPage: boolean | undefined;
-    foundServices: ServiceVertexType[];
-    servicesHasNextPage: boolean | undefined;
-    productsEndCursor: string | Date | undefined;
-    fetchMore: any;
-    searchLoading: boolean;
-  } & ModalShowStateType
+type SearchResultModalType = {
+  foundProducts: ProductVertexType[];
+  productsHasNextPage: boolean | undefined;
+  foundServices: ServiceVertexType[];
+  servicesHasNextPage: boolean | undefined;
+  productsEndCursor: string | Date | undefined;
+  fetchMore: any;
+  searchLoading: boolean;
+} & ModalShowStateType;
+
+type ServiceCommentModalType = {
+  authPayload: (UserPayloadType & JwtPayload) | undefined;
+  serviceId: string;
+  favoriteService: boolean | undefined;
+  edges: EdgeType<CommentVertexType>[] | undefined;
+} & ModalShowStateType;

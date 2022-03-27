@@ -1,6 +1,4 @@
-import FormControl from "react-bootstrap/FormControl";
-import FloatingLabel from "react-bootstrap/FloatingLabel";
-import Card from "react-bootstrap/Card";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
@@ -8,8 +6,9 @@ import Container from "react-bootstrap/Container";
 import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import Spinner from "react-bootstrap/Spinner";
-import { BiMessageAltDots, BiLike, BiInfoCircle, BiSend } from "react-icons/bi";
+import { BiMessageAltDots, BiLike, BiInfoCircle } from "react-icons/bi";
 import type {
+  JwtPayload,
   PagingInputType,
   ServiceLabelPropType,
   ServiceVertexType,
@@ -20,15 +19,14 @@ import { CSSProperties, useEffect, useState } from "react";
 import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import AjaxFeedback from "./AjaxFeedback";
 import Link from "next/link";
-import {
-  MY_COMMENT,
-  MY_FAV_SERVICE,
-  SERVICE_LIKE_DATA,
-} from "@/graphql/documentNodes";
+import { MY_FAV_SERVICE, SERVICE_LIKE_DATA } from "@/graphql/documentNodes";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import config from "../config";
-import { JwtPayload } from "jsonwebtoken";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
+
+const ServiceCommentModal = dynamic(() => import("./ServiceCommentModal"), {
+  loading: () => <>loading...</>,
+});
 
 const styling: { [key: string]: CSSProperties } = {
     smallTextStyle: {
@@ -48,8 +46,6 @@ const styling: { [key: string]: CSSProperties } = {
     // info modal state
     const [show, setShow] = useState(false),
       [authPayload, setAuthPayload] = useState<UserPayloadType & JwtPayload>(),
-      // comment post text state
-      [post, setPost] = useState(""),
       // comment modal state
       [showComment, setShowComment] = useState(false),
       // the auth payload
@@ -74,22 +70,6 @@ const styling: { [key: string]: CSSProperties } = {
           },
         },
       }),
-      // comment posting
-      [postComment, { loading: postLoading, data: postData }] = useMutation<
-        Record<"myCommentPost", string>,
-        Record<"serviceId" | "post", string>
-      >(MY_COMMENT, {
-        refetchQueries: [SERVICE_LIKE_DATA],
-        context: {
-          headers: {
-            authorization: `Bearer ${accessToken}`,
-          },
-        },
-        variables: {
-          post,
-          serviceId: _id?.toString()!,
-        },
-      }),
       // service liking mutation
       [likeOrUnlike, { loading, data: likeData }] = useMutation<
         Record<"myFavService", boolean>,
@@ -101,14 +81,9 @@ const styling: { [key: string]: CSSProperties } = {
             authorization: `Bearer ${accessToken}`,
           },
         },
-        fetchPolicy: "network-only",
+        fetchPolicy: "no-cache",
       });
     // useEffect hook to manage rerenders
-    useEffect(() => {
-      fetch("/api/revalidateHome");
-      postData && setPost("");
-    }, [postData, likeData]);
-
     useEffect(() => {
       setAuthPayload(
         JSON.parse(localStorage.getItem(config.appData.constants.AUTH_PAYLOAD)!)
@@ -125,63 +100,16 @@ const styling: { [key: string]: CSSProperties } = {
           <Modal.Body>{description}</Modal.Body>
         </Modal>
         {/* comments modal */}
-        <Modal
-          show={showComment}
-          onHide={() => setShowComment(false)}
-          size="xl"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>
-              <BiMessageAltDots /> Comments
-            </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Container fluid>
-              <Row>
-                {(serviceData?.service?.comments?.edges ?? [])
-                  .map((edge) => edge.node)
-                  .map((comment) => (
-                    <Col key={comment._id.toString()} sm="6">
-                      <Card className="mb-3">
-                        <Card.Header>
-                          <Card.Title>{comment?.poster?.username!}</Card.Title>
-                          <Card.Subtitle>
-                            {new Date(+comment.createdAt).toDateString()}
-                          </Card.Subtitle>
-                        </Card.Header>
-                        <Card.Body>{comment.post}</Card.Body>
-                      </Card>
-                    </Col>
-                  ))}
-              </Row>
-            </Container>
-          </Modal.Body>
-          <Modal.Footer>
-            {!!authPayload && (
-              <Col>
-                <FloatingLabel label="Enter comment">
-                  <FormControl
-                    value={post}
-                    onChange={(e) => setPost(e.currentTarget.value)}
-                    placeholder="Enter text"
-                    as="textarea"
-                    style={{
-                      height: "5rem",
-                    }}
-                  ></FormControl>
-                </FloatingLabel>
-                <Button
-                  className="w-100 my-2"
-                  onClick={() => postComment()}
-                  disabled={!post}
-                >
-                  {postLoading && <Spinner animation="grow" size="sm" />}
-                  <BiSend size={18} /> Send
-                </Button>
-              </Col>
-            )}
-          </Modal.Footer>
-        </Modal>
+        <ServiceCommentModal
+          {...{
+            authPayload,
+            edges: serviceData?.service?.comments?.edges,
+            favoriteService: likeData?.myFavService,
+            serviceId: _id.toString(),
+            setShow: setShowComment,
+            show: showComment,
+          }}
+        />
         {/* service label */}
         <Row
           style={styling.smallTextStyle}

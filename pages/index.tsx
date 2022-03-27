@@ -24,10 +24,10 @@ import Container from "react-bootstrap/Container";
 import { FaBoxes } from "react-icons/fa";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
 
-// dynamically import - tree shaking
+// dynamically import - code splitting
 const QuickStartModal = dynamic(
   () => import("../components/QuickStartModal"),
-  { ssr: false }
+  { loading: () => <>loading..</> }
 );
 // fetch page data
 const {

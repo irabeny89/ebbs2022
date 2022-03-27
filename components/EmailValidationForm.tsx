@@ -6,7 +6,11 @@ import { MdSend } from "react-icons/md";
 import { useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { USER_REQUEST_PASSCODE } from "@/graphql/documentNodes";
-import FeedbackToast from "./FeedbackToast";
+import dynamic from "next/dynamic";
+
+const FeedbackToast = dynamic(() => import("@/components/FeedbackToast"), {
+  loading: () => <>loading...</>,
+});
 
 const EmailValidationForm = () => {
   // passcode form validation state
