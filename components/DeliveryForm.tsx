@@ -15,7 +15,7 @@ import {
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 import { MY_PROFILE, SERVICE_ORDER } from "@/graphql/documentNodes";
 import { DeliveryFormType, OrderType } from "types";
-import countCartItems from "@/utils/CountCartItems";
+import countCartItems from "@/utils/countCartItems";
 import { FaFirstOrder, FaTrash } from "react-icons/fa";
 import config from "config";
 import Link from "next/link";

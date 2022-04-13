@@ -17,7 +17,7 @@ import {
   PagingInputType,
 } from "types";
 import dynamic from "next/dynamic";
-import countCartItems from "@/utils/CountCartItems";
+import countCartItems from "@/utils/countCartItems";
 // dynamically import components - code splitting
 const CartModal = dynamic(() => import("./CartModal")),
   SearchResultModal = dynamic(() => import("./SearchResultModal"));

@@ -4,7 +4,6 @@ import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import { MdHowToReg } from "react-icons/md";
 import { FaTelegram } from "react-icons/fa";
-import { Dispatch, SetStateAction } from "react";
 import { QuickStartModalPropType } from "types";
 
 const QuickStartModal = ({

@@ -316,6 +316,8 @@ type LayoutPropsType = {
   children: ReactNode;
 };
 
+type DeliveryFormType = LayoutPropsType;
+
 type AjaxFeedbackProps = {
   loading?: boolean;
   error?: any;
@@ -350,15 +352,7 @@ type QuickStartModalPropType = {
   link: string;
 } & ModalShowStateType;
 
-type CartModalPropType = {
-  cartItemsCount: number;
-  authPayload: Partial<UserPayloadType> & JwtPayload;
-  serviceOrder: string | undefined;
-  cartItems: OrderItemType[];
-  loading: boolean;
-  sendRequest: any;
-} & ModalShowStateType &
-  FormValidateStateType;
+type CartModalPropType = ModalShowStateType;
 
 type SearchResultModalType = {
   foundProducts: ProductVertexType[];

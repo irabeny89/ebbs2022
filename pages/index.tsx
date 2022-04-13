@@ -20,15 +20,13 @@ import ServiceSection from "@/components/ServiceSection";
 import Button from "react-bootstrap/Button";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Container from "react-bootstrap/Container";
 import { FaBoxes } from "react-icons/fa";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
 
 // dynamically import - code splitting
-const QuickStartModal = dynamic(
-  () => import("../components/QuickStartModal"),
-  { loading: () => <>loading..</> }
-);
+const QuickStartModal = dynamic(() => import("../components/QuickStartModal"), {
+  loading: () => <>loading..</>,
+});
 // fetch page data
 const {
     webPages,
@@ -95,92 +93,104 @@ export const getStaticProps: GetStaticProps = async () => {
 
     return (
       <Layout>
-        {/* tab title */}
         <Head>
+        {/* tab title */}
           <title>
             {abbr} &trade; | {homePage?.pageTitle}
           </title>
         </Head>
-        {/* main body of home page */}
-        <Container fluid>
-          {/* site features modal */}
-          <QuickStartModal
-            show={show}
-            setShow={setShow}
-            features={features}
-            link={link}
-          />
-          {/* page title */}
-          <Row className="mb-4 h1">
-            <Col>
-              <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
+        {/* site features modal */}
+        <QuickStartModal
+          show={show}
+          setShow={setShow}
+          features={features}
+          link={link}
+        />
+        {/* page title */}
+        <Row className="mb-4 h1">
+          <Col>
+            <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
+            <Button
+              onClick={() => setShow(true)}
+              variant="outline-dark border-2"
+            >
+              Quick Start
+            </Button>
+          </Col>
+        </Row>
+        <hr />
+        {/* first paragraph */}
+        <Row className="my-4 text-center">
+          <Col>{homePage?.parargraphs[0]}</Col>
+        </Row>
+        <Row className="text-center">
+          <Col>
+            <Link href="/member" passHref>
               <Button
-                onClick={() => setShow(true)}
-                variant="outline-dark border-2"
+                as="a"
+                variant="outline-primary"
+                href={link}
+                className="border-3"
               >
-                Quick Start
+                Be a member <MdHowToReg size={30} color="#197acf" />
               </Button>
-            </Col>
-          </Row>
-          <hr />
-          {/* first paragraph */}
-          <Row className="my-4 text-center">
-            <Col>{homePage?.parargraphs[0]}</Col>
-          </Row>
-          <Row className="text-center">
-            <Col>
-              <Link href="/member" passHref>
-                <Button as="a" variant="outline-primary" href={link}>
-                  Be a member <MdHowToReg size={30} color="#197acf" />
-                </Button>
-              </Link>
-            </Col>
-          </Row>
-          {/* Products Section */}
-          <Row className="mt-5 rounded" style={highlightStyle}>
-            <ProductSection
-              title={
-                <Col>
-                  <FaBoxes size="40" className="mb-2" /> Products
-                </Col>
-              }
-              items={products}
-              className="pt-4 rounded"
-            />
-          </Row>
-          {/* link to products page */}
-          <Row className="text-center mt-4 mb-5">
-            <Col>
-              <Link href="/products" passHref>
-                <Button as="a" variant="outline-primary" href={link}>
-                  All Products <FaBoxes size={30} color="#197acf" />
-                </Button>
-              </Link>
-            </Col>
-          </Row>
-          {/* Services Section */}
-          <Row className="mt-5 rounded" style={highlightStyle}>
-            <ServiceSection
-              items={services}
-              className="pt-4 rounded"
-              title={
-                <Col>
-                  <MdBusinessCenter size="40" className="mb-2" /> Services
-                </Col>
-              }
-            />
-          </Row>
-          {/* link to services page */}
-          <Row className="text-center mt-4 mb-5">
-            <Col>
-              <Link href="/services" passHref>
-                <Button as="a" variant="outline-primary" href={link}>
-                  All Services <MdBusinessCenter size={30} color="#197acf" />
-                </Button>
-              </Link>
-            </Col>
-          </Row>
-        </Container>
+            </Link>
+          </Col>
+        </Row>
+        {/* Products Section */}
+        <Row className="mt-5 rounded" style={highlightStyle}>
+          <ProductSection
+            title={
+              <Col>
+                <FaBoxes size="40" className="mb-2" /> Products
+              </Col>
+            }
+            items={products}
+            className="pt-4 rounded"
+          />
+        </Row>
+        {/* link to products page */}
+        <Row className="text-center mt-4 mb-5">
+          <Col>
+            <Link href="/products" passHref>
+              <Button
+                as="a"
+                variant="outline-primary"
+                href={link}
+                className="border-3"
+              >
+                See All Products <FaBoxes size={30} color="#197acf" />
+              </Button>
+            </Link>
+          </Col>
+        </Row>
+        {/* Services Section */}
+        <Row className="mt-5 rounded" style={highlightStyle}>
+          <ServiceSection
+            items={services}
+            className="pt-4 rounded"
+            title={
+              <Col>
+                <MdBusinessCenter size="40" className="mb-2" /> Services
+              </Col>
+            }
+          />
+        </Row>
+        {/* link to services page */}
+        <Row className="text-center mt-4 mb-5">
+          <Col>
+            <Link href="/services" passHref>
+              <Button
+                as="a"
+                variant="outline-primary"
+                href={link}
+                className="border-3"
+              >
+                See All Services <MdBusinessCenter size={30} color="#197acf" />
+              </Button>
+            </Link>
+          </Col>
+        </Row>
       </Layout>
     );
   };
