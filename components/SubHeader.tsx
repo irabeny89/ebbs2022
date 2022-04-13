@@ -7,7 +7,7 @@ import Spinner from "react-bootstrap/Spinner";
 import { FaShoppingCart } from "react-icons/fa";
 import { useState, FormEvent, useEffect } from "react";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
-import { authPayloadVar, cartItemsVar } from "@/graphql/reactiveVariables";
+import { cartItemsVar } from "@/graphql/reactiveVariables";
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 import { useLazyQuery, useReactiveVar } from "@apollo/client";
 import {
@@ -19,8 +19,12 @@ import {
 import dynamic from "next/dynamic";
 import countCartItems from "@/utils/countCartItems";
 // dynamically import components - code splitting
-const CartModal = dynamic(() => import("./CartModal")),
-  SearchResultModal = dynamic(() => import("./SearchResultModal"));
+const CartModal = dynamic(() => import("./CartModal"), {
+    loading: () => <>loading..</>,
+  }),
+  SearchResultModal = dynamic(() => import("./SearchResultModal"), {
+    loading: () => <>loading..</>,
+  });
 
 export default function SubHeader() {
   // states
