@@ -26,7 +26,7 @@ export default function SubHeader() {
   // states
   const [show, setShow] = useState(false),
     [showSearch, setShowSearch] = useState(false),
-    cartItems = useReactiveVar(cartItemsVar)
+    cartItems = useReactiveVar(cartItemsVar);
   // queries
   const [
     searchProduct,
@@ -83,23 +83,23 @@ export default function SubHeader() {
 
   return (
     <Row className="mb-5 mt-3">
-      <Col md={{ offset: 2 }} lg={{ offset: 3 }}>
-        <CartModal show={show} setShow={setShow} />
-        <SearchResultModal
-          {...{
-            fetchMore,
-            foundProducts,
-            foundServices,
-            productsEndCursor: searchData?.products.pageInfo.endCursor,
-            productsHasNextPage: searchData?.products.pageInfo.hasNextPage,
-            searchLoading,
-            servicesHasNextPage: searchData?.services.pageInfo.hasNextPage,
-            setShow: setShowSearch,
-            show: showSearch,
-          }}
-        />
+      <CartModal show={show} setShow={setShow} />
+      <SearchResultModal
+        {...{
+          fetchMore,
+          foundProducts,
+          foundServices,
+          productsEndCursor: searchData?.products.pageInfo.endCursor,
+          productsHasNextPage: searchData?.products.pageInfo.hasNextPage,
+          searchLoading,
+          servicesHasNextPage: searchData?.services.pageInfo.hasNextPage,
+          setShow: setShowSearch,
+          show: showSearch,
+        }}
+      />
+      <Col>
         <Form onSubmit={handleSubmit}>
-          <InputGroup>
+          <InputGroup className="justify-content-center">
             <Form.FloatingLabel label="Search...">
               <Form.Control
                 placeholder="Search..."
@@ -115,7 +115,7 @@ export default function SubHeader() {
           </InputGroup>
         </Form>
       </Col>
-      <Col xs="auto" md={{ offset: 2 }} lg={{ offset: 3 }}>
+      <Col xs="auto">
         <Button
           data-testid="cartButton"
           variant="outline-dark"
