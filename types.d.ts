@@ -316,7 +316,11 @@ type LayoutPropsType = {
   children: ReactNode;
 };
 
-type DeliveryFormType = LayoutPropsType;
+type DeliveryFormType = {
+  children: ReactNode;
+};
+
+type AddProductModalType = ModalShowStateType;
 
 type AjaxFeedbackProps = {
   loading?: boolean;
