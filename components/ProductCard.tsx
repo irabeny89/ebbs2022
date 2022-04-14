@@ -1,4 +1,4 @@
-import type { ProductCardPropType } from "types";
+import type { ProductCardPropsType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
@@ -50,7 +50,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
     provider,
     className,
     style,
-  }: ProductCardPropType) => {
+  }: ProductCardPropsType) => {
     // get auth access token
     const accessToken = useReactiveVar(accessTokenVar);
     // product info modal state

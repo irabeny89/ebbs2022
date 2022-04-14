@@ -1,5 +1,4 @@
 import Card from "react-bootstrap/Card";
-import Modal from "react-bootstrap/Modal";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Container from "react-bootstrap/Container";
@@ -12,45 +11,34 @@ import Spinner from "react-bootstrap/Spinner";
 import { MdDashboardCustomize, MdAdd, MdSend } from "react-icons/md";
 import {
   AuthComponentType,
-  NewProductFormDataType,
-  NewProductVariableType,
   PagingInputType,
   ServiceUpdateFormDataType,
   ServiceUpdateVariableType,
   UserVertexType,
 } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
+import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import {
-  useLazyQuery,
-  useMutation,
-  useQuery,
-  useReactiveVar,
-} from "@apollo/client";
-import {
-  ADD_NEW_PRODUCT,
   MY_PROFILE,
   MY_COMMENT,
   MY_SERVICE_UPDATE,
-  LOGOUT,
-  FEW_PRODUCTS_AND_SERVICES,
 } from "@/graphql/documentNodes";
 import AjaxFeedback from "@/components/AjaxFeedback";
 import SortedListWithTabs from "@/components/SortedListWithTabs";
 import OrdersOrRequests from "@/components/OrdersOrRequests";
 import ProductList from "@/components/ProductList";
-import FeedbackToast from "@/components/FeedbackToast";
-import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar } from "@/graphql/reactiveVariables";
 import web3storage from "web3storage";
 import Layout from "@/components/Layout";
 import getCidMod from "@/utils/getCidMod";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
 import dynamic from "next/dynamic";
 import config from "../config";
 import ServiceAlert from "@/components/DashboardServiceAlert";
+import PageIntro from "@/components/PageIntro";
 
 const AddProductModal = dynamic(() => import("components/AddProductModal"), {
   loading: () => <>loading...</>,
@@ -61,8 +49,6 @@ const {
     webPages,
     mediaMaxSize,
     countryStates,
-    maxImageFiles,
-    productCategories,
     constants: { AUTH_PAYLOAD },
   } = config.appData,
   // dashboard page data
@@ -74,23 +60,16 @@ const {
 
 // dashboard component
 const DashboardPage: AuthComponentType = () => {
-  const router = useRouter();
   // use auth payload & access token
   const accessToken = useReactiveVar(accessTokenVar);
   // state variable for form
   const [validated, setValidated] = useState(false),
     // file size state
     [fileSize, setFileSize] = useState(0),
-    // image file size state
-    [fileSizes, setFileSizes] = useState<number[]>([]),
-    // video file size state
-    [videoFileSize, setVideoFileSize] = useState(0),
     // product creation form modal state
     [show, setShow] = useState(false),
     // file uploading state
-    [uploading, setUploading] = useState(false),
-    // toast state
-    [showToast, setShowToast] = useState(false);
+    [uploading, setUploading] = useState(false);
   // query user data
   const {
       data: userData,
@@ -115,28 +94,6 @@ const DashboardPage: AuthComponentType = () => {
         },
       },
     }),
-    // logout
-    [logout, { data: logoutData, loading: loggingOut, client }] =
-      useLazyQuery<Record<"logout", string>>(LOGOUT),
-    // add new product mutation
-    [
-      addProduct,
-      {
-        data: newProductData,
-        loading: newProductLoading,
-        error: newProductError,
-      },
-    ] = useMutation<Record<"newProduct", string>, NewProductVariableType>(
-      ADD_NEW_PRODUCT,
-      {
-        refetchQueries: [MY_PROFILE, FEW_PRODUCTS_AND_SERVICES],
-        context: {
-          headers: {
-            authorization: `Bearer ${accessToken}`,
-          },
-        },
-      }
-    ),
     // comment mutation
     [sendPost] = useMutation<
       Record<"myComment", string>,
@@ -160,22 +117,6 @@ const DashboardPage: AuthComponentType = () => {
         },
       },
     });
-  // cleanup state when modal closed
-  useEffect(() => {
-    // when logged out clear store, accessTokenVar & redirect to home page
-    logoutData &&
-      (client.clearStore(),
-      accessTokenVar(""),
-      localStorage.removeItem(AUTH_PAYLOAD),
-      authPayloadVar({}),
-      router.push("/"));
-    // cleanup when toggling modal & new product creation
-    return () => {
-      setFileSizes([]);
-      setVideoFileSize(0);
-      setValidated(false);
-    };
-  }, [show, newProductData, logoutData, client, router]);
 
   if (userData) {
     const {
@@ -210,28 +151,15 @@ const DashboardPage: AuthComponentType = () => {
           </title>
         </Head>
         <AddProductModal {...{ show, setShow }} />
-        {/* title */}
-        <Row className="justify-content-between align-items-center">
-          <Col className="my-4" as="h2">
-            <MdDashboardCustomize size={40} /> Dashboard | {username}
-          </Col>
-          <Col xs="auto">
-            <Button size="lg" variant="outline-danger" onClick={() => logout()}>
-              {loggingOut && <Spinner size="sm" animation="grow" />} Logout
-            </Button>
-          </Col>
-        </Row>
-        <hr />
-        {/* first paragraph */}
-        <Row>
-          <Col className="text-center">
-            {
-              webPages.find(
-                ({ pageTitle }) => pageTitle.toLowerCase() === "dashboard"
-              )?.parargraphs[0]
-            }
-          </Col>
-        </Row>
+        <PageIntro
+          pageTitle={
+            <>
+              <MdDashboardCustomize size={40} />
+              {dashboardPage?.pageTitle}
+            </>
+          }
+          paragraphs={dashboardPage?.parargraphs}
+        />
         {/* dashboard tabs */}
         <Tabs defaultActiveKey="orders" className="my-5">
           {/* orders tab */}
@@ -348,9 +276,6 @@ const DashboardPage: AuthComponentType = () => {
                       size="lg"
                       disabled={!title}
                     >
-                      {newProductLoading && (
-                        <Spinner animation="grow" size="sm" />
-                      )}
                       <MdAdd size={25} /> Add Product
                     </Button>
                   </Col>

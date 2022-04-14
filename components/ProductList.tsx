@@ -1,4 +1,4 @@
-import type { ProductListPropType } from "types";
+import type { ProductListPropsType } from "types";
 import ProductCard from "./ProductCard";
 import Carousel from "react-bootstrap/Carousel";
 import Button from "react-bootstrap/Button";
@@ -10,7 +10,7 @@ const ProductList = ({
   items,
   carousel = false,
   ...rest
-}: ProductListPropType) =>
+}: ProductListPropsType) =>
   items.length ? (
     carousel ? (
       // carousel product list

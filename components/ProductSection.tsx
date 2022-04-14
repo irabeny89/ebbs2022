@@ -1,4 +1,4 @@
-import type { ProductSectionPropType } from "types";
+import type { ProductSectionPropsType } from "types";
 import ProductList from "./ProductList";
 import Row from "react-bootstrap/Row";
 import Container from "react-bootstrap/Container";
@@ -7,7 +7,7 @@ const ProductSection = ({
   items,
   title = null,
   ...rest
-}: ProductSectionPropType) => (
+}: ProductSectionPropsType) => (
   <Container fluid {...rest}>
     <Row className="h2">{title}</Row>
     <Row className="py-5 bg-info">
