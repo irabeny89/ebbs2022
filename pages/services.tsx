@@ -9,7 +9,7 @@ import { GetStaticProps } from "next";
 import type {
   CursorConnectionType,
   ProductCategoryType,
-  ServiceCardPropType,
+  ServiceCardPropsType,
   ServiceReturnType,
   ServiceVariableType,
 } from "types";
@@ -21,6 +21,7 @@ import { FaBoxes } from "react-icons/fa";
 import ServiceSection from "@/components/ServiceSection";
 import { FEW_SERVICES } from "@/graphql/documentNodes";
 import MoreButton from "@/components/MoreButton";
+import PageIntro from "@/components/PageIntro";
 
 // fetch web app meta data
 const { webPages, abbr } = config.appData,
@@ -59,7 +60,7 @@ export const getStaticProps: GetStaticProps = async () => {
   ServicesPage = ({
     edges,
     pageInfo: { endCursor, hasNextPage },
-  }: CursorConnectionType<ServiceCardPropType>) => {
+  }: CursorConnectionType<ServiceCardPropsType>) => {
     // ref for lazy fetch flag
     const hasLazyFetched = useRef(false),
       // lazy fetch more products
@@ -93,78 +94,72 @@ export const getStaticProps: GetStaticProps = async () => {
             {abbr} | {servicesPage?.pageTitle}
           </title>
         </Head>
-        {/* products page content */}
-        <Container fluid>
-          {/* page title */}
-          <Row className="mb-4 h2">
-            <Col>
+        <PageIntro
+          pageTitle={
+            <>
               <FaBoxes size="40" className="mb-2" /> {servicesPage?.pageTitle}
-            </Col>
-          </Row>
-          <hr />
-          {/* first paragraph */}
-          <Row className="my-4 text-center">
-            <Col>{servicesPage?.parargraphs[0]}</Col>
-          </Row>
-          {/* category tabs 
+            </>
+          }
+          paragraphs={servicesPage?.parargraphs}
+        />
+        {/* category tabs 
           N.B - no need to use SortedListWithTabs component because it is incompatible with the requirements here.
           */}
-          <Tabs id="category-tabs" defaultActiveKey="ALL">
-            {/* render category as tabs */}
-            {["ALL"]
-              .concat(...services.map((item) => item.categories!))
-              // deduplicate categories
-              .reduce(
-                (prev: string[], cat) =>
-                  prev.includes(cat) ? prev : [...prev, cat],
-                []
-              )
-              .map((category) => (
-                <Tab title={category} eventKey={category} key={category}>
-                  <Row className="bg-danger my-0">
-                    <ServiceSection
-                      className="pt-4 rounded"
-                      // render filtered services based on product categories
-                      items={
-                        category === "ALL"
-                          ? (services as ServiceCardPropType[])
-                          : (services.filter((item) =>
-                              item.categories!.includes(
-                                category as ProductCategoryType
-                              )
-                            ) as ServiceCardPropType[])
-                      }
-                    />
-                  </Row>
-                </Tab>
-              ))}
-            {hasNextPage ? (
-              <MoreButton
-                {...{
-                  customFetch: fetchMoreServices,
-                  fetchMore: () =>
-                    fetchMore({
-                      variables: {
-                        serviceArgs: {
-                          last: 20,
-                          before: endCursor,
-                        },
-                        commentArgs: {
-                          last: 20,
-                        },
-                        productArgs: {
-                          last: 5,
-                        },
+        <Tabs id="category-tabs" defaultActiveKey="ALL">
+          {/* render category as tabs */}
+          {["ALL"]
+            .concat(...services.map((item) => item.categories!))
+            // deduplicate categories
+            .reduce(
+              (prev: string[], cat) =>
+                prev.includes(cat) ? prev : [...prev, cat],
+              []
+            )
+            .map((category) => (
+              <Tab title={category} eventKey={category} key={category}>
+                <Row className="bg-danger my-0">
+                  <ServiceSection
+                    className="pt-4 rounded"
+                    // render filtered services based on product categories
+                    items={
+                      category === "ALL"
+                        ? (services as ServiceCardPropsType[])
+                        : (services.filter((item) =>
+                            item.categories!.includes(
+                              category as ProductCategoryType
+                            )
+                          ) as ServiceCardPropsType[])
+                    }
+                  />
+                </Row>
+              </Tab>
+            ))}
+          {hasNextPage ? (
+            <MoreButton
+              {...{
+                customFetch: fetchMoreServices,
+                fetchMore: () =>
+                  fetchMore({
+                    variables: {
+                      serviceArgs: {
+                        last: 20,
+                        before: endCursor,
                       },
-                    }),
-                  hasLazyFetched,
-                  label: "More services",
-                  loading,
-                }}
-              />
-            ) : null}
-          </Tabs>
-        </Container>
+                      commentArgs: {
+                        last: 20,
+                      },
+                      productArgs: {
+                        last: 5,
+                      },
+                    },
+                  }),
+                hasLazyFetched,
+                label: "More services",
+                loading,
+              }}
+            />
+          ) : null}
+        </Tabs>
       </Layout>
     );
   };
