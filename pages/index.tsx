@@ -1,6 +1,6 @@
 import type {
   CursorConnectionType,
-  HomePagePropType,
+  HomePagePropsType,
   PagingInputType,
   ProductVertexType,
   ServiceVertexType,
@@ -22,6 +22,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { FaBoxes } from "react-icons/fa";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
+import PageIntro from "@/components/PageIntro";
 
 // dynamically import - code splitting
 const QuickStartModal = dynamic(() => import("components/QuickStartModal"), {
@@ -87,49 +88,44 @@ export const getStaticProps: GetStaticProps = async () => {
         };
   },
   // home page component
-  Home = ({ products, services }: HomePagePropType) => {
+  Home = ({ products, services }: HomePagePropsType) => {
     // state variable to handle modal clicks
     const [show, setShow] = useState(false);
 
     return (
       <Layout>
         <Head>
-        {/* tab title */}
+          {/* tab title */}
           <title>
             {abbr} &trade; | {homePage?.pageTitle}
           </title>
         </Head>
-        {/* site features modal */}
         <QuickStartModal
           show={show}
           setShow={setShow}
           features={features}
           link={link}
         />
-        {/* page title */}
-        <Row className="mb-4" as="h2">
-          <Col>
-            <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
-            <Button
-              onClick={() => setShow(true)}
-              variant="outline-dark border-2"
-            >
-              Quick Start
-            </Button>
-          </Col>
-        </Row>
-        <hr />
-        {/* first paragraph */}
-        <Row className="my-4 text-center">
-          <Col>{homePage?.parargraphs[0]}</Col>
-        </Row>
+        <PageIntro
+          pageTitle={
+            <>
+              <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
+              <Button
+                onClick={() => setShow(true)}
+                variant="outline-dark border-2"
+              >
+                Quick Start
+              </Button>
+            </>
+          }
+          paragraphs={homePage?.parargraphs}
+        />
         <Row className="text-center">
           <Col>
             <Link href="/member" passHref>
               <Button
                 as="a"
                 variant="outline-primary"
-                href={link}
                 className="border-3"
               >
                 Be a member <MdHowToReg size={30} color="#197acf" />
@@ -156,7 +152,6 @@ export const getStaticProps: GetStaticProps = async () => {
               <Button
                 as="a"
                 variant="outline-primary"
-                href={link}
                 className="border-3"
               >
                 See All Products <FaBoxes size={30} color="#197acf" />
@@ -183,7 +178,6 @@ export const getStaticProps: GetStaticProps = async () => {
               <Button
                 as="a"
                 variant="outline-primary"
-                href={link}
                 className="border-3"
               >
                 See All Services <MdBusinessCenter size={30} color="#197acf" />
