@@ -274,24 +274,24 @@ type GraphContextType = {
   >;
 };
 
-type ServiceCardPropType = Required<ServiceVertexType> & StyleType;
+type ServiceCardPropsType = Required<ServiceVertexType> & StyleType;
 
-type ProductCardPropType = Required<
+type ProductCardPropsType = Required<
   Omit<ProductVertexType, "createdAt" | "updatedAt">
 > &
   StyleType;
 
-type HomePagePropType = {
+type HomePagePropsType = {
   products: ProductCardPropType[];
   services: ServiceCardPropType[];
 };
 
-type ProductSectionPropType = {
+type ProductSectionPropsType = {
   items: ProductCardPropType[];
   title?: ReactNode | string | null;
 } & StyleType;
 
-type ProductListPropType = {
+type ProductListPropsType = {
   items: ProductCardPropType[];
   carousel?: boolean;
 } & StyleType;
@@ -307,13 +307,13 @@ type ServiceListPropType = {
 
 type ServiceLabelPropType = Omit<ServiceVertexType, "products"> & StyleType;
 
-type HomePagePropType = {
-  services: ServiceCardPropType[];
-  products: ProductType[];
-};
-
 type LayoutPropsType = {
   children: ReactNode;
+};
+
+type PageIntroPropsType = {
+  pageTitle: ReactNode | string;
+  paragraphs?: string[];
 };
 
 type DeliveryFormType = {
