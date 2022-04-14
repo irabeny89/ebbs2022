@@ -38,7 +38,7 @@ const MemberPage = () => {
       </Head>
       <Container>
         {/* page title */}
-        <Row className="mb-4 h1">
+        <Row className="mb-4 h2">
           <Col>
             <MdCardMembership size="40" className="mb-2" />{" "}
             {memberPage?.pageTitle}

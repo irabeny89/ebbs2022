@@ -1,5 +1,6 @@
 import { useEffect, SetStateAction, Dispatch } from "react";
 import Toast from "react-bootstrap/Toast";
+import ToastContainer from "react-bootstrap/ToastContainer";
 
 const FeedbackToast = ({
   error,
@@ -18,26 +19,28 @@ const FeedbackToast = ({
   );
 
   return (
-    <Toast
-      bg={error ? "danger" : "success"}
-      show={showToast}
-      onClose={() => setShowToast(false)}
-      autohide
-    >
-      <Toast.Header className="justify-content-between h5">
-        {error?.name || "Success"}
-      </Toast.Header>
-      {error && (
-        <Toast.Body className="justify-content-between text-white">
-          {error.message}
-        </Toast.Body>
-      )}
-      {successText && (
-        <Toast.Body className="justify-content-between text-white">
-          {successText}
-        </Toast.Body>
-      )}
-    </Toast>
+    <ToastContainer position="middle-center">
+      <Toast
+        bg={error ? "danger" : "success"}
+        show={showToast}
+        onClose={() => setShowToast(false)}
+        autohide
+      >
+        <Toast.Header className="justify-content-between h5">
+          {error?.name || "Success"}
+        </Toast.Header>
+        {error && (
+          <Toast.Body className="justify-content-between text-white">
+            {error.message}
+          </Toast.Body>
+        )}
+        {successText && (
+          <Toast.Body className="justify-content-between text-white">
+            {successText}
+          </Toast.Body>
+        )}
+      </Toast>
+    </ToastContainer>
   );
 };
 

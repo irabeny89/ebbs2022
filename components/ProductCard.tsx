@@ -86,6 +86,16 @@ const { CART_ITEMS_KEY } = config.appData.constants,
 
     return (
       <Container fluid {...{ className, style }}>
+        <FeedbackToast
+          {...{
+            error: deleteError,
+            successText: deleteData?.deleteMyProduct
+            ? "Product deleted successfully!"
+            : undefined,
+            setShowToast,
+            showToast,
+          }}
+        />
         {/* info modal */}
         <Modal centered show={show} onHide={() => setShow(false)}>
           <Modal.Header closeButton>
@@ -94,12 +104,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
           <Modal.Body>{description}</Modal.Body>
         </Modal>
         {/* delete modal dialog */}
-        <Modal
-          centered
-          show={showDialog}
-          onHide={() => setShowDialog(false)}
-          size="sm"
-        >
+        <Modal centered show={showDialog} onHide={() => setShowDialog(false)}>
           <Modal.Dialog className="m-0">
             <Modal.Header className="h3 bg-warning">
               Delete{" "}
@@ -108,16 +113,7 @@ const { CART_ITEMS_KEY } = config.appData.constants,
               </Badge>
               ?
             </Modal.Header>
-            <Modal.Body>
-              <FeedbackToast
-                {...{
-                  error: deleteError,
-                  successText: deleteData?.deleteMyProduct,
-                  setShowToast,
-                  showToast,
-                }}
-              />
-            </Modal.Body>
+            <Modal.Body>This cannot be undone. Are you sure?</Modal.Body>
             <Modal.Footer>
               <Button variant="danger" onClick={() => deleteProduct()}>
                 {deleteLoading && <Spinner animation="grow" size="sm" />}Delete

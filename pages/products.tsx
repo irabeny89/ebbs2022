@@ -70,7 +70,7 @@ export const getStaticProps: GetStaticProps = async () => {
         {/* products page content */}
         <Container fluid>
           {/* page title */}
-          <Row className="mb-4 h1">
+          <Row className="mb-4 h2">
             <Col>
               <FaBoxes size="40" className="mb-2" /> {productsPage?.pageTitle}
             </Col>

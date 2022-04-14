@@ -24,7 +24,7 @@ import { FaBoxes } from "react-icons/fa";
 import { FEW_PRODUCTS_AND_SERVICES } from "@/graphql/documentNodes";
 
 // dynamically import - code splitting
-const QuickStartModal = dynamic(() => import("../components/QuickStartModal"), {
+const QuickStartModal = dynamic(() => import("components/QuickStartModal"), {
   loading: () => <>loading..</>,
 });
 // fetch page data
@@ -107,7 +107,7 @@ export const getStaticProps: GetStaticProps = async () => {
           link={link}
         />
         {/* page title */}
-        <Row className="mb-4 h1">
+        <Row className="mb-4" as="h2">
           <Col>
             <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
             <Button

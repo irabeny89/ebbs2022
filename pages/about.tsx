@@ -36,7 +36,7 @@ const About = () => (
     </Head>
     <Container>
       {/* About header */}
-      <Row as="h1">
+      <Row as="h2">
         <Col>
           <MdOutlineInfo size="40" className="mb-2" />
           {aboutPage?.pageTitle}
