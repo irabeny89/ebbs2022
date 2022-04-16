@@ -1,9 +1,7 @@
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
-import Badge from "react-bootstrap/Badge";
 import { MdDashboardCustomize } from "react-icons/md";
 import { AuthComponentType, UserVertexType } from "types";
-import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { useQuery, useReactiveVar } from "@apollo/client";
 import { DASHBOARD } from "@/graphql/documentNodes";
 import AjaxFeedback from "@/components/AjaxFeedback";
