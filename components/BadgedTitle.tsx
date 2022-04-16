@@ -4,13 +4,15 @@ import { TabTitlePropsType } from "types";
 
 const tabTitleStyle = { fontSize: 16 };
 
-export default function TabTitle({ countValue }: TabTitlePropsType) {
+export default function BadgedTitle({ label, countValue }: TabTitlePropsType) {
   return (
     <h5 style={tabTitleStyle}>
-      Orders
-      <Badge pill className="bg-info">
-        {getCompactNumberFormat(countValue)}
-      </Badge>
+      {label}
+      {typeof countValue !== "undefined" && (
+        <Badge pill className="bg-info">
+          {getCompactNumberFormat(countValue)}
+        </Badge>
+      )}
     </h5>
   );
 }
