@@ -5,7 +5,7 @@ import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { MdSend } from "react-icons/md";
 import FeedbackToast from "./FeedbackToast";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import {
   ADD_NEW_PRODUCT,
   FEW_PRODUCTS_AND_SERVICES,

@@ -2,7 +2,6 @@ import Modal from "react-bootstrap/Modal";
 import { CartModalPropType } from "types";
 import Link from "next/link";
 import {
-  accessTokenVar,
   authPayloadVar,
   cartItemsVar,
 } from "@/graphql/reactiveVariables";

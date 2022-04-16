@@ -45,18 +45,15 @@ const MemberPage = () => {
       />
       {/* member authentication tabs */}
       <Tabs id="member-tabs" defaultActiveKey="Login" className="my-5">
-        {/* login tab */}
         <Tab title={<h5 style={tabTitleStyle}>Login</h5>} eventKey="Login">
           <LoginSection />
         </Tab>
-        {/* register tab */}
         <Tab
           title={<h5 style={tabTitleStyle}>Register</h5>}
           eventKey="Register"
         >
           <RegisterSection />
         </Tab>
-        {/* lost password tab */}
         <Tab
           title={<h5 style={tabTitleStyle}>Lost Password</h5>}
           eventKey="Lost Password"

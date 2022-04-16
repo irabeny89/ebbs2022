@@ -305,6 +305,125 @@ export const FEW_PRODUCTS = gql`
   }
 `;
 
+export const PROFILE_TAB = gql`
+  query ProfileTab {
+    me {
+      _id
+      createdAt
+      email
+      service {
+        _id
+        title
+        logoCID
+        description
+        state
+        likeCount
+        productCount
+        maxProduct
+        categories
+        createdAt
+      }
+    }
+  }
+`;
+
+export const COMMENTS_TAB = gql`
+  ${COMMENT_FRAGMENT}
+  query CommentsTab($commentArgs: PagingInput!) {
+    me {
+      _id
+      service {
+        _id
+        title
+        comments(args: $commentArgs) {
+          edges {
+            node {
+              ...CommentFields
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const PRODUCTS_TAB = gql`
+  ${PRODUCT_FRAGMENT}
+  query ProductsTab($productArgs: PagingInput!) {
+    me {
+      _id
+      service {
+        _id
+        title
+        products(args: $productArgs) {
+          edges {
+            node {
+              ...ProductFields
+              provider {
+                _id
+                title
+              }
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+    }
+  }
+`
+
+export const REQUESTS_TAB = gql`
+  ${ORDER_FRAGMENT}
+  query RequestTab($requestArgs: PagingInput!) {
+    me {
+      _id
+      requestCount
+      requests(args: $requestArgs) {
+        edges {
+          node {
+            ...OrderFields
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+      service {
+        _id
+        title
+      }
+    }
+  }
+`
+
+export const ORDERS_TAB = gql`
+  ${ORDER_FRAGMENT}
+  query OrdersTab($orderArgs: PagingInput!) {
+    me {
+      _id
+      service {
+        _id
+        title
+        orders(args: $orderArgs) {
+          edges {
+            node {
+              ...OrderFields
+            }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+          }
+        }
+      }
+    }
+  }
+`
+
 export const MY_PROFILE = gql`
   ${PRODUCT_FRAGMENT}
   ${COMMENT_FRAGMENT}

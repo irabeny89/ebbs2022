@@ -316,6 +316,24 @@ type PageIntroPropsType = {
   paragraphs?: string[];
 };
 
+type ProfileSectionPropsType = {
+  logoCID?: string;
+  username?: string;
+  createdAt?: string | Date;
+  title?: string;
+  email?: string;
+  maxProduct?: number;
+  productCount?: number;
+  likeCount?: number;
+  categories?: [ProductCategoryType];
+  state?: string;
+  description?: string;
+};
+
+type TabTitlePropsType = {
+  countValue: number;
+};
+
 type DeliveryFormType = {
   children: ReactNode;
 };
