@@ -331,7 +331,8 @@ type ProfileSectionPropsType = {
 };
 
 type TabTitlePropsType = {
-  countValue: number;
+  label: string;
+  countValue?: number;
 };
 
 type DeliveryFormType = {
