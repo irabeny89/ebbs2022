@@ -424,6 +424,21 @@ export const ORDERS_TAB = gql`
   }
 `
 
+export const DASHBOARD = gql`
+  query Dashbaord {
+    me {
+      _id
+      requestCount
+      service {
+        _id
+        orderCount
+        productCount
+        commentCount
+      }
+    }
+  }
+`
+
 export const MY_PROFILE = gql`
   ${PRODUCT_FRAGMENT}
   ${COMMENT_FRAGMENT}
