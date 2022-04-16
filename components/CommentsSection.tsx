@@ -73,7 +73,7 @@ export default function CommentsSection() {
               <Card.Header
                 className={`${
                   JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!)?.username ===
-                    comment.poster?.username && "bg-info"
+                    comment.poster?.username && "text-info"
                 }`}
               >
                 <Card.Title>{comment?.poster?.username}</Card.Title>
