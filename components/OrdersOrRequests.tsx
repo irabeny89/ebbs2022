@@ -17,7 +17,7 @@ import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import getLocalePrice from "@/utils/getLocalePrice";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import {
-  MY_PROFILE,
+  ORDERS_TAB,
   SET_ORDER_DELIVERY_DATE,
   UPDATE_ORDER_ITEM_STATUS,
 } from "@/graphql/documentNodes";
@@ -105,7 +105,7 @@ const OrdersOrRequests = ({
           authorization: `Bearer ${accessToken}`,
         },
       },
-      refetchQueries: [MY_PROFILE],
+      refetchQueries: [ORDERS_TAB],
     }),
     [setOrderDeliveryDate, { loading: deliveryDateLoading }] = useMutation<
       Record<"setOrderDeliveryDate", string>,
@@ -116,7 +116,7 @@ const OrdersOrRequests = ({
           authorization: `Bearer ${accessToken}`,
         },
       },
-      refetchQueries: [MY_PROFILE],
+      refetchQueries: [ORDERS_TAB],
     });
 
   return (
