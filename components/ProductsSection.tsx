@@ -32,7 +32,9 @@ export default function ProductsSection() {
     });
 
   return loading ? (
-    <AjaxFeedback loading={loading} error={error} />
+    <AjaxFeedback loading={loading} />
+  ) : error ? (
+    <AjaxFeedback error={error} />
   ) : !data?.me?.service?.title ? (
     <DashboardServiceAlert />
   ) : (

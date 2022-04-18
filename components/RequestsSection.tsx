@@ -24,7 +24,9 @@ export default function RequestsSection() {
     });
 
   return loading ? (
-    <AjaxFeedback loading={loading} error={error} />
+    <AjaxFeedback loading={loading} />
+  ) : error ? (
+    <AjaxFeedback error={error} />
   ) : (
     <>
       <SortedListWithTabs

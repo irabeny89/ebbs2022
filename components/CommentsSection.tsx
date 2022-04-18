@@ -1,16 +1,16 @@
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Card from "react-bootstrap/Card";
-import Form from "react-bootstrap/Form";
-import Button from "react-bootstrap/Button";
 import { useQuery, useReactiveVar, useMutation } from "@apollo/client";
 import config from "config";
-import { FormEvent } from "react";
+import { useState } from "react";
 import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
-import { PagingInputType, UserVertexType } from "types";
+import { MessengerPropsType, PagingInputType, UserVertexType } from "types";
 import { COMMENTS_TAB, MY_COMMENT } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import DashboardServiceAlert from "components/DashboardServiceAlert";
+import Messenger from "./Messenger";
+import FeedbackToast from "./FeedbackToast";
 
 const {
   constants: { AUTH_PAYLOAD },
@@ -19,6 +19,7 @@ const {
 export default function CommentsSection() {
   const authPayload = useReactiveVar(authPayloadVar),
     accessToken = useReactiveVar(accessTokenVar),
+    [showToast, setShowToast] = useState(false),
     { data, loading, error } = useQuery<
       Record<"me", UserVertexType>,
       Record<"commentArgs", PagingInputType>
@@ -32,7 +33,7 @@ export default function CommentsSection() {
         },
       },
     }),
-    [sendPost] = useMutation<
+    [sendPost, { loading: posting, error: errorPosting }] = useMutation<
       Record<"myComment", string>,
       Record<"serviceId" | "post", string>
     >(MY_COMMENT, {
@@ -43,29 +44,23 @@ export default function CommentsSection() {
         },
       },
     }),
-    handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const post = new FormData(e.currentTarget).get("commentReply") as
-        | string
-        | null;
-
-      post
-        ? (e.currentTarget.reset(),
-          sendPost({
-            variables: {
-              post,
-              serviceId: authPayload?.serviceId?.toString()!,
-            },
-          }))
-        : (e.preventDefault(), e.stopPropagation());
-    };
+    messengerAction: MessengerPropsType["action"] = (message) =>
+      sendPost({
+        variables: {
+          post: message,
+          serviceId: authPayload?.serviceId?.toString()!,
+        },
+      });
 
   return loading ? (
-    <AjaxFeedback loading={loading} error={error} />
+    <AjaxFeedback loading={loading} />
+  ) : error ? (
+    <AjaxFeedback error={error} />
   ) : !data?.me?.service?.title ? (
     <DashboardServiceAlert />
   ) : (
     <>
+      <FeedbackToast {...{ showToast, setShowToast, error: errorPosting }} />
       {data?.me?.service?.comments?.edges.map(({ node: comment }) => (
         <Row key={comment._id?.toString()} className="justify-content-center">
           <Col lg="7">
@@ -90,20 +85,13 @@ export default function CommentsSection() {
       ))}
       <Row className="justify-content-center mt-5">
         <Col lg="7">
-          <Form onSubmit={handleSubmit}>
-            <Form.FloatingLabel label="Reply comments">
-              <Form.Control
-                placeholder="Reply comments"
-                aria-label="comment reply"
-                name="commentReply"
-                as="textarea"
-                style={{ height: "6rem" }}
-              />
-            </Form.FloatingLabel>
-            <Button type="submit" className="w-100 mt-3" size="lg">
-              Send
-            </Button>
-          </Form>
+          <Messenger
+            {...{
+              action: messengerAction,
+              isSubmitting: posting,
+              label: "Reply comments",
+            }}
+          />
         </Col>
       </Row>
     </>
