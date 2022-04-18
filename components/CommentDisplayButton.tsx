@@ -8,9 +8,12 @@ import { useState } from "react";
 import AjaxFeedback from "./AjaxFeedback";
 import dynamic from "next/dynamic";
 
-const ServiceCommentModal = dynamic(() => import("components/ServiceCommentModal"), {
-  loading: () => <AjaxFeedback loading />
-})
+const ServiceCommentModal = dynamic(
+  () => import("components/ServiceCommentModal"),
+  {
+    loading: () => <AjaxFeedback loading />,
+  }
+);
 
 export default function CommentDisplayButton({
   serviceId,
