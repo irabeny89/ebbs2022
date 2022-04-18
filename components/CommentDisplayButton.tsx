@@ -6,7 +6,11 @@ import { BiMessageAltDots } from "react-icons/bi";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { useState } from "react";
 import AjaxFeedback from "./AjaxFeedback";
-import ServiceCommentModal from "./ServiceCommentModal";
+import dynamic from "next/dynamic";
+
+const ServiceCommentModal = dynamic(() => import("components/ServiceCommentModal"), {
+  loading: () => <AjaxFeedback loading />
+})
 
 export default function CommentDisplayButton({
   serviceId,
