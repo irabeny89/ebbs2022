@@ -145,6 +145,7 @@ export const SERVICE = gql`
 export const SERVICE_LIKE_DATA = gql`
   query ServiceLikeData($serviceId: ID!, $commentArgs: PagingInput!) {
     service(serviceId: $serviceId) {
+      _id
       happyClients
       likeCount
       commentCount
@@ -168,6 +169,7 @@ export const SERVICE_PRODUCT = gql`
   ${PRODUCT_FRAGMENT}
   query ServiceProducts($productArgs: PagingInput!, $serviceId: ID!) {
     service(serviceId: $serviceId) {
+      _id
       products(args: $productArgs) {
         edges {
           node {
@@ -189,16 +191,19 @@ export const SERVICE_PRODUCT = gql`
 
 export const FEW_SERVICES = gql`
   ${PRODUCT_FRAGMENT}
-  ${SERVICE_FRAGMENT}
   query FewServices(
     $serviceArgs: PagingInput!
     $productArgs: PagingInput!
-    $commentArgs: PagingInput!
   ) {
     services(args: $serviceArgs) {
       edges {
         node {
-          ...ServiceFields
+          _id
+          title
+          logoCID
+          description
+          state
+          categories
           products(args: $productArgs) {
             edges {
               node {
@@ -207,18 +212,6 @@ export const FEW_SERVICES = gql`
                   _id
                   title
                 }
-              }
-            }
-          }
-          comments(args: $commentArgs) {
-            edges {
-              node {
-                _id
-                post
-                poster {
-                  username
-                }
-                createdAt
               }
             }
           }
@@ -249,10 +242,6 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
           }
         }
       }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
     }
     services(args: $serviceArgs) {
       edges {
@@ -276,10 +265,6 @@ export const FEW_PRODUCTS_AND_SERVICES = gql`
           }
         }
       }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
     }
   }
 `;
@@ -299,6 +284,8 @@ export const FEW_PRODUCTS = gql`
       }
       pageInfo {
         hasNextPage
+        hasPreviousPage
+        startCursor
         endCursor
       }
     }
@@ -373,7 +360,7 @@ export const PRODUCTS_TAB = gql`
       }
     }
   }
-`
+`;
 
 export const REQUESTS_TAB = gql`
   ${ORDER_FRAGMENT}
@@ -398,7 +385,7 @@ export const REQUESTS_TAB = gql`
       }
     }
   }
-`
+`;
 
 export const ORDERS_TAB = gql`
   ${ORDER_FRAGMENT}
@@ -422,7 +409,7 @@ export const ORDERS_TAB = gql`
       }
     }
   }
-`
+`;
 
 export const DASHBOARD = gql`
   query Dashbaord {
@@ -437,7 +424,48 @@ export const DASHBOARD = gql`
       }
     }
   }
-`
+`;
+
+export const COMMENTS = gql`
+  ${COMMENT_FRAGMENT}
+  query Comments($commentArgs: PagingInput!, $serviceId: ID!) {
+    service(serviceId: $serviceId) {
+      _id
+      comments(args: $commentArgs) {
+        edges {
+          node {
+            ...CommentFields
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const COMMENT_COUNT = gql`
+  query CommentCount($serviceId: ID!) {
+    service(serviceId: $serviceId) {
+      _id
+      commentCount
+    }
+  }
+`;
+
+export const LIKES = gql`
+  query Likes($serviceId: ID!) {
+    service(serviceId: $serviceId) {
+      _id
+      likeCount
+      happyClients
+    }
+  }
+`;
+
+export const LIKE_A_SERVICE = gql`
+  mutation LikeAService($serviceId: ID!, $isFav: Boolean!) {
+    myFavService(serviceId: $serviceId, isFav: $isFav)
+  }
+`;
 
 export const MY_PROFILE = gql`
   ${PRODUCT_FRAGMENT}
@@ -471,6 +499,7 @@ export const MY_PROFILE = gql`
         logoCID
         description
         state
+        likeCount
         happyClients
         productCount
         orderCount

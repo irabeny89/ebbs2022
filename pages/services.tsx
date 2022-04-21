@@ -1,6 +1,4 @@
-import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
-import Col from "react-bootstrap/Col";
 import Tab from "react-bootstrap/Tab";
 import Tabs from "react-bootstrap/Tabs";
 import client from "@/graphql/apollo-client";
@@ -39,14 +37,11 @@ export const getStaticProps: GetStaticProps = async () => {
     >({
       query: FEW_SERVICES,
       variables: {
-        commentArgs: {
-          last: 20,
-        },
         productArgs: {
-          last: 5,
+          last: 10,
         },
         serviceArgs: {
-          last: 20,
+          first: 25,
         },
       },
       fetchPolicy: "no-cache",
@@ -54,7 +49,7 @@ export const getStaticProps: GetStaticProps = async () => {
 
     return error
       ? { notFound: true }
-      : { props: data.services, revalidate: 20 };
+      : { props: data.services, revalidate: 15 };
   },
   // services page component
   ServicesPage = ({
@@ -64,31 +59,56 @@ export const getStaticProps: GetStaticProps = async () => {
     // ref for lazy fetch flag
     const hasLazyFetched = useRef(false),
       // lazy fetch more products
-      [fetchMoreServices, { data, loading, fetchMore }] = useLazyQuery<
+      [fetchServices, { data, loading, fetchMore }] = useLazyQuery<
         ServiceReturnType,
         ServiceVariableType
       >(FEW_SERVICES, {
         variables: {
           serviceArgs: {
-            last: 20,
+            last: 25,
             before: endCursor,
-          },
-          commentArgs: {
-            last: 20,
           },
           productArgs: {
             last: 5,
           },
         },
-      });
-    // omit cursor property from edge node
-    const services = [...(data?.services.edges ?? []), ...edges]
-      .map((edge) => edge.node)
-      .filter((item) => item.products?.edges.length! > 0);
+        notifyOnNetworkStatusChange: true,
+      }),
+      handleFetchMore = () =>
+        fetchMore({
+          variables: {
+            serviceArgs: {
+              first: 25,
+              after: data?.services.pageInfo.endCursor,
+            },
+            productArgs: {
+              last: 10,
+            },
+          },
+        }),
+      // omit cursor property from edge node
+      services = [...(data?.services.edges ?? []), ...edges]
+        .map((edge) => edge.node)
+        .filter((item) => item.products?.edges.length! > 0),
+      categoryTabList = ["ALL"]
+        .concat(...services.map((item) => item.categories!))
+        // deduplicate categories
+        .reduce(
+          (prev: string[], cat) => (prev.includes(cat) ? prev : [...prev, cat]),
+          []
+        ),
+      modifyList = (category: string) =>
+        category === "ALL"
+          ? (services as ServiceCardPropsType[])
+          : (services.filter((item) =>
+              item.categories!.includes(category as ProductCategoryType)
+            ) as ServiceCardPropsType[]),
+      showMoreButton = data
+        ? data?.services?.pageInfo?.hasNextPage
+        : hasNextPage;
 
     return (
       <Layout>
-        {/* head title for services page tab */}
         <Head>
           <title>
             {abbr} | {servicesPage?.pageTitle}
@@ -107,58 +127,28 @@ export const getStaticProps: GetStaticProps = async () => {
           */}
         <Tabs id="category-tabs" defaultActiveKey="ALL">
           {/* render category as tabs */}
-          {["ALL"]
-            .concat(...services.map((item) => item.categories!))
-            // deduplicate categories
-            .reduce(
-              (prev: string[], cat) =>
-                prev.includes(cat) ? prev : [...prev, cat],
-              []
-            )
-            .map((category) => (
-              <Tab title={category} eventKey={category} key={category}>
-                <Row className="bg-danger my-0">
-                  <ServiceSection
-                    className="pt-4 rounded"
-                    // render filtered services based on product categories
-                    items={
-                      category === "ALL"
-                        ? (services as ServiceCardPropsType[])
-                        : (services.filter((item) =>
-                            item.categories!.includes(
-                              category as ProductCategoryType
-                            )
-                          ) as ServiceCardPropsType[])
-                    }
-                  />
-                </Row>
-              </Tab>
-            ))}
-          {hasNextPage ? (
+          {categoryTabList.map((category) => (
+            <Tab title={category} eventKey={category} key={category}>
+              <Row className="bg-danger my-0">
+                <ServiceSection
+                  className="pt-4 rounded"
+                  // render filtered services based on product categories
+                  items={modifyList(category)}
+                />
+              </Row>
+            </Tab>
+          ))}
+          {showMoreButton && (
             <MoreButton
               {...{
-                customFetch: fetchMoreServices,
-                fetchMore: () =>
-                  fetchMore({
-                    variables: {
-                      serviceArgs: {
-                        last: 20,
-                        before: endCursor,
-                      },
-                      commentArgs: {
-                        last: 20,
-                      },
-                      productArgs: {
-                        last: 5,
-                      },
-                    },
-                  }),
-                hasLazyFetched,
+                initialFetch: fetchServices,
+                fetchMore: handleFetchMore,
+                hasLazyFetched: (hasLazyFetched.current = !!data),
                 label: "More services",
                 loading,
               }}
             />
-          ) : null}
+          )}
         </Tabs>
       </Layout>
     );

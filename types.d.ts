@@ -229,7 +229,7 @@ type ServiceReturnType = Record<
 >;
 
 type ServiceVariableType = Record<
-  "commentArgs" | "productArgs" | "serviceArgs",
+  "productArgs" | "serviceArgs",
   PagingInputType
 >;
 
@@ -305,7 +305,17 @@ type ServiceListPropType = {
   items: ServiceCardPropType[];
 } & StyleType;
 
-type ServiceLabelPropType = Omit<ServiceVertexType, "products"> & StyleType;
+type ServiceLabelPropType = Required<
+  Pick<
+    ServiceVertexType,
+    "_id" | "categories" | "description" | "logoCID" | "title" | "state"
+  >
+> &
+  StyleType;
+
+type ServiceLikeButtonPropsType = {
+  serviceId: string;
+};
 
 type LayoutPropsType = {
   children: ReactNode;
@@ -349,9 +359,9 @@ type AjaxFeedbackProps = {
 } & StyleType;
 
 type MoreButtonPropType = {
-  hasLazyFetched: MutableRefObject<boolean>;
+  hasLazyFetched: boolean;
   fetchMore: any;
-  customFetch: any;
+  initialFetch: any;
   loading: boolean;
   label: ReactNode | string;
 };
@@ -375,6 +385,16 @@ type QuickStartModalPropType = {
   link: string;
 } & ModalShowStateType;
 
+type MessengerPropsType = {
+  action: (message: string) => void;
+  label: string;
+  isSubmitting: boolean;
+};
+
+type CommentDisplayButtonPropsType = {
+  serviceId: string;
+};
+
 type CartModalPropType = ModalShowStateType;
 
 type SearchResultModalType = {
@@ -388,8 +408,5 @@ type SearchResultModalType = {
 } & ModalShowStateType;
 
 type ServiceCommentModalType = {
-  authPayload: (UserPayloadType & JwtPayload) | undefined;
   serviceId: string;
-  favoriteService: boolean | undefined;
-  edges: EdgeType<CommentVertexType>[] | undefined;
 } & ModalShowStateType;

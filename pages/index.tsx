@@ -62,13 +62,13 @@ export const getStaticProps: GetStaticProps = async () => {
       query: FEW_PRODUCTS_AND_SERVICES,
       variables: {
         productArgs: {
-          last: 20,
+          last: 10,
         },
         serviceArgs: {
-          last: 20,
+          last: 10,
         },
         serviceProductArgs: {
-          first: 10,
+          first: 5,
         },
       },
       fetchPolicy: "no-cache",
@@ -84,7 +84,7 @@ export const getStaticProps: GetStaticProps = async () => {
               // filter out services without a single product
               .filter((item) => item.products?.edges.length! > 0),
           },
-          revalidate: 20,
+          revalidate: 15,
         };
   },
   // home page component
@@ -123,11 +123,7 @@ export const getStaticProps: GetStaticProps = async () => {
         <Row className="text-center">
           <Col>
             <Link href="/member" passHref>
-              <Button
-                as="a"
-                variant="outline-primary"
-                className="border-3"
-              >
+              <Button as="a" variant="outline-primary" className="border-3">
                 Be a member <MdHowToReg size={30} color="#197acf" />
               </Button>
             </Link>
@@ -137,9 +133,9 @@ export const getStaticProps: GetStaticProps = async () => {
         <Row className="mt-5 rounded" style={highlightStyle}>
           <ProductSection
             title={
-              <Col>
+              <h2>
                 <FaBoxes size="40" className="mb-2" /> Products
-              </Col>
+              </h2>
             }
             items={products}
             className="pt-4 rounded"
@@ -149,11 +145,7 @@ export const getStaticProps: GetStaticProps = async () => {
         <Row className="text-center mt-4 mb-5">
           <Col>
             <Link href="/products" passHref>
-              <Button
-                as="a"
-                variant="outline-primary"
-                className="border-3"
-              >
+              <Button as="a" variant="outline-primary" className="border-3">
                 See All Products <FaBoxes size={30} color="#197acf" />
               </Button>
             </Link>
@@ -165,9 +157,9 @@ export const getStaticProps: GetStaticProps = async () => {
             items={services}
             className="pt-4 rounded"
             title={
-              <Col>
+              <h2>
                 <MdBusinessCenter size="40" className="mb-2" /> Services
-              </Col>
+              </h2>
             }
           />
         </Row>
@@ -175,11 +167,7 @@ export const getStaticProps: GetStaticProps = async () => {
         <Row className="text-center mt-4 mb-5">
           <Col>
             <Link href="/services" passHref>
-              <Button
-                as="a"
-                variant="outline-primary"
-                className="border-3"
-              >
+              <Button as="a" variant="outline-primary" className="border-3">
                 See All Services <MdBusinessCenter size={30} color="#197acf" />
               </Button>
             </Link>

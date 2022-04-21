@@ -17,8 +17,13 @@ import getCidMod from "@/utils/getCidMod";
 import web3storage from "../web3storage";
 import { useMutation, useReactiveVar, useQuery } from "@apollo/client";
 import {
+  COMMENTS_TAB,
+  FEW_PRODUCTS,
+  FEW_PRODUCTS_AND_SERVICES,
+  FEW_SERVICES,
   MY_PROFILE,
   MY_SERVICE_UPDATE,
+  ORDERS_TAB,
   PROFILE_TAB,
 } from "@/graphql/documentNodes";
 import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
@@ -34,20 +39,28 @@ export default function ProfileSection() {
     [uploading, setUploading] = useState(false),
     authPayload = useReactiveVar(authPayloadVar),
     accessToken = useReactiveVar(accessTokenVar),
-    { data, loading, error } = useQuery<
-      Record<"me", UserVertexType>
-    >(PROFILE_TAB, {
-      context: {
-        headers: {
-          authorization: `Bearer ${accessToken}`,
+    { data, loading, error } = useQuery<Record<"me", UserVertexType>>(
+      PROFILE_TAB,
+      {
+        context: {
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+          },
         },
-      },
-    }),
+      }
+    ),
     [updateService, { loading: serviceUpdateLoading }] = useMutation<
       Record<"myServiceUpdate", string>,
       ServiceUpdateVariableType
     >(MY_SERVICE_UPDATE, {
-      refetchQueries: [MY_PROFILE],
+      refetchQueries: [
+        PROFILE_TAB,
+        COMMENTS_TAB,
+        ORDERS_TAB,
+        FEW_PRODUCTS_AND_SERVICES,
+        FEW_PRODUCTS,
+        FEW_SERVICES,
+      ],
       context: {
         headers: {
           authorization: `Bearer ${accessToken}`,

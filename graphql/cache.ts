@@ -1,5 +1,9 @@
 import { InMemoryCache } from "@apollo/client";
-import { CursorConnectionType, ProductVertexType, ServiceVertexType } from "types";
+import {
+  CursorConnectionType,
+  ProductVertexType,
+  ServiceVertexType,
+} from "types";
 
 const initialData = {
   edges: [],

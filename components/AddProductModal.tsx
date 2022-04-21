@@ -8,8 +8,11 @@ import FeedbackToast from "./FeedbackToast";
 import { FormEvent, useState } from "react";
 import {
   ADD_NEW_PRODUCT,
+  FEW_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
+  FEW_SERVICES,
   MY_PROFILE,
+  PRODUCTS_TAB,
 } from "@/graphql/documentNodes";
 import {
   AddProductModalType,
@@ -47,7 +50,12 @@ export default function AddProductModal({
     ] = useMutation<Record<"newProduct", string>, NewProductVariableType>(
       ADD_NEW_PRODUCT,
       {
-        refetchQueries: [MY_PROFILE, FEW_PRODUCTS_AND_SERVICES],
+        refetchQueries: [
+          FEW_PRODUCTS_AND_SERVICES,
+          FEW_PRODUCTS,
+          FEW_SERVICES,
+          PRODUCTS_TAB,
+        ],
         context: {
           headers: {
             authorization: `Bearer ${accessToken}`,

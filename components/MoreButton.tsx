@@ -5,22 +5,18 @@ import Spinner from "react-bootstrap/Spinner";
 const MoreButton = ({
   hasLazyFetched,
   fetchMore,
-  customFetch,
+  initialFetch,
   loading,
-  label = "more",
+  label = "More",
 }: MoreButtonPropType) => {
   return (
     <Button
       size="lg"
       variant="outline-primary"
-      className="m-3"
-      onClick={() =>
-        hasLazyFetched.current
-          ? fetchMore()
-          : (customFetch(), (hasLazyFetched.current = true))
-      }
+      className="m-3 border-3"
+      onClick={hasLazyFetched ? fetchMore : initialFetch}
     >
-      {loading ? <Spinner animation="grow" size="sm" /> : null} {label}
+      {loading && <Spinner animation="grow" size="sm" />}&nbsp;{label}
     </Button>
   );
 };
