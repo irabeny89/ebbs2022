@@ -2,13 +2,11 @@ import type { ProductCardPropsType } from "types";
 import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Card from "react-bootstrap/Card";
-import Spinner from "react-bootstrap/Spinner";
-import Modal from "react-bootstrap/Modal";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Container from "react-bootstrap/Container";
 import Carousel from "react-bootstrap/Carousel";
-import { MdShoppingCart, MdDeleteForever, MdModeEdit } from "react-icons/md";
+import { MdShoppingCart, MdBusinessCenter } from "react-icons/md";
 import getCompactNumberFormat from "../utils/getCompactNumberFormat";
 import Image from "next/image";
 import {
@@ -187,11 +185,13 @@ const ProductCard = ({
             {authPayload?.serviceId === provider._id && (
               <>
                 <EditButton setShow={setShowEdit} />
-                <DeleteButton setShow={setShowDelete}></DeleteButton>
+                <DeleteButton setShow={setShowDelete} />
               </>
             )}
           </Card.Title>
-          <Card.Subtitle>{provider?.title}</Card.Subtitle>
+          <Card.Subtitle>
+            <MdBusinessCenter size={20} /> {provider?.title}
+          </Card.Subtitle>
           <Row className="my-2">
             <Col>
               <Card.Subtitle>{category}</Card.Subtitle>
