@@ -4,15 +4,15 @@ import { InfoModalPropsType } from "types";
 export default function InfoModal({
   show,
   setShow,
-  name,
-  description,
+  title,
+  body,
 }: InfoModalPropsType) {
   return (
     <Modal centered show={show} onHide={() => setShow(false)}>
       <Modal.Header closeButton>
-        <Modal.Title>{name}</Modal.Title>
+        <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>{description}</Modal.Body>
+      <Modal.Body>{body}</Modal.Body>
     </Modal>
   );
 }
