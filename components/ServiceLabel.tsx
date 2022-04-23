@@ -38,7 +38,7 @@ const ServiceLabel = ({
 
   return (
     <section {...{ style, className }}>
-      <InfoModal {...{ description, name, setShow, show }} />
+      <InfoModal {...{ body: description, title, setShow, show }} />
       {/* service label */}
       <Row style={styling.smallTextStyle} className="text-right mb-0 bg-white">
         <Col className="text-nowrap text-truncate">
