@@ -2,51 +2,67 @@ import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Form from "react-bootstrap/Form";
 import Card from "react-bootstrap/Card";
-import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
-import { BiMessageAltDots, BiSend } from "react-icons/bi";
-import { ServiceCommentModalType } from "types";
-import { useEffect, useState } from "react";
-import { useMutation, useReactiveVar } from "@apollo/client";
-import { MY_COMMENT, SERVICE_LIKE_DATA } from "@/graphql/documentNodes";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import { BiMessageAltDots } from "react-icons/bi";
+import {
+  MessengerPropsType,
+  PagingInputType,
+  ServiceCommentModalType,
+  ServiceVertexType,
+} from "types";
+import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
+import { COMMENTS, COMMENT_COUNT, MY_COMMENT } from "@/graphql/documentNodes";
+import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
+import AjaxFeedback from "./AjaxFeedback";
+import Messenger from "./Messenger";
+import Link from "next/link";
 
 export default function ServiceCommentModal({
   show,
   setShow,
-  edges,
+  // edges,
   serviceId,
-  authPayload,
-  favoriteService,
-}: ServiceCommentModalType) {
-  const [post, setPost] = useState(""),
-    // the auth payload
+}: // authPayload,
+// favoriteService,
+ServiceCommentModalType) {
+  const authPayload = useReactiveVar(authPayloadVar),
     accessToken = useReactiveVar(accessTokenVar),
+    // query comments
+    { loading, error, data } = useQuery<
+      Record<"service", ServiceVertexType>,
+      Record<"commentArgs", PagingInputType> & Record<"serviceId", string>
+    >(COMMENTS, {
+      variables: {
+        commentArgs: { last: 50 },
+        serviceId,
+      },
+    }),
     // comment posting
-    [postComment, { loading: postLoading, data: postData }] = useMutation<
+    [postComment, { loading: postLoading }] = useMutation<
       Record<"myCommentPost", string>,
       Record<"serviceId" | "post", string>
     >(MY_COMMENT, {
-      refetchQueries: [SERVICE_LIKE_DATA],
+      refetchQueries: [COMMENTS, COMMENT_COUNT],
       context: {
         headers: {
           authorization: `Bearer ${accessToken}`,
         },
       },
-      variables: {
-        post,
-        serviceId,
-      },
-    });
-  // useEffect hook to manage rerenders
-  useEffect(() => {
-    fetch("/api/revalidateHome");
-    postData?.myCommentPost && setPost("");
-  }, [postData?.myCommentPost, favoriteService]);
+    }),
+    messengerAction: MessengerPropsType["action"] = (message) =>
+      postComment({
+        variables: {
+          post: message,
+          serviceId,
+        },
+      });
 
-  return (
+  return loading ? (
+    <Spinner animation="grow" size="sm" />
+  ) : error ? (
+    <AjaxFeedback error={error} />
+  ) : (
     <Modal show={show} onHide={() => setShow(false)} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>
@@ -56,7 +72,7 @@ export default function ServiceCommentModal({
       <Modal.Body>
         <Container fluid>
           <Row>
-            {(edges ?? [])
+            {(data?.service?.comments?.edges ?? [])
               .map((edge) => edge.node)
               .map((comment) => (
                 <Col key={comment._id.toString()} sm="6">
@@ -75,28 +91,16 @@ export default function ServiceCommentModal({
         </Container>
       </Modal.Body>
       <Modal.Footer>
-        {!!authPayload && (
-          <Col>
-            <Form.FloatingLabel label="Enter comment">
-              <Form.Control
-                value={post}
-                onChange={(e) => setPost(e.currentTarget.value)}
-                placeholder="Enter text"
-                as="textarea"
-                style={{
-                  height: "5rem",
-                }}
-              ></Form.Control>
-            </Form.FloatingLabel>
-            <Button
-              className="w-100 my-2"
-              onClick={() => postComment()}
-              disabled={!post}
-            >
-              {postLoading && <Spinner animation="grow" size="sm" />}
-              <BiSend size={18} /> Send
-            </Button>
-          </Col>
+        {!!authPayload ? (
+          <Messenger
+            {...{
+              action: messengerAction,
+              label: "Enter comment",
+              isSubmitting: postLoading,
+            }}
+          />
+        ) : (
+          <Link href="/member">Login to comment</Link>
         )}
       </Modal.Footer>
     </Modal>

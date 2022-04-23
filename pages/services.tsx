@@ -65,11 +65,11 @@ export const getStaticProps: GetStaticProps = async () => {
       >(FEW_SERVICES, {
         variables: {
           serviceArgs: {
-            last: 25,
-            before: endCursor,
+            first: 25,
+            after: endCursor,
           },
           productArgs: {
-            last: 5,
+            last: 10,
           },
         },
         notifyOnNetworkStatusChange: true,
@@ -87,7 +87,7 @@ export const getStaticProps: GetStaticProps = async () => {
           },
         }),
       // omit cursor property from edge node
-      services = [...(data?.services.edges ?? []), ...edges]
+      services = [...edges, ...(data?.services.edges ?? [])]
         .map((edge) => edge.node)
         .filter((item) => item.products?.edges.length! > 0),
       categoryTabList = ["ALL"]
@@ -138,18 +138,18 @@ export const getStaticProps: GetStaticProps = async () => {
               </Row>
             </Tab>
           ))}
-          {showMoreButton && (
-            <MoreButton
-              {...{
-                initialFetch: fetchServices,
-                fetchMore: handleFetchMore,
-                hasLazyFetched: (hasLazyFetched.current = !!data),
-                label: "More services",
-                loading,
-              }}
-            />
-          )}
         </Tabs>
+        {showMoreButton && (
+          <MoreButton
+            {...{
+              initialFetch: fetchServices,
+              fetchMore: handleFetchMore,
+              hasLazyFetched: (hasLazyFetched.current = !!data),
+              label: "More services",
+              loading,
+            }}
+          />
+        )}
       </Layout>
     );
   };

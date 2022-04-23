@@ -11,7 +11,6 @@ import {
   FEW_PRODUCTS,
   FEW_PRODUCTS_AND_SERVICES,
   FEW_SERVICES,
-  MY_PROFILE,
   PRODUCTS_TAB,
 } from "@/graphql/documentNodes";
 import {
