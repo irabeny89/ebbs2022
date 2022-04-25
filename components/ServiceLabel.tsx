@@ -2,7 +2,6 @@ import Image from "next/image";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
-import Modal from "react-bootstrap/Modal";
 import { BiInfoCircle } from "react-icons/bi";
 import type { ServiceLabelPropType } from "types";
 import { CSSProperties, useState } from "react";
@@ -70,7 +69,10 @@ const ServiceLabel = ({
           <ServiceLikeButton serviceId={_id.toString()} />
         </Col>
         <Col>
-          <CommentDisplayButton serviceId={_id.toString()} />
+          <CommentDisplayButton
+            serviceId={_id.toString()}
+            serviceName={title}
+          />
         </Col>
         <Col>
           <Button

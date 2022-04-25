@@ -17,6 +17,7 @@ const ServiceCommentModal = dynamic(
 
 export default function CommentDisplayButton({
   serviceId,
+  serviceName,
 }: CommentDisplayButtonPropsType) {
   const [showComment, setShowComment] = useState(false),
     { data, loading, error } = useQuery<
@@ -37,6 +38,7 @@ export default function CommentDisplayButton({
       <ServiceCommentModal
         {...{
           serviceId,
+          serviceName,
           setShow: setShowComment,
           show: showComment,
         }}

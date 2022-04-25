@@ -5,12 +5,13 @@ import { useQuery, useReactiveVar, useMutation } from "@apollo/client";
 import config from "config";
 import { useState } from "react";
 import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
-import { MessengerPropsType, PagingInputType, UserVertexType } from "types";
+import { MessagePosterPropsType, PagingInputType, UserVertexType } from "types";
 import { COMMENTS_TAB, MY_COMMENT } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import DashboardServiceAlert from "components/DashboardServiceAlert";
-import Messenger from "./Messenger";
+import Messenger from "./MessagePoster";
 import FeedbackToast from "./FeedbackToast";
+import PostCard from "./PostCard";
 
 const {
   constants: { AUTH_PAYLOAD },
@@ -44,7 +45,7 @@ export default function CommentsSection() {
         },
       },
     }),
-    messengerAction: MessengerPropsType["action"] = (message) =>
+    messengerAction: MessagePosterPropsType["action"] = (message) =>
       sendPost({
         variables: {
           post: message,
@@ -61,28 +62,23 @@ export default function CommentsSection() {
   ) : (
     <>
       <FeedbackToast {...{ showToast, setShowToast, error: errorPosting }} />
-      {data?.me?.service?.comments?.edges.map(({ node: comment }) => (
-        <Row key={comment._id?.toString()} className="justify-content-center">
-          <Col lg="7">
-            <Card className="my-3">
-              <Card.Header
-                className={`${
-                  JSON.parse(localStorage.getItem(AUTH_PAYLOAD)!)?.username ===
-                    comment.poster?.username && "text-info"
-                }`}
-              >
-                <Card.Title>{comment?.poster?.username}</Card.Title>
-                <Card.Subtitle>
-                  {new Date(+comment.createdAt).toDateString()}
-                </Card.Subtitle>
-              </Card.Header>
-              <Card.Body>
-                <Card.Text>{comment.post}</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      ))}
+      {data?.me?.service?.comments?.edges.map(
+        ({ node: { createdAt, _id, post, poster, topic } }) => (
+          <Row key={_id?.toString()} className="justify-content-center">
+            <Col lg="7">
+              <PostCard
+                {...{
+                  createdAt: createdAt.toString(),
+                  post,
+                  serviceId: authPayload.serviceId!,
+                  username: poster?.username!,
+                  userServiceId: poster?.service?._id?.toString()!,
+                }}
+              />
+            </Col>
+          </Row>
+        )
+      )}
       <Row className="justify-content-center mt-5">
         <Col lg="7">
           <Messenger

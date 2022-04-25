@@ -4,9 +4,10 @@ import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
 import Card from "react-bootstrap/Card";
 import Spinner from "react-bootstrap/Spinner";
-import { BiMessageAltDots } from "react-icons/bi";
+import Badge from "react-bootstrap/Badge";
+import { BiMessageAltDots, BiUserCircle } from "react-icons/bi";
 import {
-  MessengerPropsType,
+  MessagePosterPropsType,
   PagingInputType,
   ServiceCommentModalType,
   ServiceVertexType,
@@ -15,17 +16,16 @@ import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import { COMMENTS, COMMENT_COUNT, MY_COMMENT } from "@/graphql/documentNodes";
 import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
 import AjaxFeedback from "./AjaxFeedback";
-import Messenger from "./Messenger";
+import MessagerPoster from "./MessagePoster";
 import Link from "next/link";
+import PostCard from "./PostCard";
 
 export default function ServiceCommentModal({
   show,
   setShow,
-  // edges,
   serviceId,
-}: // authPayload,
-// favoriteService,
-ServiceCommentModalType) {
+  serviceName,
+}: ServiceCommentModalType) {
   const authPayload = useReactiveVar(authPayloadVar),
     accessToken = useReactiveVar(accessTokenVar),
     // query comments
@@ -50,7 +50,7 @@ ServiceCommentModalType) {
         },
       },
     }),
-    messengerAction: MessengerPropsType["action"] = (message) =>
+    messagerPostAction: MessagePosterPropsType["action"] = (message) =>
       postComment({
         variables: {
           post: message,
@@ -66,35 +66,36 @@ ServiceCommentModalType) {
     <Modal show={show} onHide={() => setShow(false)} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>
-          <BiMessageAltDots /> Comments
+          <BiMessageAltDots /> Comments about{" "}
+          <span className="text-info">{serviceName}</span>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Container fluid>
           <Row>
-            {(data?.service?.comments?.edges ?? [])
-              .map((edge) => edge.node)
-              .map((comment) => (
-                <Col key={comment._id.toString()} sm="6">
-                  <Card className="mb-3">
-                    <Card.Header>
-                      <Card.Title>{comment?.poster?.username!}</Card.Title>
-                      <Card.Subtitle>
-                        {new Date(+comment.createdAt).toDateString()}
-                      </Card.Subtitle>
-                    </Card.Header>
-                    <Card.Body>{comment.post}</Card.Body>
-                  </Card>
+            {(data?.service?.comments?.edges ?? []).map(
+              ({ node: { createdAt, _id, post, poster } }) => (
+                <Col key={_id.toString()} sm="6">
+                  <PostCard
+                    {...{
+                      createdAt: createdAt.toString(),
+                      post,
+                      serviceId,
+                      username: poster?.username!,
+                      userServiceId: poster?.service?._id?.toString()!,
+                    }}
+                  />
                 </Col>
-              ))}
+              )
+            )}
           </Row>
         </Container>
       </Modal.Body>
       <Modal.Footer>
         {!!authPayload ? (
-          <Messenger
+          <MessagerPoster
             {...{
-              action: messengerAction,
+              action: messagerPostAction,
               label: "Enter comment",
               isSubmitting: postLoading,
             }}
