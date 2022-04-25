@@ -351,6 +351,12 @@ type DeliveryFormType = {
 
 type AddProductModalType = ModalShowStateType;
 
+type EditProductModalType = Omit<
+  ProductType,
+  "createdAt" | "updatedAt" | "provider"
+> &
+  ModalShowStateType;
+
 type AjaxFeedbackProps = {
   loading?: boolean;
   error?: any;
@@ -385,14 +391,35 @@ type QuickStartModalPropType = {
   link: string;
 } & ModalShowStateType;
 
-type MessengerPropsType = {
+type MessagePosterPropsType = {
   action: (message: string) => void;
   label: string;
   isSubmitting: boolean;
 };
 
+type InfoModalPropsType = Record<"title" | "body", string> & ModalShowStateType;
+
+type InfoButtonPropsType = {
+  setShow: ModalShowStateType["setShow"];
+};
+
+type EditButtonPropsType = {
+  setShow: ModalShowStateType["setShow"];
+};
+
+type DeleteButtonPropsType = {
+  setShow: ModalShowStateType["setShow"];
+};
+
+type DeleteModalPropsType = {
+  handleDelete: () => {};
+  name: string;
+  deleteLoading: boolean;
+} & ModalShowStateType;
+
 type CommentDisplayButtonPropsType = {
   serviceId: string;
+  serviceName: string;
 };
 
 type CartModalPropType = ModalShowStateType;
@@ -409,4 +436,5 @@ type SearchResultModalType = {
 
 type ServiceCommentModalType = {
   serviceId: string;
+  serviceName: string;
 } & ModalShowStateType;

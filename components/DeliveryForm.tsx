@@ -13,7 +13,7 @@ import {
   cartItemsVar,
 } from "@/graphql/reactiveVariables";
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
-import { MY_PROFILE, SERVICE_ORDER } from "@/graphql/documentNodes";
+import { REQUESTS_TAB, SERVICE_ORDER } from "@/graphql/documentNodes";
 import { DeliveryFormType, OrderType } from "types";
 import countCartItems from "@/utils/countCartItems";
 import { FaFirstOrder, FaTrash } from "react-icons/fa";
@@ -47,7 +47,7 @@ export default function DeliveryForm({ children }: DeliveryFormType) {
           authorization: `Bearer ${accessToken}`,
         },
       },
-      refetchQueries: [MY_PROFILE],
+      refetchQueries: [REQUESTS_TAB],
     }),
     handleSubmit = (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();

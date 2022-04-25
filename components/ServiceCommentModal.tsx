@@ -2,10 +2,8 @@ import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Card from "react-bootstrap/Card";
 import Spinner from "react-bootstrap/Spinner";
-import Badge from "react-bootstrap/Badge";
-import { BiMessageAltDots, BiUserCircle } from "react-icons/bi";
+import { BiMessageAltDots } from "react-icons/bi";
 import {
   MessagePosterPropsType,
   PagingInputType,
@@ -80,9 +78,11 @@ export default function ServiceCommentModal({
                     {...{
                       createdAt: createdAt.toString(),
                       post,
+                      posterId: poster?._id.toString()!,
                       serviceId,
+                      commentId: _id.toString(),
                       username: poster?.username!,
-                      userServiceId: poster?.service?._id?.toString()!,
+                      posterServiceId: poster?.service?._id?.toString()!,
                     }}
                   />
                 </Col>

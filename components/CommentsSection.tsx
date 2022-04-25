@@ -1,6 +1,5 @@
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
-import Card from "react-bootstrap/Card";
 import { useQuery, useReactiveVar, useMutation } from "@apollo/client";
 import config from "config";
 import { useState } from "react";
@@ -63,16 +62,18 @@ export default function CommentsSection() {
     <>
       <FeedbackToast {...{ showToast, setShowToast, error: errorPosting }} />
       {data?.me?.service?.comments?.edges.map(
-        ({ node: { createdAt, _id, post, poster, topic } }) => (
+        ({ node: { createdAt, _id, post, poster } }) => (
           <Row key={_id?.toString()} className="justify-content-center">
             <Col lg="7">
               <PostCard
                 {...{
                   createdAt: createdAt.toString(),
                   post,
+                  commentId: _id.toString(),
+                  posterId: poster?._id?.toString()!,
                   serviceId: authPayload.serviceId!,
                   username: poster?.username!,
-                  userServiceId: poster?.service?._id?.toString()!,
+                  posterServiceId: poster?.service?._id?.toString()!,
                 }}
               />
             </Col>
