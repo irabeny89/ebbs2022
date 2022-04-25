@@ -27,24 +27,26 @@ export const PRODUCT_FRAGMENT = gql`
     }
   `,
   PAGING_FRAGMENT = gql`
-    fragment PageInfoFields on PaginationInfo {
+    fragment PageInfoFields on PageInfo {
       totalPages
       totalItems
       page
       perPage
       hasNextPage
       hasPreviousPage
+      startCursor
+      endCursor
     }
   `,
   COMMENT_FRAGMENT = gql`
     fragment CommentFields on ServiceComment {
       _id
-      topic {
-        title
-      }
       post
       poster {
         username
+        service {
+          _id
+        }
       }
       createdAt
     }
@@ -104,11 +106,7 @@ export const USER_REQUEST_PASSCODE = gql`
 export const SERVICE = gql`
   ${PRODUCT_FRAGMENT}
   ${SERVICE_FRAGMENT}
-  query UserService(
-    $serviceId: ID!
-    $productArgs: PagingInput!
-    $commentArgs: PagingInput!
-  ) {
+  query UserService($serviceId: ID!, $productArgs: PagingInput!) {
     service(serviceId: $serviceId) {
       ...ServiceFields
       products(args: $productArgs) {
@@ -122,20 +120,10 @@ export const SERVICE = gql`
           }
         }
         pageInfo {
-          endCursor
           hasNextPage
-        }
-      }
-      comments(args: $commentArgs) {
-        edges {
-          node {
-            _id
-            post
-            poster {
-              username
-            }
-            createdAt
-          }
+          hasPreviousPage
+          startCursor
+          endCursor
         }
       }
     }
@@ -181,8 +169,10 @@ export const SERVICE_PRODUCT = gql`
           }
         }
         pageInfo {
+          startCursor
           endCursor
           hasNextPage
+          hasPreviousPage
         }
       }
     }
@@ -191,10 +181,7 @@ export const SERVICE_PRODUCT = gql`
 
 export const FEW_SERVICES = gql`
   ${PRODUCT_FRAGMENT}
-  query FewServices(
-    $serviceArgs: PagingInput!
-    $productArgs: PagingInput!
-  ) {
+  query FewServices($serviceArgs: PagingInput!, $productArgs: PagingInput!) {
     services(args: $serviceArgs) {
       edges {
         node {
@@ -315,7 +302,6 @@ export const PROFILE_TAB = gql`
 `;
 
 export const COMMENTS_TAB = gql`
-  ${COMMENT_FRAGMENT}
   query CommentsTab($commentArgs: PagingInput!) {
     me {
       _id
@@ -325,7 +311,16 @@ export const COMMENTS_TAB = gql`
         comments(args: $commentArgs) {
           edges {
             node {
-              ...CommentFields
+              _id
+              post
+              poster {
+                _id
+                username
+                service {
+                  _id
+                }
+              }
+              createdAt
             }
           }
         }
@@ -427,14 +422,22 @@ export const DASHBOARD = gql`
 `;
 
 export const COMMENTS = gql`
-  ${COMMENT_FRAGMENT}
   query Comments($commentArgs: PagingInput!, $serviceId: ID!) {
     service(serviceId: $serviceId) {
       _id
       comments(args: $commentArgs) {
         edges {
           node {
-            ...CommentFields
+            _id
+            post
+            poster {
+              _id
+              username
+              service {
+                _id
+              }
+            }
+            createdAt
           }
         }
       }
@@ -464,89 +467,6 @@ export const LIKES = gql`
 export const LIKE_A_SERVICE = gql`
   mutation LikeAService($serviceId: ID!, $isFav: Boolean!) {
     myFavService(serviceId: $serviceId, isFav: $isFav)
-  }
-`;
-
-export const MY_PROFILE = gql`
-  ${PRODUCT_FRAGMENT}
-  ${COMMENT_FRAGMENT}
-  ${ORDER_FRAGMENT}
-  query MyProfile(
-    $productArgs: PagingInput!
-    $commentArgs: PagingInput!
-    $orderArgs: PagingInput!
-    $requestArgs: PagingInput!
-  ) {
-    me {
-      _id
-      username
-      email
-      requestCount
-      requests(args: $requestArgs) {
-        edges {
-          node {
-            ...OrderFields
-          }
-        }
-        pageInfo {
-          endCursor
-          hasNextPage
-        }
-      }
-      service {
-        _id
-        title
-        logoCID
-        description
-        state
-        likeCount
-        happyClients
-        productCount
-        orderCount
-        commentCount
-        maxProduct
-        categories
-        products(args: $productArgs) {
-          edges {
-            node {
-              ...ProductFields
-              provider {
-                _id
-                title
-              }
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        comments(args: $commentArgs) {
-          edges {
-            node {
-              ...CommentFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        orders(args: $orderArgs) {
-          edges {
-            node {
-              ...OrderFields
-            }
-          }
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-        }
-        updatedAt
-      }
-      createdAt
-    }
   }
 `;
 
@@ -636,6 +556,12 @@ export const ADD_NEW_PRODUCT = gql`
   }
 `;
 
+export const EDIT_PRODUCT = gql`
+  mutation EditProduct($fields: EditProductInput!) {
+    editProduct(args: $fields)
+  }
+`;
+
 export const DELETE_MY_PRODUCT = gql`
   mutation DeleteMyProduct($productId: ID!) {
     deleteMyProduct(productId: $productId)
@@ -657,6 +583,12 @@ export const SERVICE_ORDER = gql`
 export const MY_COMMENT = gql`
   mutation MyComment($serviceId: ID!, $post: String!) {
     myCommentPost(serviceId: $serviceId, post: $post)
+  }
+`;
+
+export const DELETE_MY_COMMENT = gql`
+  mutation DeleteMyComment($commentId: ID!) {
+    deleteMyComment(commentId: $commentId)
   }
 `;
 
