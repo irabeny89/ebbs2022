@@ -1,15 +1,15 @@
-import { MessengerPropsType } from "types";
+import { MessagePosterPropsType } from "types";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { BiSend } from "react-icons/bi";
 import { FormEvent } from "react";
 
-export default function Messenger({
+export default function MessagePoster({
   action,
   isSubmitting,
   label,
-}: MessengerPropsType) {
+}: MessagePosterPropsType) {
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const message = new FormData(e.currentTarget).get("message") as
