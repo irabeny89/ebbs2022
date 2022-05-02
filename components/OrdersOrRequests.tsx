@@ -18,6 +18,7 @@ import getLocalePrice from "@/utils/getLocalePrice";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import {
   ORDERS_TAB,
+  REQUESTS_TAB,
   SET_ORDER_DELIVERY_DATE,
   UPDATE_ORDER_ITEM_STATUS,
 } from "@/graphql/documentNodes";
@@ -105,7 +106,7 @@ const OrdersOrRequests = ({
           authorization: `Bearer ${accessToken}`,
         },
       },
-      refetchQueries: [ORDERS_TAB],
+      refetchQueries: [ORDERS_TAB, REQUESTS_TAB],
     }),
     [setOrderDeliveryDate, { loading: deliveryDateLoading }] = useMutation<
       Record<"setOrderDeliveryDate", string>,
@@ -140,9 +141,9 @@ const OrdersOrRequests = ({
                               typeof value === "number" &&
                               !!value && (
                                 <Badge
+                                  pill
                                   key={key}
                                   className={getStatusColor(key)}
-                                  pill
                                 >
                                   {value + key[0]}
                                 </Badge>
@@ -153,7 +154,6 @@ const OrdersOrRequests = ({
                               {" "}
                               | ETA:{" "}
                               <Badge
-                                pill
                                 className={
                                   +order.deliveryDate < Date.now()
                                     ? "bg-danger"
@@ -173,11 +173,11 @@ const OrdersOrRequests = ({
                         {getCompactNumberFormat(order.items!.length)}
                       </Badge>{" "}
                       |{" "}
-                      <Badge className="bg-dark" pill>
+                      <Badge className="bg-dark">
                         {getLocalePrice(order.totalCost!)}
                       </Badge>{" "}
                       |&nbsp;
-                      <Badge className="bg-dark" pill>
+                      <Badge className="bg-dark">
                         {new Date(+order?.createdAt! || 0).toDateString()}
                       </Badge>
                     </Card.Subtitle>
@@ -231,7 +231,6 @@ const OrdersOrRequests = ({
                           >
                             <td style={{ cursor: "pointer" }}>
                               <Badge
-                                pill
                                 className={getStatusColor(item?.status ?? "")}
                               >
                                 {item.status}
