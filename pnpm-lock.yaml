@@ -10,7 +10,6 @@ specifiers:
   '@testing-library/user-event': ^13.5.0
   '@types/cookie': ^0.4.1
   '@types/jsonwebtoken': ^8.5.8
-  '@types/lodash': ^4.14.180
   '@types/nodemailer': ^6.4.4
   '@types/react': 17.0.38
   apollo-server-core: ^3.6.5
@@ -26,13 +25,11 @@ specifiers:
   graphql: ^16.3.0
   jest: ^27.5.1
   jsonwebtoken: ^8.5.1
-  lodash: ^4.17.21
   micro: ^9.3.4
   moment: ^2.29.1
   mongoose: ^6.2.8
   next: ^12.1.0
   next-auth: ^4.3.1
-  next-themes: ^0.0.15
   node-fetch: '*'
   nodemailer: ^6.7.3
   react: 17.0.2
@@ -58,13 +55,11 @@ dependencies:
   dataloader: 2.0.0
   graphql: 16.3.0
   jsonwebtoken: 8.5.1
-  lodash: 4.17.21
   micro: 9.3.4
   moment: 2.29.1
   mongoose: 6.2.8
   next: 12.1.0_978f344c876a57c1143ffe356b90df31
   next-auth: 4.3.1_4afad201897773dfa3805b662ddbabf0
-  next-themes: 0.0.15_caa633a00319350dbda42996613fe26c
   node-fetch: 3.2.3
   nodemailer: 6.7.3
   react: 17.0.2
@@ -82,7 +77,6 @@ devDependencies:
   '@testing-library/user-event': 13.5.0_@testing-library+dom@8.11.4
   '@types/cookie': 0.4.1
   '@types/jsonwebtoken': 8.5.8
-  '@types/lodash': 4.14.180
   '@types/nodemailer': 6.4.4
   '@types/react': 17.0.38
   babel-jest: 27.5.1_@babel+core@7.17.8
@@ -1263,10 +1257,6 @@ packages:
     resolution: {integrity: sha512-zm6xBQpFDIDM6o9r6HSgDeIcLy82TKWctCXEPbJJcXb5AKmi5BNNdLXneixK4lplX3PqIVcwLBCGE/kAGnlD4A==}
     dependencies:
       '@types/node': 17.0.23
-    dev: true
-
-  /@types/lodash/4.14.180:
-    resolution: {integrity: sha512-XOKXa1KIxtNXgASAnwj7cnttJxS4fksBRywK/9LzRV5YxrF80BXZIGeQSuoESQ/VkUj30Ae0+YcuHc15wJCB2g==}
     dev: true
 
   /@types/long/4.0.1:
@@ -4688,6 +4678,7 @@ packages:
 
   /lodash/4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
+    dev: true
 
   /loglevel/1.8.0:
     resolution: {integrity: sha512-G6A/nJLRgWOuuwdNuA6koovfEV1YpqqAG4pRUlFaz3jj2QNZ8M4vBqnVA+HBTmU/AMNUtlOsMmSpF6NyOjztbA==}
@@ -5016,18 +5007,6 @@ packages:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
       uuid: 8.3.2
-    dev: false
-
-  /next-themes/0.0.15_caa633a00319350dbda42996613fe26c:
-    resolution: {integrity: sha512-LTmtqYi03c4gMTJmWwVK9XkHL7h0/+XrtR970Ujvtu3s0kZNeJN24aJsi4rkZOI8i19+qq6f8j+8Duwy5jqcrQ==}
-    peerDependencies:
-      next: '*'
-      react: '*'
-      react-dom: '*'
-    dependencies:
-      next: 12.1.0_978f344c876a57c1143ffe356b90df31
-      react: 17.0.2
-      react-dom: 17.0.2_react@17.0.2
     dev: false
 
   /next/12.1.0_978f344c876a57c1143ffe356b90df31:
