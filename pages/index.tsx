@@ -110,10 +110,7 @@ export const getStaticProps: GetStaticProps = async () => {
           pageTitle={
             <>
               <FaHome size="40" className="mb-2" /> {homePage?.pageTitle} |{" "}
-              <Button
-                onClick={() => setShow(true)}
-                variant="outline-dark border-2"
-              >
+              <Button onClick={() => setShow(true)} variant="primary">
                 Quick Start
               </Button>
             </>

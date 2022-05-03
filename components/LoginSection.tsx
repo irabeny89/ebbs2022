@@ -5,6 +5,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { MdLogin, MdSend } from "react-icons/md";
+import { decode } from "jsonwebtoken";
 import { useState, useEffect } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { USER_LOGIN } from "@/graphql/documentNodes";
@@ -35,7 +36,6 @@ export default function LoginSection() {
   useEffect(() => {
     // update access token on login success, filter cart items & save payload in storage
     (async () => {
-      const decode = (await import("jsonwebtoken")).decode;
       data &&
         (localStorage.setItem(AUTH_PAYLOAD, JSON.stringify(decode(data.login))),
         localStorage.setItem(

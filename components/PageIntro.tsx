@@ -34,20 +34,23 @@ export default function PageIntro({
 
   return (
     <>
-      <Row className="justify-content-between align-items-center">
+      <Row className="justify-content-between align-items-center bg-dark text-white">
         <Col className="my-4" as="h2">
           {pageTitle} {authPayload?.username && <> | {authPayload.username}</>}
         </Col>
         <Col xs="auto">
           {authPayload && (
-            <Button size="lg" variant="outline-danger" onClick={() => logout()}>
+            <Button
+              size="lg"
+              variant="outline-danger border-3"
+              onClick={() => logout()}
+            >
               {loggingOut && <Spinner size="sm" animation="grow" />} Logout
             </Button>
           )}
         </Col>
       </Row>
-      <hr />
-      <Row>
+      <Row className="my-4">
         <Col className="text-center">
           {paragraphs.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>
