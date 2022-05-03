@@ -7,21 +7,27 @@ const config = {
     author: "Ernest Irabor",
     title: "EBBS - EveryBodyBuySell",
     abbr: "EBBS",
-    socialMedia: [{ name: "Telegram", link: "https://t.me/ebbs2022" }, { name: "Email", link: "Everybodybuysell@gmail.com" }],
+    socialMedia: [
+      { name: "Telegram", link: "https://t.me/ebbs2022" },
+      { name: "Email", link: "Everybodybuysell@gmail.com" },
+    ],
     description:
-      "EBBS - EveryBodyBuySell is a platform for everybody to create and manage their online businesses.",
+      "EBBS - EveryBodyBuySell is an ecommerce web app. It is a platform that connects service providers and consumers.",
     features: [
-      "Simple dashboard to manage online trades.",
-      "Track orders and your requests.",
-      "Add or remove products from catalog.",
-      "Relate with customers via comments tab.",
+      "Browse products and services.",
+      "Create 2-in-1 account - provider and consumer profile.",
+      "Manage your profile and/or products and services.",
+      "Manage your orders and requests.",
+      "Comment on service providers.",
+      "Send direct messages the users.",
+      "Telegram channel and group for feedbacks.",
       "More features coming...",
     ],
     gettingStartedSteps: [
       "Go to the 'Member' page.",
       "Click the 'Register' tab.",
       "Fill the form accordingly.",
-      "Then submit. And congrats, member :)."
+      "Then submit. And congrats, member :).",
     ],
     privacyTypes: ["ALL", "USER", "ADMIN"],
     testAccount: {
@@ -66,7 +72,7 @@ const config = {
         "Taraba",
         "Yobe",
         "Zamfara",
-      ]
+      ],
     },
     productCategories: [
       "WEARS",
@@ -76,7 +82,22 @@ const config = {
       "FOOD_DRUGS",
       "SOFTWARES",
       "PETS",
-      "ARTS"
+      "ARTS",
+      "EDUCATION",
+    ],
+    productCategoryExamples: [
+      { Wears: "clothes, jewelry, shoes, wigs, etc." },
+      { Electricals: "TV sets, generator sets, pressing Irons, etc." },
+      { Vehicles: "cars, bikes, airplanes, helicopters, etc." },
+      { Electronics: "phones, power banks, laptops, keyboards, etc." },
+      {
+        FoodAndDrugs:
+          "fruits, slim tea, sesame seeds, pain relieving balm, etc.",
+      },
+      { Pets: "dogs, cats, etc." },
+      { Softwares: "SAAS apps, blog sites, etc." },
+      { Arts: "digital arts, hand drawn porttraits, etc." },
+      { Education: "tutorial videos and materials etc." },
     ],
     orderStatuses: ["PENDING", "SHIPPED", "DELIVERED", "CANCELED"],
     subscriptionInfos: [
@@ -119,7 +140,8 @@ const config = {
         pageTitle: "Home",
         description: "List of products and services.",
         parargraphs: [
-          "EBBS - EveryBodyBuySell is a platform to trade with other members.",
+          "EBBS is an ecommerce web app. It is a platform that connects service providers and consumers.",
+          "Once you create a profile you can monitor orders, requests, comments, products, direct messages etc.",
         ],
       },
       {
@@ -163,9 +185,14 @@ const config = {
         pageTitle: "About",
         description: "Learn about EBBS - the About Us page",
         parargraphs: [
-          "EveryBodyBuySell- EBBS is a platform that allows members to trade with each other.",
+          "EBBS(EveryBodyBuySell) is an ecommerce web app. It is a platform that connects service providers and consumers.",
+          "Service providers list their products and services while the consumers make requests for their interested products.",
           "Once you create a profile you can monitor orders, requests, comments, products etc.",
         ],
+        alert:
+          "Currently, EBBS does not handle payments and it is up to the users to handle that part with discretion. Do not pay before service if you do not trust the service provider.",
+        categoryParagraph:
+          "Different categories of businesses will be supported but currently supports:",
       },
     ],
   },

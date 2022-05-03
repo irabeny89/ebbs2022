@@ -57,7 +57,11 @@ type ProductCategoryType =
   | "ELECTRICALS"
   | "VEHICLES"
   | "ELECTRONICS"
-  | "FOOD_DRUGS";
+  | "FOOD_DRUGS"
+  | "PETS"
+  | "SOFTWARES"
+  | "ARTS"
+  | "EDUCATION";
 
 type TimestampAndId = {
   _id: string | mongoose.Types.ObjectId;
@@ -136,6 +140,16 @@ type CommentType = {
   poster: mongoose.Types.ObjectId;
   post: string;
 } & TimestampAndId;
+
+type MessageType = {
+  message: string;
+  sender: mongoose.Types.ObjectId | string;
+  receiver: mongoose.Types.ObjectId | string;
+} & TimestampAndId;
+
+type MessageVertexType = Partial<
+  Omit<MessageType, "sender"> & Record<"sender", UserVertexType>
+>;
 
 type ProductVertexType = Partial<
   Omit<ProductType, "provider"> & {

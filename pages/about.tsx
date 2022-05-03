@@ -1,11 +1,14 @@
 import { FaTelegram } from "react-icons/fa";
 import Layout from "@/components/Layout";
+import Link from "next/link";
 import config from "../config";
 import Head from "next/head";
-import Link from "next/link";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import Table from "react-bootstrap/Table";
+import Alert from "react-bootstrap/Alert";
+import Container from "react-bootstrap/Container";
 import {
   MdOutlineInfo,
   MdHowToReg,
@@ -20,6 +23,7 @@ const {
     features,
     abbr,
     socialMedia: [{ link }],
+    productCategoryExamples,
   } = config.appData,
   // find home page data
   aboutPage = webPages.find(
@@ -43,11 +47,38 @@ const About = () => (
       }
       paragraphs={aboutPage?.parargraphs}
     />
+    <Alert variant="info" className="text-center border-5">
+      {aboutPage?.alert}
+    </Alert>
+    <Container>
+      <Row>
+        <h3 className="my-3">Business Categories</h3>
+        <p>{aboutPage?.categoryParagraph}</p>
+        <Table striped bordered hover size="sm" responsive>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Category</th>
+              <th>Examples</th>
+            </tr>
+          </thead>
+          <tbody>
+            {productCategoryExamples.map((categoryExample, i) => (
+              <tr key={i}>
+                <td>{i + 1}</td>
+                <td>{Object.keys(categoryExample)}</td>
+                <td>{Object.values(categoryExample)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Row>
+    </Container>
     {/* features */}
-    <Row className="my-3 justify-content-center">
+    <Row className="my-3 justify-content-center bg-dark text-white">
       <Col sm="auto" className="m-3">
-        <h3>
-          <MdFeaturedPlayList size={25} /> Features:
+        <h3 className="my-3">
+          <MdFeaturedPlayList size={25} /> Features
         </h3>
         {features.map((feature, i) => (
           <ul key={i}>
@@ -57,15 +88,17 @@ const About = () => (
       </Col>
       {/* how to get started */}
       <Col id="new" sm="auto" className="m-3">
-        <h3>
-          <MdHowToReg size={25} /> How to get started:
+        <h3 className="my-3">
+          <MdHowToReg size={25} /> How to get started
         </h3>
         <ol>
           {gettingStartedSteps.map((step, i) => (
             <li key={i}>{step}</li>
           ))}
         </ol>
-        <Link href="/member">Link to member page.</Link>
+        <Link passHref href="/member">
+          <Button>Link to member page.</Button>
+        </Link>
       </Col>
     </Row>
     {/* info */}
