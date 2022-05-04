@@ -6,7 +6,7 @@ import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { MdLogin, MdSend } from "react-icons/md";
 import { decode } from "jsonwebtoken";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { USER_LOGIN } from "@/graphql/documentNodes";
 import type { UserLoginVariableType } from "types";
@@ -26,13 +26,34 @@ const FeedbackToast = dynamic(() => import("./FeedbackToast"), {
 export default function LoginSection() {
   const [validated, setValidated] = useState(false),
     // feedback toast
-    [showToast, setShowToast] = useState(false),
-    router = useRouter(),
-    // login mutation
-    [login, { data, loading, error }] = useLazyQuery<
-      Record<"login", string>,
-      UserLoginVariableType
-    >(USER_LOGIN);
+    [showToast, setShowToast] = useState(false);
+
+  const router = useRouter();
+
+  // login mutation
+  const [login, { data, loading, error }] = useLazyQuery<
+    Record<"login", string>,
+    UserLoginVariableType
+  >(USER_LOGIN);
+
+  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    // check form validity before submitting...
+    e.currentTarget.checkValidity()
+      ? // ...if valid, off validity, send the query & reset form inputs
+        (login({
+          variables: {
+            email: formData.get("email")?.toString() ?? "",
+            password: formData.get("password")?.toString() ?? "",
+          },
+        }),
+        setValidated(false),
+        e.currentTarget.reset())
+      : // ...else prevent submitting & on validity
+        (e.preventDefault(), e.stopPropagation(), setValidated(true));
+  };
+
   useEffect(() => {
     // update access token on login success, filter cart items & save payload in storage
     (async () => {
@@ -65,25 +86,7 @@ export default function LoginSection() {
               data-testid="loginForm"
               noValidate
               validated={validated}
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget);
-                // check form validity before submitting...
-                e.currentTarget.checkValidity()
-                  ? // ...if valid, off validity, send the query & reset form inputs
-                    (login({
-                      variables: {
-                        email: formData.get("email")?.toString() ?? "",
-                        password: formData.get("password")?.toString() ?? "",
-                      },
-                    }),
-                    setValidated(false),
-                    e.currentTarget.reset())
-                  : // ...else prevent submitting & on validity
-                    (e.preventDefault(),
-                    e.stopPropagation(),
-                    setValidated(true));
-              }}
+              onSubmit={handleLogin}
             >
               <Form.FloatingLabel label="Email">
                 <Form.Control
