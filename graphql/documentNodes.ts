@@ -531,6 +531,35 @@ export const LOGOUT = gql`
   }
 `;
 
+export const INBOX = gql`
+  query Inbox($inboxArgs: PagingInput!) {
+    inbox(args: $inboxArgs) {
+      edges {
+        node {
+          _id
+          message
+          receiver
+          sender {
+            _id
+            username
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const DIRECT_MESSAGERS = gql`
+  query DirectMessagers {
+    directMessagers {
+      _id
+      username
+      unSeenSentCount
+      unSeenReceivedCount
+    }
+  }
+`;
+
 // mutation operations
 export const USER_REGISTER = gql`
   mutation register($registerInput: RegisterInput!) {
@@ -601,5 +630,11 @@ export const MY_SERVICE_UPDATE = gql`
 export const SET_ORDER_DELIVERY_DATE = gql`
   mutation SetOrderDeliveryDate($orderId: ID!, $deliveryDate: String!) {
     setOrderDeliveryDate(orderId: $orderId, deliveryDate: $deliveryDate)
+  }
+`;
+
+export const SEND_MY_DIRECT_MESSAGE = gql`
+  mutation SendMyDirectMessage($message: String!, $receiverId: ID!) {
+    sendMyDirectMessage(message: $message, receiverId: $receiverId)
   }
 `;

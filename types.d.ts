@@ -147,9 +147,8 @@ type MessageType = {
   receiver: mongoose.Types.ObjectId | string;
 } & TimestampAndId;
 
-type MessageVertexType = Partial<
-  Omit<MessageType, "sender"> & Record<"sender", UserVertexType>
->;
+type MessageVertexType = Omit<MessageType, "sender"> &
+  Record<"sender", UserVertexType>;
 
 type ProductVertexType = Partial<
   Omit<ProductType, "provider"> & {
@@ -183,9 +182,8 @@ type UserVertexType = Partial<
     service: ServiceVertexType;
     requests: CursorConnectionType<OrderVertexType>;
     requestCount: number;
-  }
-> &
-  TimestampAndId;
+  } & TimestampAndId
+>;
 
 type OrderVertexType = Partial<Omit<OrderType, "client">> & {
   client: UserVertexType;
@@ -437,6 +435,17 @@ type CommentDisplayButtonPropsType = {
 };
 
 type CartModalPropType = ModalShowStateType;
+
+type DirectMessageCardPropsType = MessageVertexType;
+
+type DirectMessagerType = {
+  _id: string;
+  username: string;
+  unSeenReceivedCount: number;
+  unSeenSentCount: number;
+};
+
+type DirectMessagerPropsType = DirectMessagerType;
 
 type SearchResultModalType = {
   foundProducts: ProductVertexType[];

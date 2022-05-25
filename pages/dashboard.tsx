@@ -27,7 +27,13 @@ const ProfileSection = dynamic(() => import("components/ProfileSection"), {
   }),
   OrdersSection = dynamic(() => import("components/OrdersSection"), {
     loading: () => <AjaxFeedback loading />,
-  });
+  }),
+  DirectMessagesSection = dynamic(
+    () => import("components/DirectMessagesSection"),
+    {
+      loading: () => <AjaxFeedback loading />,
+    }
+  );
 
 const { abbr, webPages } = config.appData,
   // dashboard page data
@@ -74,7 +80,8 @@ const DashboardPage: AuthComponentType = () => {
           }
           paragraphs={dashboardPage?.parargraphs}
         />
-        <Tabs defaultActiveKey="orders" className="my-5">
+        {/* TODO: change defaultActiveKey back to orders */}
+        <Tabs defaultActiveKey="messages" className="my-5">
           <Tab
             eventKey="orders"
             title={<BadgedTitle label="Orders" countValue={orderCount ?? 0} />}
@@ -84,21 +91,27 @@ const DashboardPage: AuthComponentType = () => {
           </Tab>
           <Tab
             eventKey="requests"
-            title={<BadgedTitle label="Requests" countValue={requestCount ?? 0} />}
+            title={
+              <BadgedTitle label="Requests" countValue={requestCount ?? 0} />
+            }
             className="my-5"
           >
             <RequestsSection />
           </Tab>
           <Tab
             eventKey="products"
-            title={<BadgedTitle label="Products" countValue={productCount ?? 0} />}
+            title={
+              <BadgedTitle label="Products" countValue={productCount ?? 0} />
+            }
             className="my-5"
           >
             <ProductsSection />
           </Tab>
           <Tab
             eventKey="comments"
-            title={<BadgedTitle label="Comments" countValue={commentCount ?? 0} />}
+            title={
+              <BadgedTitle label="Comments" countValue={commentCount ?? 0} />
+            }
             className="my-5"
           >
             <CommentsSection />
@@ -109,6 +122,13 @@ const DashboardPage: AuthComponentType = () => {
             className="my-5"
           >
             <ProfileSection />
+          </Tab>
+          <Tab
+            eventKey="messages"
+            title={<BadgedTitle label="Messages" />}
+            className="my-5"
+          >
+            <DirectMessagesSection />
           </Tab>
         </Tabs>
       </Layout>
