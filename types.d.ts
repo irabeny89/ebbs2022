@@ -436,6 +436,16 @@ type CommentDisplayButtonPropsType = {
 
 type CartModalPropType = ModalShowStateType;
 
+type DirectMessageType = {
+  _id: string;
+  message: string;
+  sender: UserVertexType;
+  receiver: string;
+  isSeen: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type DirectMessageCardPropsType = MessageVertexType;
 
 type DirectMessagerType = {
@@ -446,6 +456,12 @@ type DirectMessagerType = {
 };
 
 type DirectMessagerPropsType = DirectMessagerType;
+
+type DirectMessageModalPropsType = ModalShowStateType &
+  Record<"_id" | "username", string>;
+
+type NewDirectMessageModalPropsType = ModalShowStateType &
+  Partial<Record<"username", string>>;
 
 type SearchResultModalType = {
   foundProducts: ProductVertexType[];

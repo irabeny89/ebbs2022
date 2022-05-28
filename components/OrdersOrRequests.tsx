@@ -22,7 +22,7 @@ import {
   SET_ORDER_DELIVERY_DATE,
   UPDATE_ORDER_ITEM_STATUS,
 } from "@/graphql/documentNodes";
-import { forwardRef } from "react";
+import { FormEvent, forwardRef } from "react";
 import Link from "next/link";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 
@@ -312,7 +312,7 @@ const OrdersOrRequests = ({
                     <Row className="my-5">
                       <h5>Set Delivery Date:</h5>
                       <Form
-                        onSubmit={(e) => {
+                        onSubmit={(e: FormEvent<HTMLFormElement>) => {
                           e.preventDefault();
                           const deliveryDate = new FormData(
                             e.currentTarget

@@ -17,7 +17,7 @@ export default function DirectMessageCard({
   const authPayload = useReactiveVar(authPayloadVar);
 
   return (
-    <Card className="shadow" style={cardStyle}>
+    <Card className="shadow my-2" style={cardStyle}>
       <Card.Header>
         <Card.Title className="d-flex justify-content-between text-capitalize">
           <div>

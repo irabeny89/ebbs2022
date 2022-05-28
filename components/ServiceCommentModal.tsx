@@ -78,7 +78,7 @@ export default function ServiceCommentModal({
                     {...{
                       createdAt: createdAt.toString(),
                       post,
-                      posterId: poster?._id.toString()!,
+                      posterId: poster?._id?.toString() ?? "",
                       serviceId,
                       commentId: _id.toString(),
                       username: poster?.username!,

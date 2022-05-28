@@ -1,9 +1,9 @@
 import Tabs from "react-bootstrap/Tabs";
 import Tab from "react-bootstrap/Tab";
 import { MdDashboardCustomize } from "react-icons/md";
-import { AuthComponentType, UserVertexType } from "types";
+import { AuthComponentType, DirectMessagerType, UserVertexType } from "types";
 import { useQuery, useReactiveVar } from "@apollo/client";
-import { DASHBOARD } from "@/graphql/documentNodes";
+import { DASHBOARD, DIRECT_MESSAGERS } from "@/graphql/documentNodes";
 import AjaxFeedback from "@/components/AjaxFeedback";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import Layout from "@/components/Layout";
@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import config from "../config";
 import PageIntro from "@/components/PageIntro";
 import BadgedTitle from "components/BadgedTitle";
+import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 
 const ProfileSection = dynamic(() => import("components/ProfileSection"), {
     loading: () => <AjaxFeedback loading />,
@@ -56,7 +57,23 @@ const DashboardPage: AuthComponentType = () => {
           authorization: `Bearer ${accessToken}`,
         },
       },
+    }),
+    { loading, error, data } = useQuery<
+      Record<"directMessagers", DirectMessagerType[]>
+    >(DIRECT_MESSAGERS, {
+      context: {
+        headers: {
+          authorization: `Bearer ${accessToken}`,
+        },
+      },
     });
+
+  const unSeenMessagesCount = +getCompactNumberFormat(
+    data?.directMessagers.reduce(
+      (prev: number, { unSeenSentCount }) => unSeenSentCount + prev,
+      0
+    ) ?? 0
+  );
 
   if (userData?.me) {
     const {
@@ -80,8 +97,7 @@ const DashboardPage: AuthComponentType = () => {
           }
           paragraphs={dashboardPage?.parargraphs}
         />
-        {/* TODO: change defaultActiveKey back to orders */}
-        <Tabs defaultActiveKey="messages" className="my-5">
+        <Tabs defaultActiveKey="orders" className="my-5">
           <Tab
             eventKey="orders"
             title={<BadgedTitle label="Orders" countValue={orderCount ?? 0} />}
@@ -125,7 +141,9 @@ const DashboardPage: AuthComponentType = () => {
           </Tab>
           <Tab
             eventKey="messages"
-            title={<BadgedTitle label="Messages" />}
+            title={
+              <BadgedTitle label="Messages" countValue={unSeenMessagesCount} />
+            }
             className="my-5"
           >
             <DirectMessagesSection />

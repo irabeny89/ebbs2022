@@ -530,7 +530,7 @@ export const LOGOUT = gql`
     logout
   }
 `;
-
+// TODO - delete INBOX SDL below
 export const INBOX = gql`
   query Inbox($inboxArgs: PagingInput!) {
     inbox(args: $inboxArgs) {
@@ -556,6 +556,26 @@ export const DIRECT_MESSAGERS = gql`
       username
       unSeenSentCount
       unSeenReceivedCount
+    }
+  }
+`;
+
+export const CHATS_WITH = gql`
+  query ChatsWith($userId: ID!, $args: PagingInput!) {
+    chatsWith(userId: $userId, args: $args) {
+      edges {
+        node {
+          _id
+          message
+          receiver
+          isSeen
+          sender {
+            _id
+            username
+          }
+          createdAt
+        }
+      }
     }
   }
 `;
@@ -634,7 +654,19 @@ export const SET_ORDER_DELIVERY_DATE = gql`
 `;
 
 export const SEND_MY_DIRECT_MESSAGE = gql`
-  mutation SendMyDirectMessage($message: String!, $receiverId: ID!) {
+  mutation SendMyDirectMessage($message: String!, $receiverId: ID) {
     sendMyDirectMessage(message: $message, receiverId: $receiverId)
+  }
+`;
+
+export const SEND_MY_NEW_DIRECT_MESSAGE = gql`
+  mutation SendMyDirectMessage($message: String!, $receiverUsername: String) {
+    sendMyDirectMessage(message: $message, receiverUsername: $receiverUsername)
+  }
+`;
+
+export const SET_SEEN_DIRECT_MESSAGES = gql`
+  mutation SetSeenDirectMessages($messageIds: [String]!) {
+    setSeenDirectMessages(messageIds: $messageIds)
   }
 `;
