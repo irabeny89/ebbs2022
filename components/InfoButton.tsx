@@ -1,6 +1,6 @@
 import Button from "react-bootstrap/Button";
 import { InfoButtonPropsType } from "types";
-import { BsInfoLg } from "react-icons/Bs";
+import { MdInfoOutline } from "react-icons/md";
 
 export default function InfoButton({ setShow }: InfoButtonPropsType) {
   return (
@@ -10,7 +10,7 @@ export default function InfoButton({ setShow }: InfoButtonPropsType) {
       variant="outline-info"
       onClick={() => setShow(true)}
     >
-      <BsInfoLg size={20} />
+      <MdInfoOutline size={20} />
     </Button>
   );
 }
