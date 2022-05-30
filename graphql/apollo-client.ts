@@ -13,7 +13,7 @@ const {
 
 const client = new ApolloClient({
   name: abbr,
-  version: "1.0.0",
+  version: "2.0.0",
   cache,
   link: from([
     onError(({ graphQLErrors, networkError, operation, forward }) => {

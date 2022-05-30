@@ -1,7 +1,5 @@
 import { CookieSerializeOptions } from "cookie";
 
-const isProductionEnv = process.env.NODE_ENV === "production";
-
 const config = {
   appData: {
     author: "Ernest Irabor",
@@ -198,7 +196,7 @@ const config = {
   },
   environmentVariable: {
     apiHost:
-      isProductionEnv && !process.env.OFFLINE!
+      process.env.APP_SERVER_STATUS !== "local"
         ? "https://ebbs-io.vercel.app"
         : "http://localhost:4000",
     graphqlUri: "/api/graphql",
