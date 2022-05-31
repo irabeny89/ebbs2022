@@ -9,12 +9,9 @@ import Link from "next/link";
 import getIpfsGateWay from "@/utils/getIpfsGateWay";
 import CommentDisplayButton from "./CommentDisplayButton";
 import ServiceLikeButton from "./ServiceLikeButton";
-import AjaxFeedback from "./AjaxFeedback";
 import dynamic from "next/dynamic";
 
-const InfoModal = dynamic(() => import("components/InfoModal"), {
-  loading: () => <AjaxFeedback loading />,
-});
+const InfoModal = dynamic(() => import("components/InfoModal"));
 
 const styling: { [key: string]: CSSProperties } = {
   smallTextStyle: {

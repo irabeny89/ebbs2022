@@ -2,7 +2,6 @@ import Modal from "react-bootstrap/Modal";
 import Container from "react-bootstrap/Container";
 import Col from "react-bootstrap/Col";
 import Row from "react-bootstrap/Row";
-import Spinner from "react-bootstrap/Spinner";
 import { BiMessageAltDots } from "react-icons/bi";
 import {
   MessagePosterPropsType,
@@ -13,7 +12,6 @@ import {
 import { useMutation, useQuery, useReactiveVar } from "@apollo/client";
 import { COMMENTS, COMMENT_COUNT, MY_COMMENT } from "@/graphql/documentNodes";
 import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
-import AjaxFeedback from "./AjaxFeedback";
 import MessagerPoster from "./MessagePoster";
 import Link from "next/link";
 import PostCard from "./PostCard";
@@ -27,7 +25,7 @@ export default function ServiceCommentModal({
   const authPayload = useReactiveVar(authPayloadVar),
     accessToken = useReactiveVar(accessTokenVar),
     // query comments
-    { loading, error, data } = useQuery<
+    { data } = useQuery<
       Record<"service", ServiceVertexType>,
       Record<"commentArgs", PagingInputType> & Record<"serviceId", string>
     >(COMMENTS, {
@@ -56,11 +54,7 @@ export default function ServiceCommentModal({
         },
       });
 
-  return loading ? (
-    <Spinner animation="grow" size="sm" />
-  ) : error ? (
-    <AjaxFeedback error={error} />
-  ) : (
+  return (
     <Modal show={show} onHide={() => setShow(false)} size="xl">
       <Modal.Header closeButton>
         <Modal.Title>

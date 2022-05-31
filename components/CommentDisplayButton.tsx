@@ -1,18 +1,16 @@
 import Button from "react-bootstrap/Button";
+import Spinner from "react-bootstrap/Spinner";
 import { COMMENT_COUNT } from "@/graphql/documentNodes";
 import { useQuery } from "@apollo/client";
 import { CommentDisplayButtonPropsType, ServiceVertexType } from "types";
 import { BiMessageAltDots } from "react-icons/bi";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import { useState } from "react";
-import AjaxFeedback from "./AjaxFeedback";
+import FeedbackToast from "./FeedbackToast";
 import dynamic from "next/dynamic";
 
 const ServiceCommentModal = dynamic(
-  () => import("components/ServiceCommentModal"),
-  {
-    loading: () => <AjaxFeedback loading />,
-  }
+  () => import("components/ServiceCommentModal")
 );
 
 export default function CommentDisplayButton({
@@ -20,21 +18,26 @@ export default function CommentDisplayButton({
   serviceName,
 }: CommentDisplayButtonPropsType) {
   const [showComment, setShowComment] = useState(false),
-    { data, loading, error } = useQuery<
-      Record<"service", ServiceVertexType>,
-      Record<"serviceId", string>
-    >(COMMENT_COUNT, {
-      variables: {
-        serviceId,
-      },
-    });
+    [showToast, setShowToast] = useState(false);
+
+  const { data, loading, error } = useQuery<
+    Record<"service", ServiceVertexType>,
+    Record<"serviceId", string>
+  >(COMMENT_COUNT, {
+    variables: {
+      serviceId,
+    },
+  });
 
   return loading ? (
-    <AjaxFeedback loading />
-  ) : error ? (
-    <AjaxFeedback error={error} />
+    <Spinner animation="grow" size="sm" />
   ) : (
     <>
+      <FeedbackToast
+        error={error}
+        showToast={showToast}
+        setShowToast={setShowToast}
+      />
       <ServiceCommentModal
         {...{
           serviceId,
