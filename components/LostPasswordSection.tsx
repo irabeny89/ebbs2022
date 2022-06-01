@@ -1,13 +1,13 @@
-import Container from "react-bootstrap/Container"
-import Col from "react-bootstrap/Col"
-import Row from "react-bootstrap/Row"
-import Form from "react-bootstrap/Form"
-import Alert from "react-bootstrap/Alert"
-import Button from "react-bootstrap/Button"
-import Spinner from "react-bootstrap/Spinner"
+import Container from "react-bootstrap/Container";
+import Col from "react-bootstrap/Col";
+import Row from "react-bootstrap/Row";
+import Form from "react-bootstrap/Form";
+import Alert from "react-bootstrap/Alert";
+import Button from "react-bootstrap/Button";
+import Spinner from "react-bootstrap/Spinner";
 import { MdPassword, MdSend } from "react-icons/md";
 import EmailValidationForm from "./EmailValidationForm";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { useMutation } from "@apollo/client";
 import { ChangePasswordVariableType } from "types";
 import { USER_PASSWORD_CHANGE } from "@/graphql/documentNodes";
@@ -15,15 +15,39 @@ import AjaxFeedback from "./AjaxFeedback";
 
 export default function LostPasswordSection() {
   const [validated, setValidated] = useState(false),
-  [showAlert, setShowAlert] = useState(false),
-  // change password mutation
-  [
-    changePassword,
-    { data: passwordData, error: passwordError, loading: passwordLoading },
-  ] = useMutation<
-    Record<"changePassword", string>,
-    ChangePasswordVariableType
-  >(USER_PASSWORD_CHANGE);
+    [showAlert, setShowAlert] = useState(false),
+    // change password mutation
+    [
+      changePassword,
+      { data: passwordData, error: passwordError, loading: passwordLoading },
+    ] = useMutation<
+      Record<"changePassword", string>,
+      ChangePasswordVariableType
+    >(USER_PASSWORD_CHANGE);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget),
+      password = formData.get("password")?.toString()!,
+      confirmPassword = formData.get("confirmPassword")?.toString()!,
+      // compare password, store in variable
+      hasConfirmedPassword = confirmPassword === password;
+    // show the alert message if passwords are not same
+    setShowAlert(!hasConfirmedPassword);
+    // check form validity without submitting...
+    hasConfirmedPassword && e.currentTarget.checkValidity()
+      ? // ...if valid, off validity, send the query & reset form inputs
+        (setValidated(false),
+        e.currentTarget.reset(),
+        changePassword({
+          variables: {
+            passCode: formData.get("passCode")?.toString()!,
+            newPassword: password,
+          },
+        }))
+      : // ...else prevent submitting & on validity
+        (e.preventDefault(), e.stopPropagation(), setValidated(true));
+  };
 
   return (
     <>
@@ -45,33 +69,7 @@ export default function LostPasswordSection() {
               data-testid="changePasswordForm"
               noValidate
               validated={validated}
-              onSubmit={(e) => {
-                e.preventDefault();
-                const formData = new FormData(e.currentTarget),
-                  password = formData.get("password")?.toString()!,
-                  confirmPassword = formData
-                    .get("confirmPassword")
-                    ?.toString()!,
-                  // compare password, store in variable
-                  hasConfirmedPassword = confirmPassword === password;
-                // show the alert message if passwords are not same
-                setShowAlert(!hasConfirmedPassword);
-                // check form validity without submitting...
-                hasConfirmedPassword && e.currentTarget.checkValidity()
-                  ? // ...if valid, off validity, send the query & reset form inputs
-                    (setValidated(false),
-                    e.currentTarget.reset(),
-                    changePassword({
-                      variables: {
-                        passCode: formData.get("passCode")?.toString()!,
-                        newPassword: password,
-                      },
-                    }))
-                  : // ...else prevent submitting & on validity
-                    (e.preventDefault(),
-                    e.stopPropagation(),
-                    setValidated(true));
-              }}
+              onSubmit={handleSubmit}
             >
               <Form.FloatingLabel label="Pass Code" className="mb-3">
                 <Form.Control

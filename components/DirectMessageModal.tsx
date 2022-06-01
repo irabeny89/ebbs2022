@@ -4,10 +4,10 @@ import {
   SEND_MY_DIRECT_MESSAGE,
   SET_SEEN_DIRECT_MESSAGES,
 } from "@/graphql/documentNodes";
-import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar, authPayloadVar, toastPayloadsVar } from "@/graphql/reactiveVariables";
 import { useQuery, useReactiveVar, useMutation } from "@apollo/client";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import Modal from "react-bootstrap/Modal";
 import {
   CursorConnectionType,
@@ -20,10 +20,7 @@ import MessagePoster from "./MessagePoster";
 
 const AjaxFeedback = dynamic(() => import("components/AjaxFeedback"), {
     loading: () => <>loading...</>,
-  }),
-  FeedbackToast = dynamic(() => import("components/FeedbackToast"), {
-    loading: () => <>loading...</>,
-  });
+  })
 
 export default function DirectMessageModal({
   show,
@@ -31,7 +28,6 @@ export default function DirectMessageModal({
   _id: userId,
   username,
 }: DirectMessageModalPropsType) {
-  const [showToast, setShowToast] = useState(false);
 
   const accessToken = useReactiveVar(accessTokenVar),
     authPayload = useReactiveVar(authPayloadVar);
@@ -97,9 +93,20 @@ export default function DirectMessageModal({
     return () => reset();
   }, [show === true]);
 
+  useEffect(() => {
+    // toast feedback
+    (error) &&
+      toastPayloadsVar([{ error }]);
+    (errorMessage) &&
+      toastPayloadsVar([{ error: errorMessage, reset }]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [error?.message, errorMessage?.message]);
+  
   return (
     <>
-      <FeedbackToast {...{ showToast, setShowToast, error: errorMessage }} />
       <Modal show={show} onHide={() => setShow(false)}>
         <Modal.Header closeButton>
           <Modal.Title>

@@ -10,23 +10,18 @@ import { useState, useEffect, FormEvent } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { USER_LOGIN } from "@/graphql/documentNodes";
 import type { UserLoginVariableType } from "types";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { accessTokenVar } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
+import AjaxFeedback from "./AjaxFeedback";
 
 const {
   constants: { AUTH_PAYLOAD, CART_ITEMS_KEY },
 } = config.appData;
-const FeedbackToast = dynamic(() => import("./FeedbackToast"), {
-  loading: () => <>loading...</>,
-});
 
 export default function LoginSection() {
-  const [validated, setValidated] = useState(false),
-    // feedback toast
-    [showToast, setShowToast] = useState(false);
+  const [validated, setValidated] = useState(false);
 
   const router = useRouter();
 
@@ -71,7 +66,7 @@ export default function LoginSection() {
         accessTokenVar(data.login),
         router.push("/dashboard"));
     })();
-  }, [data, router]);
+  }, [data?.login, router]);
 
   return (
     <>
@@ -122,14 +117,6 @@ export default function LoginSection() {
                 </Form.Control.Feedback>
               </Form.FloatingLabel>
               {/* login form feedback toast */}
-              <FeedbackToast
-                {...{
-                  error,
-                  showToast,
-                  setShowToast,
-                  successText: data?.login && "Login successfully. Welcome!",
-                }}
-              />
               <Button
                 data-testid="loginButton"
                 size="lg"
@@ -142,6 +129,7 @@ export default function LoginSection() {
             </Form>
           </Col>
         </Row>
+        <AjaxFeedback error={error} />
       </Container>
     </>
   );

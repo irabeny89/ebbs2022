@@ -8,13 +8,13 @@ import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
 import dynamic from "next/dynamic";
 import { MdBusinessCenter, MdRememberMe, MdSend } from "react-icons/md";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useMutation } from "@apollo/client";
 import { USER_REGISTER } from "@/graphql/documentNodes";
 import { RegisterVariableType } from "types";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
 import config from "config";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar, toastPayloadsVar } from "@/graphql/reactiveVariables";
 import { useRouter } from "next/router";
 import EmailValidationForm from "./EmailValidationForm";
 
@@ -23,24 +23,76 @@ const {
   constants: { AUTH_PAYLOAD },
 } = config.appData;
 
-// dynamically import component - code splitting
-const FeedbackToast = dynamic(() => import("./FeedbackToast"), {
-    loading: () => <>loading...</>,
-  });
-
 export default function RegisterSection() {
   const [validated, setValidated] = useState(false),
     [show, setShow] = useState(false),
-    [fileSize, setFileSize] = useState(0),
-    [showToast, setShowToast] = useState(false),
-    router = useRouter(),
+    [fileSize, setFileSize] = useState(0);
+
+  const router = useRouter(),
     // register mutation
     [
       registerUser,
-      { data: registerData, error: registerError, loading: registerLoading },
+      {
+        data: registerData,
+        error: registerError,
+        loading: registerLoading,
+        reset,
+      },
     ] = useMutation<Record<"register", string>, RegisterVariableType>(
       USER_REGISTER
     );
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget),
+      username = formData.get("username")?.toString().trim()!,
+      passCode = formData.get("passCode")?.toString().trim()!,
+      password = formData.get("password")?.toString(),
+      confirmPassword = formData.get("confirmPassword")?.toString()!,
+      title = formData.get("title")?.toString().trim(),
+      logo = formData.get("logo") as File,
+      description = formData.get("description")?.toString().trim(),
+      state = formData.get("state")?.toString().trim(),
+      // compare password & give feedback accordingly
+      hasConfirmedPassword = confirmPassword === password;
+    // show the message if passwords are not same
+    setShow(!hasConfirmedPassword);
+    // check form validity without submitting...
+    hasConfirmedPassword && logo.size < 1e6 && e.currentTarget.checkValidity()
+      ? // ...if valid, off validity, send the query & reset form inputs & fileSize
+        (setValidated(false),
+        e.currentTarget.reset(),
+        setFileSize(0),
+        registerUser({
+          variables: {
+            registerInput: {
+              passCode,
+              password,
+              username,
+              title,
+              logoCID: logo.name
+                ? await (
+                    await import("../web3storage/index")
+                  ).default.put([logo])
+                : undefined,
+              description,
+              state,
+            },
+          },
+        }))
+      : // ...else prevent submitting & on validity
+        (e.preventDefault(), e.stopPropagation(), setValidated(true));
+  };
+
+  useEffect(() => {
+    // toast feedback
+    registerError && toastPayloadsVar([{ error: registerError }]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [registerError?.message]);
+
   useEffect(() => {
     (async () => {
       const decode = (await import("jsonwebtoken")).decode;
@@ -53,7 +105,7 @@ export default function RegisterSection() {
         accessTokenVar(registerData.register),
         router.push("/dashboard"));
     })();
-  }, [registerData, router]);
+  }, [registerData?.register, router]);
 
   return (
     <>
@@ -72,49 +124,7 @@ export default function RegisterSection() {
           data-testid="registerForm"
           noValidate
           validated={validated}
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.currentTarget),
-              username = formData.get("username")?.toString().trim()!,
-              passCode = formData.get("passCode")?.toString().trim()!,
-              password = formData.get("password")?.toString(),
-              confirmPassword = formData.get("confirmPassword")?.toString()!,
-              title = formData.get("title")?.toString().trim(),
-              logo = formData.get("logo") as File,
-              description = formData.get("description")?.toString().trim(),
-              state = formData.get("state")?.toString().trim(),
-              // compare password & give feedback accordingly
-              hasConfirmedPassword = confirmPassword === password;
-            // show the message if passwords are not same
-            setShow(!hasConfirmedPassword);
-            // check form validity without submitting...
-            hasConfirmedPassword &&
-            logo.size < 1e6 &&
-            e.currentTarget.checkValidity()
-              ? // ...if valid, off validity, send the query & reset form inputs & fileSize
-                (setValidated(false),
-                e.currentTarget.reset(),
-                setFileSize(0),
-                registerUser({
-                  variables: {
-                    registerInput: {
-                      passCode,
-                      password,
-                      username,
-                      title,
-                      logoCID: logo.name
-                        ? await (
-                            await import("../web3storage/index")
-                          ).default.put([logo])
-                        : undefined,
-                      description,
-                      state,
-                    },
-                  },
-                }))
-              : // ...else prevent submitting & on validity
-                (e.preventDefault(), e.stopPropagation(), setValidated(true));
-          }}
+          onSubmit={handleSubmit}
         >
           <Row>
             <Col md="6" className="mb-3">
@@ -276,17 +286,6 @@ export default function RegisterSection() {
               </Row>
             </Accordion.Body>
           </Accordion>
-          {/* register form feedback toast */}
-          <FeedbackToast
-            {...{
-              error: registerError,
-              showToast,
-              setShowToast,
-              successText:
-                registerData?.register &&
-                "Registration successful. You can login Now.",
-            }}
-          />
           <Button
             data-testid="registerButton"
             size="lg"

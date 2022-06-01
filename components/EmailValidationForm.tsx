@@ -3,35 +3,47 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { MdSend } from "react-icons/md";
-import { useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useLazyQuery } from "@apollo/client";
 import { USER_REQUEST_PASSCODE } from "@/graphql/documentNodes";
-import dynamic from "next/dynamic";
+import { toastPayloadsVar } from "@/graphql/reactiveVariables";
 
-const FeedbackToast = dynamic(() => import("@/components/FeedbackToast"), {
-  loading: () => <>loading...</>,
-});
-
-const EmailValidationForm = () => {
+export default function EmailValidationForm() {
   // passcode form validation state
-  const [passcodeValidated, setPassCodeValidated] = useState(false),
-    [showToast, setShowToast] = useState(false),
-    // passcode request query
-    [requestPassCode, { data, error, loading }] = useLazyQuery<
-      Record<"requestPassCode", string>,
-      Record<"email", string>
-    >(USER_REQUEST_PASSCODE);
+  const [passcodeValidated, setPassCodeValidated] = useState(false);
+  // passcode request query
+  const [requestPassCode, { data, error, loading }] = useLazyQuery<
+    Record<"requestPassCode", string>,
+    Record<"email", string>
+  >(USER_REQUEST_PASSCODE);
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    // check form validity before sending
+    e.currentTarget.checkValidity()
+      ? (setPassCodeValidated(false),
+        e.currentTarget.reset(),
+        requestPassCode({
+          variables: {
+            email: formData.get("email")?.toString()!,
+          },
+        }))
+      : (e.preventDefault(), e.stopPropagation(), setPassCodeValidated(true));
+  };
+
+  useEffect(() => {
+    // toast feedback
+    (error || data?.requestPassCode) &&
+      toastPayloadsVar([{ error, successText: data?.requestPassCode }]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [error?.message, data?.requestPassCode]);
 
   return (
     <Accordion>
-      <FeedbackToast
-        {...{
-          error,
-          showToast,
-          setShowToast,
-          successText: data?.requestPassCode!,
-        }}
-      />
       <Accordion.Item eventKey="0">
         <Accordion.Header>Request Passcode</Accordion.Header>
         <Accordion.Body>
@@ -39,22 +51,7 @@ const EmailValidationForm = () => {
             data-testid="recoveryForm"
             noValidate
             validated={passcodeValidated}
-            onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              // check form validity before sending
-              e.currentTarget.checkValidity()
-                ? (setPassCodeValidated(false),
-                  e.currentTarget.reset(),
-                  requestPassCode({
-                    variables: {
-                      email: formData.get("email")?.toString()!,
-                    },
-                  }))
-                : (e.preventDefault(),
-                  e.stopPropagation(),
-                  setPassCodeValidated(true));
-            }}
+            onSubmit={handleSubmit}
           >
             <Form.FloatingLabel label="Email">
               <Form.Control
@@ -84,6 +81,4 @@ const EmailValidationForm = () => {
       </Accordion.Item>
     </Accordion>
   );
-};
-
-export default EmailValidationForm;
+}

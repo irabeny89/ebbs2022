@@ -13,11 +13,12 @@ import {
   accessTokenVar,
   authPayloadVar,
   cartItemsVar,
+  toastPayloadsVar,
 } from "@/graphql/reactiveVariables";
 import config from "../config";
 import getLastCartItemsFromStorage from "@/utils/getLastCartItemsFromStorage";
 import getLocalePrice from "@/utils/getLocalePrice";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useReactiveVar } from "@apollo/client";
 import {
   DELETE_MY_PRODUCT,
@@ -34,9 +35,6 @@ import EditButton from "./EditButton";
 import DeleteButton from "./DeleteButton";
 
 const EditProductModal = dynamic(() => import("components/EditProductModal"), {
-    loading: () => <AjaxFeedback loading />,
-  }),
-  FeedbackToast = dynamic(() => import("components/FeedbackToast"), {
     loading: () => <AjaxFeedback loading />,
   }),
   DeleteModal = dynamic(() => import("components/DeleteModal"), {
@@ -73,15 +71,15 @@ const ProductCard = ({
   style,
 }: ProductCardPropsType) => {
   // get auth access token
-  const accessToken = useReactiveVar(accessTokenVar);
+  const accessToken = useReactiveVar(accessTokenVar),
+    authPayload = useReactiveVar(authPayloadVar);
+
   const [showEdit, setShowEdit] = useState(false),
-    authPayload = useReactiveVar(authPayloadVar),
-    // feedback toast state
-    [showToast, setShowToast] = useState(false),
     [showInfo, setShowInfo] = useState(false),
-    [showDelete, setShowDelete] = useState(false),
-    // deletion mutation
-    [
+    [showDelete, setShowDelete] = useState(false);
+
+  // deletion mutation
+  const [
       deleteProduct,
       { loading: deleteLoading, data: deleteData, error: deleteError },
     ] = useMutation<
@@ -133,18 +131,20 @@ const ProductCard = ({
       cartItemsVar(newItems);
     };
 
+  useEffect(() => {
+    // toast feedback
+    (deleteError || deleteData?.deleteMyProduct) &&
+      toastPayloadsVar([
+        { error: deleteError, successText: deleteData?.deleteMyProduct },
+      ]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [deleteError?.message, deleteData?.deleteMyProduct]);
+
   return (
     <Container fluid {...{ className, style }}>
-      <FeedbackToast
-        {...{
-          error: deleteError,
-          successText: deleteData?.deleteMyProduct
-            ? "Product deleted successfully!"
-            : undefined,
-          setShowToast,
-          showToast,
-        }}
-      />
       <InfoModal
         title={name}
         body={description}
