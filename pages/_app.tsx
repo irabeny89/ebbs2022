@@ -11,6 +11,7 @@ import UnAuth from "@/components/UnAuth";
 import Head from "next/head";
 import Layout from "@/components/Layout";
 import FeedbackToast from "@/components/FeedbackToast";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const {
   abbr,
@@ -28,25 +29,27 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <SSRProvider>
-      <ApolloProvider client={client}>
-        <FeedbackToast>
-          {Component.displayName === "DashboardPage" ? (
-            // @ts-ignore
-            Component.audiences.includes(audience) ? (
-              <Component {...pageProps} />
+      <ErrorBoundary>
+        <ApolloProvider client={client}>
+          <FeedbackToast>
+            {Component.displayName === "DashboardPage" ? (
+              // @ts-ignore
+              Component.audiences.includes(audience) ? (
+                <Component {...pageProps} />
+              ) : (
+                <Layout>
+                  <Head>
+                    <title>{abbr} &trade; | Forbidden Page</title>
+                  </Head>
+                  <UnAuth />
+                </Layout>
+              )
             ) : (
-              <Layout>
-                <Head>
-                  <title>{abbr} &trade; | Forbidden Page</title>
-                </Head>
-                <UnAuth />
-              </Layout>
-            )
-          ) : (
-            <Component {...pageProps} />
-          )}
-        </FeedbackToast>
-      </ApolloProvider>
+              <Component {...pageProps} />
+            )}
+          </FeedbackToast>
+        </ApolloProvider>
+      </ErrorBoundary>
     </SSRProvider>
   );
 }
