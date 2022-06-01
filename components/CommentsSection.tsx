@@ -1,26 +1,24 @@
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import { useQuery, useReactiveVar, useMutation } from "@apollo/client";
-import config from "config";
-import { useState } from "react";
-import { accessTokenVar, authPayloadVar } from "@/graphql/reactiveVariables";
+import {
+  accessTokenVar,
+  authPayloadVar,
+  toastPayloadsVar,
+} from "@/graphql/reactiveVariables";
 import { MessagePosterPropsType, PagingInputType, UserVertexType } from "types";
 import { COMMENTS_TAB, MY_COMMENT } from "@/graphql/documentNodes";
 import AjaxFeedback from "./AjaxFeedback";
 import DashboardServiceAlert from "components/DashboardServiceAlert";
 import Messenger from "./MessagePoster";
-import FeedbackToast from "./FeedbackToast";
 import PostCard from "./PostCard";
-
-const {
-  constants: { AUTH_PAYLOAD },
-} = config.appData;
+import { useEffect } from "react";
 
 export default function CommentsSection() {
   const authPayload = useReactiveVar(authPayloadVar),
-    accessToken = useReactiveVar(accessTokenVar),
-    [showToast, setShowToast] = useState(false),
-    { data, loading, error } = useQuery<
+    accessToken = useReactiveVar(accessTokenVar);
+
+  const { data, loading, error } = useQuery<
       Record<"me", UserVertexType>,
       Record<"commentArgs", PagingInputType>
     >(COMMENTS_TAB, {
@@ -33,7 +31,7 @@ export default function CommentsSection() {
         },
       },
     }),
-    [sendPost, { loading: posting, error: errorPosting }] = useMutation<
+    [sendPost, { loading: posting, error: errorPosting, reset }] = useMutation<
       Record<"myComment", string>,
       Record<"serviceId" | "post", string>
     >(MY_COMMENT, {
@@ -52,6 +50,16 @@ export default function CommentsSection() {
         },
       });
 
+  useEffect(() => {
+    // toast feedback
+    error && toastPayloadsVar([{ error }]);
+    (errorPosting) && toastPayloadsVar([{ error: errorPosting, reset }]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [error?.message, errorPosting?.message]);
+
   return loading ? (
     <AjaxFeedback loading={loading} />
   ) : error ? (
@@ -60,7 +68,6 @@ export default function CommentsSection() {
     <DashboardServiceAlert />
   ) : (
     <>
-      <FeedbackToast {...{ showToast, setShowToast, error: errorPosting }} />
       {data?.me?.service?.comments?.edges.map(
         ({ node: { createdAt, _id, post, poster } }) => (
           <Row key={_id?.toString()} className="justify-content-center">

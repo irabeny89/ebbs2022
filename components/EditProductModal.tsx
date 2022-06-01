@@ -4,8 +4,7 @@ import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { MdSend } from "react-icons/md";
-import FeedbackToast from "./FeedbackToast";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   EDIT_PRODUCT,
   FEW_PRODUCTS,
@@ -19,7 +18,7 @@ import {
   NewProductFormDataType,
 } from "types";
 import { useMutation, useReactiveVar } from "@apollo/client";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar, toastPayloadsVar } from "@/graphql/reactiveVariables";
 import config from "config";
 import getCidMod from "@/utils/getCidMod";
 import web3storage from "../web3storage";
@@ -32,15 +31,15 @@ export default function EditProductModal({
   setShow,
   ...productData
 }: EditProductModalType) {
+  const accessToken = useReactiveVar(accessTokenVar);
+
   const [validated, setValidated] = useState(false),
-    [showToast, setShowToast] = useState(false),
-    accessToken = useReactiveVar(accessTokenVar),
     // image file sizes state
     [fileSizes, setFileSizes] = useState<number[]>([]),
     // video file size state
     [videoFileSize, setVideoFileSize] = useState(0),
     [uploading, setUploading] = useState(false),
-    [editProduct, { data: editProductData, loading: editProductLoading }] =
+    [editProduct, { data, reset, loading: editProductLoading, error }] =
       useMutation<
         Record<"editProduct", string>,
         Record<"fields", Omit<EditProductModalType, keyof ModalShowStateType>>
@@ -127,6 +126,16 @@ export default function EditProductModal({
       }
     };
 
+  useEffect(() => {
+    // toast feedback
+    (error || data) &&
+      toastPayloadsVar([{ error, successText: data!.editProduct, reset }]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [error?.message, data?.editProduct]);
+
   return (
     <Modal show={show} onHide={() => setShow(false)}>
       <Modal.Header closeButton className="h3">
@@ -136,15 +145,6 @@ export default function EditProductModal({
         )}
       </Modal.Header>
       <Modal.Body>
-        <FeedbackToast
-          {...{
-            successText: editProductData
-              ? "Product added successfully!"
-              : undefined,
-            setShowToast,
-            showToast,
-          }}
-        />
         <Form validated={validated} noValidate onSubmit={handleSubmit}>
           <Form.FloatingLabel label="Product Name">
             <Form.Control

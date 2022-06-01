@@ -4,8 +4,7 @@ import Badge from "react-bootstrap/Badge";
 import Button from "react-bootstrap/Button";
 import Spinner from "react-bootstrap/Spinner";
 import { MdSend } from "react-icons/md";
-import FeedbackToast from "./FeedbackToast";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import {
   ADD_NEW_PRODUCT,
   FEW_PRODUCTS,
@@ -19,7 +18,7 @@ import {
   NewProductVariableType,
 } from "types";
 import { useMutation, useReactiveVar } from "@apollo/client";
-import { accessTokenVar } from "@/graphql/reactiveVariables";
+import { accessTokenVar, toastPayloadsVar } from "@/graphql/reactiveVariables";
 import config from "config";
 import getCidMod from "@/utils/getCidMod";
 import web3storage from "../web3storage";
@@ -32,21 +31,15 @@ export default function AddProductModal({
   setShow,
 }: AddProductModalType) {
   const [validated, setValidated] = useState(false),
-    [showToast, setShowToast] = useState(false),
     accessToken = useReactiveVar(accessTokenVar),
     // image file sizes state
     [fileSizes, setFileSizes] = useState<number[]>([]),
     // video file size state
     [videoFileSize, setVideoFileSize] = useState(0),
-    [uploading, setUploading] = useState(false),
-    [
-      addProduct,
-      {
-        data: newProductData,
-        loading: newProductLoading,
-        error: newProductError,
-      },
-    ] = useMutation<Record<"newProduct", string>, NewProductVariableType>(
+    [uploading, setUploading] = useState(false);
+
+  const [addProduct, { data, loading: newProductLoading, error, reset }] =
+    useMutation<Record<"newProduct", string>, NewProductVariableType>(
       ADD_NEW_PRODUCT,
       {
         refetchQueries: [
@@ -61,75 +54,85 @@ export default function AddProductModal({
           },
         },
       }
-    ),
-    handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-      try {
-        e.preventDefault();
-        const formData = Object.fromEntries(
-            new FormData(e.currentTarget)
-          ) as unknown as NewProductFormDataType,
-          // formData does not contain FileList but File
-          // so, using DOM directly & asserting type
+    );
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    try {
+      e.preventDefault();
+      const formData = Object.fromEntries(
+          new FormData(e.currentTarget)
+        ) as unknown as NewProductFormDataType,
+        // formData does not contain FileList but File
+        // so, using DOM directly & asserting type
+        // @ts-ignore
+        imageFileList = e.currentTarget.querySelector(
+          "input[name='images']"
           // @ts-ignore
-          imageFileList = e.currentTarget.querySelector(
-            "input[name='images']"
-            // @ts-ignore
-          ).files as FileList;
-        // validate form & maximum file sizes
-        if (
-          e.currentTarget.checkValidity() &&
-          fileSizes.length <= maxImageFiles &&
-          fileSizes.find((fileSize) => fileSize < mediaMaxSize.image) &&
-          videoFileSize < mediaMaxSize.video
-        ) {
-          // store file remotely or return undefined if video is not selected
-          // alert while uploading
-          const videoCID =
-            formData?.video?.name &&
-            (setUploading(true), await getCidMod(web3storage, formData.video));
-          setUploading(false);
-          // if uploaded log to console the cid
-          videoCID && console.log("video file uploaded => CID:", videoCID);
-          // remove video field; it's not part of gql schema
-          delete formData.video;
-          // store images remotely & attach file names separated by comma & alert while uploading
-          setUploading(true);
-          // @ts-ignore
-          const imagesCID = !!process.env.NEXT_PUBLIC_OFFLINE!
-            ? "/vercel.svg"
-            : (Array.from(imageFileList)
-                .map(({ name }: File) => encodeURIComponent(name))
-                .concat(await web3storage.put(imageFileList))
-                .join() as string);
-          // alert & log if images uploaded
-          setUploading(false);
-          console.log("images uploaded =>", imagesCID);
-          // remove video field; it's not part of gql schema
-          // @ts-ignore
-          delete formData.images;
-          // call the mutate function
-          addProduct({
-            variables: {
-              newProduct: {
-                ...formData,
-                imagesCID,
-                videoCID,
-                tags: formData?.tags
-                  ?.trim()
-                  .split(" ")
-                  .filter((text) => text !== ""),
-                price: +formData.price,
-              },
+        ).files as FileList;
+      // validate form & maximum file sizes
+      if (
+        e.currentTarget.checkValidity() &&
+        fileSizes.length <= maxImageFiles &&
+        fileSizes.find((fileSize) => fileSize < mediaMaxSize.image) &&
+        videoFileSize < mediaMaxSize.video
+      ) {
+        // store file remotely or return undefined if video is not selected
+        // alert while uploading
+        const videoCID =
+          formData?.video?.name &&
+          (setUploading(true), await getCidMod(web3storage, formData.video));
+        setUploading(false);
+        // if uploaded log to console the cid
+        videoCID && console.log("video file uploaded => CID:", videoCID);
+        // remove video field; it's not part of gql schema
+        delete formData.video;
+        // store images remotely & attach file names separated by comma & alert while uploading
+        setUploading(true);
+        // @ts-ignore
+        const imagesCID = !!process.env.NEXT_PUBLIC_OFFLINE!
+          ? "/vercel.svg"
+          : (Array.from(imageFileList)
+              .map(({ name }: File) => encodeURIComponent(name))
+              .concat(await web3storage.put(imageFileList))
+              .join() as string);
+        // alert & log if images uploaded
+        setUploading(false);
+        console.log("images uploaded =>", imagesCID);
+        // remove video field; it's not part of gql schema
+        // @ts-ignore
+        delete formData.images;
+        // call the mutate function
+        addProduct({
+          variables: {
+            newProduct: {
+              ...formData,
+              imagesCID,
+              videoCID,
+              tags: formData?.tags
+                ?.trim()
+                .split(" ")
+                .filter((text) => text !== ""),
+              price: +formData.price,
             },
-          }),
-            e.currentTarget.reset(),
-            setFileSizes([]),
-            setVideoFileSize(0);
-        } else e.preventDefault(), e.stopPropagation(), setValidated(true);
-      } catch (error) {
-        setUploading(false), console.error(error);
-      }
+          },
+        }),
+          e.currentTarget.reset(),
+          setFileSizes([]),
+          setVideoFileSize(0);
+      } else e.preventDefault(), e.stopPropagation(), setValidated(true);
+    } catch (error) {
+      setUploading(false), console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    // toast feedback
+    (error || data) &&
+      toastPayloadsVar([{ error, successText: data!.newProduct, reset }]);
+
+    return () => {
+      toastPayloadsVar([]);
     };
+  }, [error?.message, data?.newProduct]);
 
   return (
     <Modal show={show} onHide={() => setShow(false)}>
@@ -140,16 +143,6 @@ export default function AddProductModal({
         )}
       </Modal.Header>
       <Modal.Body>
-        <FeedbackToast
-          {...{
-            error: newProductError,
-            successText: newProductData
-              ? "Product added successfully!"
-              : undefined,
-            setShowToast,
-            showToast,
-          }}
-        />
         <Form validated={validated} noValidate onSubmit={handleSubmit}>
           <Form.FloatingLabel label="Product Name">
             <Form.Control

@@ -74,6 +74,12 @@ type StyleType = {
   style?: CSSProperties;
 };
 
+type ToastPayloadType = {
+  error: any;
+  successText?: string;
+  reset?: () => void;
+};
+
 type UserType = {
   role: "ADMIN" | "USER";
   username: string;
@@ -477,3 +483,5 @@ type ServiceCommentModalType = {
   serviceId: string;
   serviceName: string;
 } & ModalShowStateType;
+
+type FeedbackToastPropsType = Partial<Record<"reset", () => void>>;

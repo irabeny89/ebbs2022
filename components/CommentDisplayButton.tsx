@@ -5,9 +5,9 @@ import { useQuery } from "@apollo/client";
 import { CommentDisplayButtonPropsType, ServiceVertexType } from "types";
 import { BiMessageAltDots } from "react-icons/bi";
 import getCompactNumberFormat from "@/utils/getCompactNumberFormat";
-import { useState } from "react";
-import FeedbackToast from "./FeedbackToast";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { toastPayloadsVar } from "@/graphql/reactiveVariables";
 
 const ServiceCommentModal = dynamic(
   () => import("components/ServiceCommentModal")
@@ -17,8 +17,7 @@ export default function CommentDisplayButton({
   serviceId,
   serviceName,
 }: CommentDisplayButtonPropsType) {
-  const [showComment, setShowComment] = useState(false),
-    [showToast, setShowToast] = useState(false);
+  const [showComment, setShowComment] = useState(false);
 
   const { data, loading, error } = useQuery<
     Record<"service", ServiceVertexType>,
@@ -29,15 +28,19 @@ export default function CommentDisplayButton({
     },
   });
 
+  useEffect(() => {
+    // toast feedback
+    error && toastPayloadsVar([{ error }]);
+
+    return () => {
+      toastPayloadsVar([]);
+    };
+  }, [error?.message]);
+
   return loading ? (
     <Spinner animation="grow" size="sm" />
   ) : (
     <>
-      <FeedbackToast
-        error={error}
-        showToast={showToast}
-        setShowToast={setShowToast}
-      />
       <ServiceCommentModal
         {...{
           serviceId,
