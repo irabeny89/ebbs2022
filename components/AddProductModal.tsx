@@ -132,7 +132,7 @@ export default function AddProductModal({
     return () => {
       toastPayloadsVar([]);
     };
-  }, [error?.message, data?.newProduct]);
+  }, [error, data, reset]);
 
   return (
     <Modal show={show} onHide={() => setShow(false)}>

@@ -91,7 +91,7 @@ export default function PostCard({
           </div>
           <div style={dotsStyle}>
             {posterServiceId && (
-              <Link href={`/services/${posterServiceId}`}>
+              <Link passHref href={`/services/${posterServiceId}`}>
                 <MdBusinessCenter size={30} className="mx-2" />
               </Link>
             )}

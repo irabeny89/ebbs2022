@@ -17,8 +17,9 @@ export default function FeedbackToast({
   return (
     <>
       <ToastContainer position="middle-center">
-        {toastPayloads.map(({ error, successText, reset }) => (
+        {toastPayloads.map(({ error, successText, reset }, i) => (
           <Toast
+            key={i}
             bg={error ? "danger" : "success"}
             show={show}
             onClose={() => handleClose(reset)}

@@ -141,7 +141,7 @@ const ProductCard = ({
     return () => {
       toastPayloadsVar([]);
     };
-  }, [deleteError?.message, deleteData?.deleteMyProduct]);
+  }, [deleteError, deleteData?.deleteMyProduct]);
 
   return (
     <Container fluid {...{ className, style }}>

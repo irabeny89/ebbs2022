@@ -6,7 +6,6 @@ import Accordion from "react-bootstrap/Accordion";
 import Spinner from "react-bootstrap/Spinner";
 import Alert from "react-bootstrap/Alert";
 import Button from "react-bootstrap/Button";
-import dynamic from "next/dynamic";
 import { MdBusinessCenter, MdRememberMe, MdSend } from "react-icons/md";
 import { useState, useEffect, FormEvent } from "react";
 import { useMutation } from "@apollo/client";
@@ -86,12 +85,12 @@ export default function RegisterSection() {
 
   useEffect(() => {
     // toast feedback
-    registerError && toastPayloadsVar([{ error: registerError }]);
+    registerError && toastPayloadsVar([{ error: registerError, reset }]);
 
     return () => {
       toastPayloadsVar([]);
     };
-  }, [registerError?.message]);
+  }, [registerError, reset]);
 
   useEffect(() => {
     (async () => {
@@ -105,7 +104,7 @@ export default function RegisterSection() {
         accessTokenVar(registerData.register),
         router.push("/dashboard"));
     })();
-  }, [registerData?.register, router]);
+  }, [registerData, router]);
 
   return (
     <>

@@ -66,7 +66,7 @@ export default function LoginSection() {
         accessTokenVar(data.login),
         router.push("/dashboard"));
     })();
-  }, [data?.login, router]);
+  }, [data, router]);
 
   return (
     <>

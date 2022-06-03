@@ -35,7 +35,7 @@ export default function CommentDisplayButton({
     return () => {
       toastPayloadsVar([]);
     };
-  }, [error?.message]);
+  }, [error]);
 
   return loading ? (
     <Spinner animation="grow" size="sm" />

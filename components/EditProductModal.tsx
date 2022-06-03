@@ -128,13 +128,13 @@ export default function EditProductModal({
 
   useEffect(() => {
     // toast feedback
-    (error || data) &&
+    (error || data?.editProduct) &&
       toastPayloadsVar([{ error, successText: data!.editProduct, reset }]);
 
     return () => {
       toastPayloadsVar([]);
     };
-  }, [error?.message, data?.editProduct]);
+  }, [error, data?.editProduct, reset, data]);
 
   return (
     <Modal show={show} onHide={() => setShow(false)}>

@@ -40,7 +40,7 @@ export default function EmailValidationForm() {
     return () => {
       toastPayloadsVar([]);
     };
-  }, [error?.message, data?.requestPassCode]);
+  }, [error, data?.requestPassCode]);
 
   return (
     <Accordion>

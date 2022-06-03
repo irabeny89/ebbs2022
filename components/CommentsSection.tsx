@@ -58,7 +58,7 @@ export default function CommentsSection() {
     return () => {
       toastPayloadsVar([]);
     };
-  }, [error?.message, errorPosting?.message]);
+  }, [error, errorPosting, reset]);
 
   return loading ? (
     <AjaxFeedback loading={loading} />

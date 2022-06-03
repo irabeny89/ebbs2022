@@ -56,7 +56,7 @@ export default function ServiceLikeButton({
     return () => {
       toastPayloadsVar([]);
     };
-  }, [error?.message]);
+  }, [error, reset]);
 
   return loading ? (
     <Spinner animation="grow" size="sm" />
